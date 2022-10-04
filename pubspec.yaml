@@ -43,6 +43,7 @@ dependencies:
   date_range_picker: ^1.0.3
   intl: ^0.17.0
   image_picker: ^0.8.3
+  flutter_custom_dialog: ^1.2.0
 
 dev_dependencies:
   flutter_test:

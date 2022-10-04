@@ -9,4 +9,6 @@ class Styles {
   static Color secondColor = const Color(0xFFB1D8B7);
   static TextStyle title =
       TextStyle(fontSize: 26, color: textColor, fontWeight: FontWeight.bold);
+  static TextStyle subtitle =
+      TextStyle(fontSize: 24, color: textColor, fontWeight: FontWeight.bold);
 }

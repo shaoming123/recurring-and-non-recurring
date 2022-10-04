@@ -82,8 +82,8 @@ class Navbar extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.supervisor_account),
             title: const Text('Member'),
-            onTap: () => Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => const Member())),
+            onTap: () => Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (context) => Member())),
           ),
           const Divider(),
           const Gap(100),

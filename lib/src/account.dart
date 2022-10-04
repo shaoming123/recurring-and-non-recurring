@@ -19,7 +19,7 @@ class _AccountState extends State<Account> {
   bool showPassword = false;
 
   File? image;
-  
+
   Future pickImage() async {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -89,11 +89,13 @@ class _AccountState extends State<Account> {
                                         offset: const Offset(0, 10))
                                   ],
                                   shape: BoxShape.circle,
-                                  image: const DecorationImage(
+                                  image: DecorationImage(
                                       fit: BoxFit.cover,
-                                      image: NetworkImage(
-                                        'https://oflutter.com/wp-content/uploads/2021/02/girl-profile.png',
-                                      ))),
+                                      image: image == null
+                                          ? const NetworkImage(
+                                              'https://oflutter.com/wp-content/uploads/2021/02/girl-profile.png')
+                                          : FileImage(image!)
+                                              as ImageProvider)),
                             ),
                             Positioned(
                                 bottom: 0,
