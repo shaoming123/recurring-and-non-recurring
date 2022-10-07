@@ -6,7 +6,7 @@ import 'package:ipsolution/src/navbar.dart';
 import '../util/app_styles.dart';
 
 class Member extends StatefulWidget {
-  Member({super.key});
+  const Member({super.key});
 
   @override
   State<Member> createState() => _MemberState();
@@ -23,9 +23,21 @@ class _MemberState extends State<Member> {
 
   bool selected = false;
 
-  final List<Map> _products = List.generate(30, (i) {
-    return {"id": i, "name": "User $i", "role": "Staff"};
-  });
+  final List _products = [
+    {'id': '1', 'name': 'Abhi', 'role': 'Admin'},
+    {'id': '2', 'name': 'Sipun', 'role': 'Staff'},
+    {'id': '3', 'name': 'Lipun', 'role': 'Staff'}
+  ];
+
+  List usersFiltered = [];
+  TextEditingController textcontroller = TextEditingController();
+  String _searchResult = '';
+
+  @override
+  void initState() {
+    super.initState();
+    usersFiltered = _products;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,9 +80,25 @@ class _MemberState extends State<Member> {
                       width: 180,
                       height: 40,
                       child: TextFormField(
-                        initialValue: '',
+                        controller: textcontroller,
+
                         style: const TextStyle(color: Colors.black),
                         cursorColor: Colors.black,
+                        onChanged: (value) {
+                          setState(() {
+                            _searchResult = value;
+                          });
+
+                          usersFiltered = _products
+                              .where((user) =>
+                                  user["name"]
+                                      .toLowerCase()
+                                      .contains(_searchResult) ||
+                                  user["role"]
+                                      .toLowerCase()
+                                      .contains(_searchResult))
+                              .toList();
+                        },
                         decoration: InputDecoration(
                           hintText: "Search",
                           hintStyle: const TextStyle(
@@ -103,7 +131,7 @@ class _MemberState extends State<Member> {
               const Gap(5),
               Expanded(
                 child: Container(
-                    margin: const EdgeInsets.only(bottom: 10),
+                    margin: const EdgeInsets.only(bottom: 10, top: 10),
                     decoration: const BoxDecoration(
                       color: Colors.white,
                     ),
@@ -111,111 +139,112 @@ class _MemberState extends State<Member> {
                       width: width * 0.98,
                       child: SingleChildScrollView(
                         child: DataTable(
-                          showCheckboxColumn: false,
-                          sortColumnIndex: _currentSortColumn,
-                          sortAscending: _isAscending,
-                          headingRowColor:
-                              MaterialStateProperty.all(Styles.buttonColor),
-                          columns: [
-                            DataColumn(
-                                label: Text(
-                                  'User',
-                                  style: TextStyle(
-                                      color: Styles.textColor,
-                                      fontWeight: FontWeight.w700),
-                                ),
-                                // Sorting function
-                                onSort: (columnIndex, _) {
-                                  setState(() {
-                                    _currentSortColumn = columnIndex;
-                                    if (_isAscending == true) {
-                                      _isAscending = false;
-                                      // sort the product list in Ascending, order by Price
-                                      _products.sort((productA, productB) =>
-                                          productB['id']
-                                              .compareTo(productA['id']));
-                                    } else {
-                                      _isAscending = true;
-                                      // sort the product list in Descending, order by Price
-                                      _products.sort((productA, productB) =>
-                                          productA['id']
-                                              .compareTo(productB['id']));
-                                    }
-                                  });
-                                }),
-                            DataColumn(
-                                label: Text(
-                                  'Username',
-                                  style: TextStyle(
-                                      color: Styles.textColor,
-                                      fontWeight: FontWeight.w700),
-                                ),
-                                // Sorting function
-                                onSort: (columnIndex, _) {
-                                  setState(() {
-                                    _currentSortColumn = columnIndex;
-                                    if (_isAscending == true) {
-                                      _isAscending = false;
-                                      // sort the product list in Ascending, order by Price
-                                      _products.sort((productA, productB) =>
-                                          productB['name']
-                                              .compareTo(productA['name']));
-                                    } else {
-                                      _isAscending = true;
-                                      // sort the product list in Descending, order by Price
-                                      _products.sort((productA, productB) =>
-                                          productA['name']
-                                              .compareTo(productB['name']));
-                                    }
-                                  });
-                                }),
-                            DataColumn(
-                                label: Text(
-                                  'Role',
-                                  style: TextStyle(
-                                      color: Styles.textColor,
-                                      fontWeight: FontWeight.w700),
-                                ),
-                                // Sorting function
-                                onSort: (columnIndex, _) {
-                                  setState(() {
-                                    _currentSortColumn = columnIndex;
-                                    if (_isAscending == true) {
-                                      _isAscending = false;
-                                      // sort the product list in Ascending, order by Price
-                                      _products.sort((productA, productB) =>
-                                          productB['role']
-                                              .compareTo(productA['role']));
-                                    } else {
-                                      _isAscending = true;
-                                      // sort the product list in Descending, order by Price
-                                      _products.sort((productA, productB) =>
-                                          productA['role']
-                                              .compareTo(productB['role']));
-                                    }
-                                  });
-                                }),
-                          ],
-                          rows: _products.map((item) {
-                            return DataRow(
-                                cells: [
-                                  DataCell(Text(item['id'].toString())),
-                                  DataCell(Text(item['name'])),
-                                  DataCell(Text(item['role'].toString()))
-                                ],
-                                onSelectChanged: (e) {
-                                  showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return DialogBox(
-                                          id: item['id'].toString(),
-                                          name: item['name'].toString(),
-                                          role: item['role'].toString(),
-                                        );
-                                      });
-                                });
-                          }).toList(),
-                        ),
+                            showCheckboxColumn: false,
+                            sortColumnIndex: _currentSortColumn,
+                            sortAscending: _isAscending,
+                            headingRowColor:
+                                MaterialStateProperty.all(Styles.buttonColor),
+                            columns: [
+                              DataColumn(
+                                  label: Text(
+                                    'User',
+                                    style: TextStyle(
+                                        color: Styles.textColor,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                  // Sorting function
+                                  onSort: (columnIndex, _) {
+                                    setState(() {
+                                      _currentSortColumn = columnIndex;
+                                      if (_isAscending == true) {
+                                        _isAscending = false;
+                                        // sort the product list in Ascending, order by Price
+                                        _products.sort((productA, productB) =>
+                                            productB['id']
+                                                .compareTo(productA['id']));
+                                      } else {
+                                        _isAscending = true;
+                                        // sort the product list in Descending, order by Price
+                                        _products.sort((productA, productB) =>
+                                            productA['id']
+                                                .compareTo(productB['id']));
+                                      }
+                                    });
+                                  }),
+                              DataColumn(
+                                  label: Text(
+                                    'Username',
+                                    style: TextStyle(
+                                        color: Styles.textColor,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                  // Sorting function
+                                  onSort: (columnIndex, _) {
+                                    setState(() {
+                                      _currentSortColumn = columnIndex;
+                                      if (_isAscending == true) {
+                                        _isAscending = false;
+                                        // sort the product list in Ascending, order by Price
+                                        _products.sort((productA, productB) =>
+                                            productB['name']
+                                                .compareTo(productA['name']));
+                                      } else {
+                                        _isAscending = true;
+                                        // sort the product list in Descending, order by Price
+                                        _products.sort((productA, productB) =>
+                                            productA['name']
+                                                .compareTo(productB['name']));
+                                      }
+                                    });
+                                  }),
+                              DataColumn(
+                                  label: Text(
+                                    'Role',
+                                    style: TextStyle(
+                                        color: Styles.textColor,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                  // Sorting function
+                                  onSort: (columnIndex, _) {
+                                    setState(() {
+                                      _currentSortColumn = columnIndex;
+                                      if (_isAscending == true) {
+                                        _isAscending = false;
+                                        // sort the product list in Ascending, order by Price
+                                        _products.sort((productA, productB) =>
+                                            productB['role']
+                                                .compareTo(productA['role']));
+                                      } else {
+                                        _isAscending = true;
+                                        // sort the product list in Descending, order by Price
+                                        _products.sort((productA, productB) =>
+                                            productA['role']
+                                                .compareTo(productB['role']));
+                                      }
+                                    });
+                                  }),
+                            ],
+                            rows: List.generate(
+                              usersFiltered.length,
+                              (index) => DataRow(
+                                  cells: [
+                                    DataCell(Text(usersFiltered[index]["id"])),
+                                    DataCell(
+                                        Text(usersFiltered[index]["name"])),
+                                    DataCell(Text(usersFiltered[index]["role"]))
+                                  ],
+                                  onSelectChanged: (e) {
+                                    showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return DialogBox(
+                                            id: usersFiltered[index]["id"],
+                                            name: usersFiltered[index]["name"],
+                                            role: usersFiltered[index]["role"],
+                                          );
+                                        });
+                                  }),
+                            )),
                       ),
                     )),
               ),
