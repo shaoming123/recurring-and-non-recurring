@@ -2,29 +2,29 @@
 import 'package:flutter/material.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
+import 'package:ipsolution/src/Login.dart';
 import 'package:ipsolution/src/dashboard.dart';
-import 'package:ipsolution/src/signup.dart';
 import 'package:ipsolution/util/app_styles.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../util/fade_animation.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class SignUp extends StatefulWidget {
+  const SignUp({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<SignUp> createState() => _SignUpState();
 }
 
-class _LoginState extends State<Login> {
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+class _SignUpState extends State<SignUp> {
   final userController = TextEditingController();
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  var dbHelper;
 
   late String username;
   late String password;
+  late int userQuantity;
+
+  var dbHelper;
 
   @override
   void initState() {
@@ -32,50 +32,36 @@ class _LoginState extends State<Login> {
     dbHelper = DbHelper();
   }
 
-  void loginForm() async {
+  void signupForm() async {
     if (_formKey.currentState!.validate()) {
       username = userController.text;
       password = passwordController.text;
 
-      await dbHelper.getLoginUser(username, password).then((userData) {
-        if (userData != null) {
-          setSP(userData).whenComplete(() {
-            Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => Dashboard()),
-                (Route<dynamic> route) => false);
+      _formKey.currentState!.save();
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Login Successfully"),
-              ),
-            );
-          });
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Username and Password Incorrect!"),
-            ),
-          );
-        }
+      userQuantity = await dbHelper.getUserQuantity() + 1;
+      print(userQuantity);
+      UserModel user_model =
+          UserModel(userQuantity.toString(), username, password);
+      await dbHelper.saveData(user_model).then((userData) {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => Login()));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Register account Successfully!"),
+          ),
+        );
       }).catchError((error) {
         print(error);
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Username and Password Incorrect!"),
+            content: Text("Error: Data Save Fail"),
           ),
         );
       });
     }
-  }
-
-  Future setSP(UserModel user) async {
-    final SharedPreferences sp = await _pref;
-
-    sp.setString("user_id", user.user_id);
-    sp.setString("user_name", user.user_name);
-    sp.setString("password", user.password);
   }
 
   @override
@@ -140,7 +126,7 @@ class _LoginState extends State<Login> {
                           margin: const EdgeInsets.only(top: 50),
                           child: Center(
                             child: Text(
-                              "Login",
+                              "Signup",
                               style: TextStyle(
                                   color: Styles.textColor,
                                   fontSize: 40,
@@ -232,7 +218,7 @@ class _LoginState extends State<Login> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10))),
                         onPressed: (() {
-                          loginForm();
+                          signupForm();
                         }),
                         child: Ink(
                           height: 50,
@@ -242,40 +228,7 @@ class _LoginState extends State<Login> {
                           ),
                           child: Center(
                             child: Text(
-                              "Login",
-                              style: TextStyle(
-                                  color: Styles.textColor,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                      )),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  FadeAnimation(
-                      2,
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            backgroundColor: Styles.bgColor,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                        onPressed: (() {
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => SignUp()));
-                        }),
-                        child: Ink(
-                          height: 50,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Styles.bgColor,
-                          ),
-                          child: Center(
-                            child: Text(
-                              "Signup",
+                              "Sign up",
                               style: TextStyle(
                                   color: Styles.textColor,
                                   fontWeight: FontWeight.bold),

@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ipsolution/databaseHandler/DbHelper.dart';
+import 'package:ipsolution/model/manageUser.dart';
+import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Account extends StatefulWidget {
   const Account({super.key});
@@ -16,9 +20,37 @@ class Account extends StatefulWidget {
 
 class _AccountState extends State<Account> {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  bool showPassword = false;
-
+  final _formKey = GlobalKey<FormState>();
+  bool showPassword = true;
   File? image;
+
+  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  late DbHelper dbHelper;
+
+  final username = TextEditingController();
+  final password = TextEditingController();
+  String userid = "";
+  final email = TextEditingController();
+  final phone = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    getUserData();
+
+    dbHelper = DbHelper();
+  }
+
+  Future<void> getUserData() async {
+    final SharedPreferences sp = await _pref;
+
+    setState(() {
+      userid = sp.getString("user_id")!;
+      username.text = sp.getString("user_name")!;
+      password.text = sp.getString("password")!;
+      email.text = "Alex@gmail.com";
+      phone.text = "0125524215";
+    });
+  }
 
   Future pickImage() async {
     try {
@@ -60,114 +92,132 @@ class _AccountState extends State<Account> {
             const Gap(20),
             Expanded(
               child: Container(
-                margin: const EdgeInsets.all(10),
+                margin: const EdgeInsets.symmetric(horizontal: 10),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   color: Colors.white,
                 ),
-                child: ListView(
-                  children: [
-                    Center(
-                      child: GestureDetector(
-                        onTap: () => pickImage(),
-                        child: Stack(
-                          children: [
-                            Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                      width: 4,
-                                      color: Theme.of(context)
-                                          .scaffoldBackgroundColor),
-                                  boxShadow: [
-                                    BoxShadow(
-                                        spreadRadius: 2,
-                                        blurRadius: 10,
-                                        color: Colors.black.withOpacity(0.1),
-                                        offset: const Offset(0, 10))
-                                  ],
-                                  shape: BoxShape.circle,
-                                  image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: image == null
-                                          ? const NetworkImage(
-                                              'https://oflutter.com/wp-content/uploads/2021/02/girl-profile.png')
-                                          : FileImage(image!)
-                                              as ImageProvider)),
-                            ),
-                            Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  height: 30,
-                                  width: 30,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
+                child: Form(
+                  key: _formKey,
+                  child: ListView(
+                    children: [
+                      Center(
+                        child: GestureDetector(
+                          onTap: () => pickImage(),
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
                                     border: Border.all(
-                                      width: 4,
-                                      color: Theme.of(context)
-                                          .scaffoldBackgroundColor,
+                                        width: 4,
+                                        color: Theme.of(context)
+                                            .scaffoldBackgroundColor),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          spreadRadius: 2,
+                                          blurRadius: 10,
+                                          color: Colors.black.withOpacity(0.1),
+                                          offset: const Offset(0, 10))
+                                    ],
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: image == null
+                                            ? const NetworkImage(
+                                                'https://oflutter.com/wp-content/uploads/2021/02/girl-profile.png')
+                                            : FileImage(image!)
+                                                as ImageProvider)),
+                              ),
+                              Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    height: 30,
+                                    width: 30,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        width: 4,
+                                        color: Theme.of(context)
+                                            .scaffoldBackgroundColor,
+                                      ),
+                                      color: Colors.green,
                                     ),
-                                    color: Colors.green,
-                                  ),
-                                  child: const Icon(
-                                    Icons.edit,
-                                    color: Colors.white,
-                                    size: 15,
-                                  ),
-                                )),
-                          ],
+                                    child: const Icon(
+                                      Icons.edit,
+                                      color: Colors.white,
+                                      size: 15,
+                                    ),
+                                  )),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const Gap(35),
-                    buildTextField("Username", "Dor Alex", false, true),
-                    buildTextField("E-mail", "alexd@gmail.com", false, true),
-                    buildTextField("Password", "********", true, true),
-                    buildTextField("Phone No", "0123342234", false, true),
-                    buildTextField("Role", "-", false, false),
-                    buildTextField("Function", "-", false, false),
-                    buildTextField("Site", "-", false, false),
-                    const Gap(20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(
+                      const Gap(35),
+                      Column(
+                        children: [
+                          buildTextField(
+                              "Username", "Dor Alex", false, true, username),
+                          buildTextField(
+                              "E-mail", "alexd@gmail.com", false, true, email),
+                          buildTextField(
+                              "Password", "********", true, true, password),
+                          buildTextField(
+                              "Phone No", "0123342234", false, true, phone),
+                          // buildTextField("Role", "-", false, false, null),
+                          // buildTextField("Function", "-", false, false, null),
+                          // buildTextField("Site", "-", false, false, null),
+                        ],
+                      ),
+                      const Gap(20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 50),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20))),
+                            onPressed: () {},
+                            child: const Text("CANCEL",
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    letterSpacing: 2.2,
+                                    color: Colors.black)),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Styles.buttonColor,
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 50),
+                              elevation: 2,
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20))),
-                          onPressed: () {},
-                          child: const Text("CANCEL",
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  letterSpacing: 2.2,
-                                  color: Colors.black)),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Styles.buttonColor,
-                            padding: const EdgeInsets.symmetric(horizontal: 50),
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                          ),
-                          onPressed: () {},
-                          child: const Text(
-                            "SAVE",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              letterSpacing: 2.2,
+                                  borderRadius: BorderRadius.circular(20)),
                             ),
-                          ),
-                        )
-                      ],
-                    )
-                  ],
+                            onPressed: (() {
+                              if (_formKey.currentState!.validate()) {
+                                _formKey.currentState!.save();
+                                updateAccount(
+                                    userid, username.text, password.text, context);
+                              }
+                            }),
+                            child: const Text(
+                              "SAVE",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                letterSpacing: 2.2,
+                              ),
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -175,36 +225,49 @@ class _AccountState extends State<Account> {
         ));
   }
 
-  Widget buildTextField(String labelText, String placeholder,
-      bool isPasswordTextField, bool editable) {
+  Widget buildTextField(
+      String labelText,
+      String placeholder,
+      bool isPasswordTextField,
+      bool editable,
+      TextEditingController? controllerText) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 35.0),
-      child: TextField(
+      child: TextFormField(
+        controller: controllerText,
         enabled: editable,
         obscureText: isPasswordTextField ? showPassword : false,
         decoration: InputDecoration(
-            suffixIcon: isPasswordTextField
-                ? IconButton(
-                    onPressed: () {
-                      setState(() {
-                        showPassword = !showPassword;
-                      });
-                    },
-                    icon: const Icon(
-                      Icons.remove_red_eye,
-                      color: Colors.grey,
-                    ),
-                  )
-                : null,
-            contentPadding: const EdgeInsets.only(bottom: 3),
-            labelText: labelText,
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            hintText: placeholder,
-            hintStyle: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            )),
+          suffixIcon: isPasswordTextField
+              ? IconButton(
+                  onPressed: () {
+                    setState(() {
+                      showPassword = !showPassword;
+                    });
+                  },
+                  icon: const Icon(
+                    Icons.remove_red_eye,
+                    color: Colors.grey,
+                  ),
+                )
+              : null,
+          contentPadding: const EdgeInsets.only(bottom: 3),
+          labelText: labelText,
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          hintText: placeholder,
+        ),
+        validator: (text) {
+          if (text == null || text.isEmpty) {
+            return 'Can\'t be empty';
+          }
+
+          return null;
+        },
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
       ),
     );
   }

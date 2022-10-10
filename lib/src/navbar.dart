@@ -8,9 +8,36 @@ import 'package:ipsolution/src/non_recurring.dart';
 import 'package:ipsolution/src/recurrring.dart';
 import 'package:ipsolution/src/report.dart';
 import 'package:ipsolution/util/app_styles.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class Navbar extends StatelessWidget {
+import '../databaseHandler/DbHelper.dart';
+
+class Navbar extends StatefulWidget {
   const Navbar({super.key});
+
+  @override
+  State<Navbar> createState() => _NavbarState();
+}
+
+class _NavbarState extends State<Navbar> {
+  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  late DbHelper dbHelper;
+  String username = "";
+  @override
+  void initState() {
+    super.initState();
+    getUserData();
+
+    dbHelper = DbHelper();
+  }
+
+  Future<void> getUserData() async {
+    final SharedPreferences sp = await _pref;
+
+    setState(() {
+      username = sp.getString("user_name")!;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +48,7 @@ class Navbar extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            accountName: Text('Alumi',
+            accountName: Text(username,
                 style: TextStyle(
                   color: Styles.textColor,
                 )),
@@ -86,7 +113,7 @@ class Navbar extends StatelessWidget {
                 context, MaterialPageRoute(builder: (context) => Member())),
           ),
           const Divider(),
-          const Gap(100),
+          const Gap(50),
           ListTile(
             title: const Text('Logout'),
             leading: const Icon(Icons.exit_to_app),
