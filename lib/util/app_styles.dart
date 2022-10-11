@@ -10,5 +10,5 @@ class Styles {
   static TextStyle title =
       TextStyle(fontSize: 26, color: textColor, fontWeight: FontWeight.bold);
   static TextStyle subtitle =
-      TextStyle(fontSize: 24, color: textColor, fontWeight: FontWeight.bold);
+      TextStyle(fontSize: 20, color: textColor, fontWeight: FontWeight.bold);
 }

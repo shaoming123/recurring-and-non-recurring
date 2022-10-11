@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:ipsolution/src/addtional/dialogbox.dart';
+import 'package:ipsolution/src/dialogBox/memberDetails.dart';
 import 'package:ipsolution/src/navbar.dart';
 
 import '../util/app_styles.dart';

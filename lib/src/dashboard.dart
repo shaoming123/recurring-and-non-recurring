@@ -27,7 +27,7 @@ class _DashboardState extends State<Dashboard> {
         body: SingleChildScrollView(
           child: Container(
             margin: EdgeInsets.symmetric(
-                vertical: height * 0.05, horizontal: width * 0.02),
+                vertical: height * 0.08, horizontal: width * 0.02),
             child: Column(
               children: [
                 Row(
