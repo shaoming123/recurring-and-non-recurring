@@ -20,7 +20,7 @@ class EventProvider extends ChangeNotifier {
   void addEvent(Event event) async {
     DbHelper dbHelper = DbHelper();
 
-    await dbHelper.addEvent(event);
+    // await dbHelper.addEvent(event);
 
     notifyListeners();
   }
@@ -31,8 +31,4 @@ class EventProvider extends ChangeNotifier {
 
     notifyListeners();
   }
-
-  // Future<Map<String, dynamic>> mapEventData (){
-
-  // }
 }

@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 
 class UserModel {
-  late String user_id;
+  late int? user_id;
   late String user_name;
   late String password;
+  // late String? photoName =
+  //     'https://oflutter.com/wp-content/uploads/2021/02/girl-profile.png';
 
   UserModel(this.user_id, this.user_name, this.password);
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
-      'user_id': user_id,
       'user_name': user_name,
-      'password': password
+      'password': password,
+      // 'photoName': photoName
     };
     return map;
   }
@@ -20,5 +22,6 @@ class UserModel {
     user_id = map['user_id'];
     user_name = map['user_name'];
     password = map['password'];
+    // photoName = map['photoName'];
   }
 }

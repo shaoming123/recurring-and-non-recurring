@@ -29,7 +29,7 @@ class _AccountState extends State<Account> {
 
   final username = TextEditingController();
   final password = TextEditingController();
-  String userid = "";
+  late int userid;
   final email = TextEditingController();
   final phone = TextEditingController();
   @override
@@ -44,7 +44,7 @@ class _AccountState extends State<Account> {
     final SharedPreferences sp = await _pref;
 
     setState(() {
-      userid = sp.getString("user_id")!;
+      userid = sp.getInt("user_id")!;
       username.text = sp.getString("user_name")!;
       password.text = sp.getString("password")!;
       email.text = "Alex@gmail.com";
@@ -201,8 +201,8 @@ class _AccountState extends State<Account> {
                             onPressed: (() {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
-                                updateAccount(
-                                    userid, username.text, password.text, context);
+                                updateAccount(userid, username.text,
+                                    password.text, context);
                               }
                             }),
                             child: const Text(

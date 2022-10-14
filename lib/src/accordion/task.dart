@@ -1,6 +1,6 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:ipsolution/src/dialogBox/eventEdit.dart';
+import 'package:ipsolution/src/dialogBox/eventAdd.dart';
 import 'package:ipsolution/util/app_styles.dart';
 
 class Task extends StatefulWidget {

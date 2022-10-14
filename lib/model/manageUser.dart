@@ -4,6 +4,8 @@ import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/account.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../src/member.dart';
+
 DbHelper dbHelper = DbHelper();
 Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
@@ -13,6 +15,7 @@ Future updateSP(UserModel? user, bool add) async {
   if (add) {
     sp.setString("user_name", user!.user_name);
     sp.setString("password", user.password);
+    // sp.setString("photoName", user.photoName!);
   } else {
     sp.remove('user_id');
     sp.remove('user_name');
@@ -22,7 +25,7 @@ Future updateSP(UserModel? user, bool add) async {
 }
 
 void updateAccount(
-    String userid, String username, String password, context) async {
+    int userid, String username, String password, context) async {
   UserModel userModel = UserModel(userid, username, password);
 
   await dbHelper.updateUser(userModel).then((value) {
@@ -54,21 +57,14 @@ void updateAccount(
   });
 }
 
-void delete(String userid, context) async {
-  await dbHelper.deleteUser(userid).then((value) {
-    if (value == 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Successfully Deleted !"),
-        ),
-      );
-
-      updateSP(null, false).whenComplete(() {
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => Account()),
-            (Route<dynamic> route) => false);
-      });
-    }
-  });
+// Delete an item
+void removeUser(int id, context) async {
+  await dbHelper.deleteUser(id);
+  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+    content: Text('Successfully deleted!'),
+  ));
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) => const Member()),
+  );
 }

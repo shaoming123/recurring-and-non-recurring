@@ -1,45 +1,53 @@
-import 'package:dropdown_button2/dropdown_button2.dart';
+// ignore: file_names
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
-import '../../model/event.dart';
+import 'package:ipsolution/model/event.dart';
+import 'package:ipsolution/src/recurrring.dart';
+import 'package:provider/provider.dart';
+
+import 'package:dropdown_button2/dropdown_button2.dart';
+
+import '../../model/manageUser.dart';
+import '../../provider/event_provider.dart';
 import '../../util/datetime.dart';
-import '../recurrring.dart';
 
-class EventEdit extends StatefulWidget {
-  final Event event;
-  const EventEdit({Key? key, required this.event}) : super(key: key);
-
+class EventAdd extends StatefulWidget {
+  final Event? event;
+  const EventAdd({Key? key, this.event}) : super(key: key);
   @override
-  State<EventEdit> createState() => _EventEditState();
+  State<EventAdd> createState() => _EventAddState();
 }
 
+String _selectedVal = '';
+String _selectedPriority = '';
+List<String> list = <String>['One', 'Two', 'Three', 'Four'];
+List<String> priorityList = <String>['Low', 'Moderate', 'High'];
 final _formkey = GlobalKey<FormState>();
-late DateTime fromDate;
-late DateTime toDate;
-TextEditingController taskController = TextEditingController();
-TextEditingController durationController = TextEditingController();
 
-class _EventEditState extends State<EventEdit> {
-  DbHelper dbHelper = DbHelper();
-  late int recurringId;
-  String _selectedVal = '';
-  String _selectedPriority = '';
-  List<String> list = <String>['One', 'Two', 'Three', 'Four'];
-  List<String> priorityList = <String>['Low', 'Moderate', 'High'];
+class _EventAddState extends State<EventAdd> {
+  late DateTime fromDate;
+  late DateTime toDate;
+  final taskController = TextEditingController();
+  final durationController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
 
-    final event = widget.event;
-    recurringId = event.recurringId!;
-    fromDate = DateTime.parse(event.from);
-    toDate = DateTime.parse(event.to);
-    _selectedVal = event.category;
-    _selectedPriority = event.priority;
-    taskController.text = event.task;
-    durationController.text = event.duration.toString();
+    fromDate = DateTime.now();
+    toDate = DateTime.now();
+
+    // toDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 17, 30);
+  }
+
+  @override
+  void dispose() {
+    taskController.dispose();
+    super.dispose();
   }
 
   Future pickFromDateTime({required bool pickdate}) async {
@@ -61,6 +69,29 @@ class _EventEditState extends State<EventEdit> {
       toDate = date;
     });
   }
+
+  // Future pickToTime({required int durationDay}) async {
+  //   final timeSelect = await showTimePicker(
+  //     context: context,
+  //     initialTime: TimeOfDay.fromDateTime(fromDate),
+  //   );
+
+  //   final dateDuration =
+  //       fromDate.add(Duration(days: int.parse(durationDay.toString())));
+
+  //   final date =
+  //       DateTime(dateDuration.year, dateDuration.month, dateDuration.day);
+  //   final time = Duration(hours: timeSelect!.hour, minutes: timeSelect.minute);
+
+  //   date.add(time);
+
+  //   if (time == null) return;
+
+  //   setState(() {
+  //     toDate = date;
+  //     print(toDate);
+  //   });
+  // }
 
   //Put date and time format together in one object
   Future<DateTime?> pickDateTime(
@@ -103,12 +134,11 @@ class _EventEditState extends State<EventEdit> {
     }
   }
 
-  Future<void> updateEvent(int recurringId) async {
+  Future saveEvent() async {
     final isValid = _formkey.currentState!.validate();
 
     if (isValid) {
       final event = Event(
-          recurringId: recurringId,
           category: _selectedVal,
           subCategory: _selectedVal,
           type: _selectedVal,
@@ -121,14 +151,10 @@ class _EventEditState extends State<EventEdit> {
           duration: durationController.text,
           priority: _selectedPriority);
 
-      await dbHelper.updateEvent(event);
+      final isEditing = widget.event != null;
+      final provider = Provider.of<EventProvider>(context, listen: false);
 
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Updated Successfully!"),
-        ),
-      );
+      dbHelper.addEvent(event);
 
       Navigator.pop(context);
       Navigator.pushReplacement(
@@ -136,18 +162,6 @@ class _EventEditState extends State<EventEdit> {
         MaterialPageRoute(builder: (context) => const Recurring()),
       );
     }
-  }
-
-  Future<void> removeEvent(int recurring_Id) async {
-    await dbHelper.deleteEvent(recurring_Id);
-
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Successfully deleted!'),
-    ));
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const Recurring()),
-    );
   }
 
   @override
@@ -177,7 +191,7 @@ class _EventEditState extends State<EventEdit> {
           child: DropdownButtonFormField2<String>(
             iconSize: 30,
             isExpanded: true,
-            hint: const Text("Choose item"),
+            hint: Text("Choose item"),
             value: _selectedVal == '' ? null : _selectedVal,
             validator: (value) {
               return value == null ? 'Please select' : null;
@@ -220,7 +234,7 @@ class _EventEditState extends State<EventEdit> {
           child: DropdownButtonFormField2<String>(
             iconSize: 30,
             isExpanded: true,
-            hint: const Text("Choose item"),
+            hint: Text("Choose item"),
             value: _selectedPriority == '' ? null : _selectedPriority,
             validator: (value) {
               return value == null ? 'Please select' : null;
@@ -399,15 +413,15 @@ class _EventEditState extends State<EventEdit> {
               shape: BoxShape.rectangle,
               color: const Color(0xFF384464),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: const [
-                BoxShadow(
+              boxShadow: [
+                const BoxShadow(
                     color: Colors.black, offset: Offset(0, 10), blurRadius: 10),
               ]),
           child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Edit Task",
+                const Text("Add Task",
                     style: TextStyle(
                         color: Color(0xFFd4dce4),
                         fontSize: 26,
@@ -491,78 +505,28 @@ class _EventEditState extends State<EventEdit> {
                     user(),
                   ]),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(
-                    style: ButtonStyle(
-                      padding: MaterialStateProperty.all<EdgeInsets>(
-                        const EdgeInsets.all(10),
-                      ),
-                      backgroundColor:
-                          MaterialStateProperty.all<Color>(Colors.redAccent),
-                      shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0))),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: TextButton(
+                  style: ButtonStyle(
+                    padding: MaterialStateProperty.all<EdgeInsets>(
+                      const EdgeInsets.all(10),
                     ),
-                    onPressed: () {
-                      removeEvent(recurringId);
-                    },
-                    child: const Text(
-                      "Delete",
-                      style: TextStyle(
-                          fontSize: 18,
-                          color: Color(0xFFd4dce4),
-                          fontWeight: FontWeight.w700),
-                    )),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.all(10),
-                              side: const BorderSide(
-                                width: 3.0,
-                                color: Color(0xFF60b4b4),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10.0))),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text(
-                            "Cancel",
-                            style: TextStyle(
-                                fontSize: 18,
-                                color: Color(0xFF60b4b4),
-                                fontWeight: FontWeight.w700),
-                          )),
-                    ),
-                    TextButton(
-                        style: ButtonStyle(
-                          padding: MaterialStateProperty.all<EdgeInsets>(
-                            const EdgeInsets.all(10),
-                          ),
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                              const Color(0xFF60b4b4)),
-                          shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10.0))),
-                        ),
-                        onPressed: () {
-                          updateEvent(recurringId);
-                        },
-                        child: const Text(
-                          "Update",
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Color(0xFFd4dce4),
-                              fontWeight: FontWeight.w700),
-                        )),
-                  ],
-                ),
-              ],
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                        const Color(0xFF60b4b4)),
+                    shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0))),
+                  ),
+                  onPressed: () {
+                    saveEvent();
+                  },
+                  child: const Text(
+                    "Save",
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Color(0xFFd4dce4),
+                        fontWeight: FontWeight.w700),
+                  )),
             ),
           ]))
     ]);

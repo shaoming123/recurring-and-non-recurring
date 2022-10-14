@@ -3,8 +3,9 @@ import 'package:ipsolution/provider/event_provider.dart';
 import 'package:ipsolution/src/login.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const MyApp());
 }
 

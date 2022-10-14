@@ -97,7 +97,9 @@ class _NavbarState extends State<Navbar> {
             leading: const Icon(Icons.report),
             title: const Text('Report'),
             onTap: () => Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => Report())),
+                context, MaterialPageRoute(builder: (context) => Report())
+                
+                ),
           ),
           const Divider(),
           ListTile(

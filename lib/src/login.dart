@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/dashboard.dart';
+import 'package:ipsolution/src/dialogBox/addMember.dart';
 import 'package:ipsolution/src/signup.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -73,9 +74,10 @@ class _LoginState extends State<Login> {
   Future setSP(UserModel user) async {
     final SharedPreferences sp = await _pref;
 
-    sp.setString("user_id", user.user_id);
+    sp.setInt("user_id", user.user_id!);
     sp.setString("user_name", user.user_name);
     sp.setString("password", user.password);
+    // sp.setString("photoName", user.photoName!);
   }
 
   @override

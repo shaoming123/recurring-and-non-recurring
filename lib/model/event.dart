@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 
 class Event {
-  final int? recurringId;
-  final String category;
-  final String subCategory;
-  final String type;
-  final String site;
-  final String task;
-  final String from;
-  final String to;
-  final String duration;
-  final String priority;
-  final String? backgroundColor;
+  late String category;
+  late int? recurringId;
+  late String subCategory;
+  late String type;
+  late String site;
+  late String task;
+  late String from;
+  late String to;
+  late String duration;
+  late String priority;
+  // late String backgroundColor;
   // final String rule;
 
-  const Event({
+  Event({
     this.recurringId,
     required this.category,
     required this.subCategory,
@@ -25,7 +25,7 @@ class Event {
     required this.to,
     required this.duration,
     required this.priority,
-    this.backgroundColor,
+    // required this.backgroundColor,
     // required this.rule
   });
 
@@ -41,8 +41,23 @@ class Event {
       'toD': to,
       'duration': duration,
       'priority': priority,
-      'backgroundColor': backgroundColor,
+      // 'backgroundColor': backgroundColor,
     };
     return map;
+  }
+
+  Event.fromMap(Map<String, dynamic> map) {
+    category = map['category'];
+    subCategory = map['subCategory'];
+    recurringId = map['recurringId'];
+    type = map['type'];
+    site = map['site'];
+    task = map['task'];
+    from = map['fromD'];
+    to = map['toD'];
+    duration = map['duration'];
+    priority = map['priority'];
+    // backgroundColor = map['backgroundColor'];
+    // photoName = map['photoName'];
   }
 }
