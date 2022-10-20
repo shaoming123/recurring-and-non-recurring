@@ -3,9 +3,39 @@ import 'package:gap/gap.dart';
 import 'package:ipsolution/src/accordion/task.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class NonRecurring extends StatelessWidget {
+import '../model/manageUser.dart';
+import 'accordion/teamTask.dart';
+
+class NonRecurring extends StatefulWidget {
   const NonRecurring({super.key});
+
+  @override
+  State<NonRecurring> createState() => _NonRecurringState();
+}
+
+String completedTask = '';
+String totalTasks = '';
+String overdueTasks = '';
+Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+
+class _NonRecurringState extends State<NonRecurring> {
+  @override
+  void initState() {
+    getTasksData();
+    super.initState();
+  }
+
+  Future<void> getTasksData() async {
+    final SharedPreferences sp = await _pref;
+
+    setState(() {
+      totalTasks = sp.getString("totalTasks")!;
+      completedTask = sp.getString("completedTasks")!;
+      overdueTasks = sp.getString("overdueTasks")!;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +81,7 @@ class NonRecurring extends StatelessWidget {
                           style:
                               TextStyle(color: Styles.textColor, fontSize: 14)),
                       const Gap(5),
-                      const Text("3",
+                      Text(totalTasks,
                           style: TextStyle(
                               color: Colors.black,
                               fontSize: 25,
@@ -65,7 +95,7 @@ class NonRecurring extends StatelessWidget {
                           style:
                               TextStyle(color: Styles.textColor, fontSize: 14)),
                       const Gap(5),
-                      const Text("3",
+                      Text(completedTask,
                           style: TextStyle(
                               color: Colors.black,
                               fontSize: 25,
@@ -79,7 +109,7 @@ class NonRecurring extends StatelessWidget {
                           style:
                               TextStyle(color: Styles.textColor, fontSize: 14)),
                       const Gap(5),
-                      const Text("3",
+                      Text(overdueTasks,
                           style: TextStyle(
                               color: Colors.black,
                               fontSize: 25,
@@ -93,7 +123,7 @@ class NonRecurring extends StatelessWidget {
                           style:
                               TextStyle(color: Styles.textColor, fontSize: 14)),
                       const Gap(5),
-                      const Text("3",
+                      const Text("0",
                           style: TextStyle(
                               color: Colors.black,
                               fontSize: 25,
@@ -106,18 +136,10 @@ class NonRecurring extends StatelessWidget {
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
-                    children: const [
-                      Task(
-                        title: 'Section #1',
-                        content:
-                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam bibendum ornare vulputate. Curabitur faucibus condimentum purus quis tristique.',
-                      ),
-                      Gap(20),
-                      Task(
-                        title: 'Section #1',
-                        content:
-                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam bibendum ornare vulputate. Curabitur faucibus condimentum purus quis tristique.',
-                      ),
+                    children: [
+                      const Task(),
+                      const Gap(20),
+                      const TeamTask(),
                     ],
                   ),
                 ),

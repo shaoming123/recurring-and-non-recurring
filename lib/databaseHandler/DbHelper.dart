@@ -8,6 +8,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:io' as io;
 
+import '../model/nonRecurring.dart';
 import '../provider/event_provider.dart';
 
 class DbHelper {
@@ -16,6 +17,7 @@ class DbHelper {
   final DB_Name = 'test.db';
   final Table_User = 'user_account';
   final Table_Event = 'recurring_table';
+  final Table_NonRecurring = 'non_recurring';
   int Version = 1;
 
   // user
@@ -35,7 +37,27 @@ class DbHelper {
   String to = 'toD';
   String duration = 'duration';
   String priority = 'priority';
-  String backgroundColor = 'backgroundColor';
+  String recurringOpt = 'recurringOpt';
+  String recurringEvery = 'recurringEvery';
+  String recurringUntil = 'recurringUntil';
+  String remark = 'remark';
+  String completeDate = 'completeDate';
+  String status = 'status';
+
+  //non-recurring
+  String nonRecurringId = 'nonRecurringId';
+  String noncategory = 'category';
+  String nonsubCategory = 'subCategory';
+  String nontype = 'type';
+  String nonsite = 'site';
+  String nontask = 'task';
+  String owner = 'owner';
+  String startDate = 'startDate';
+  String due = 'due';
+  String modify = 'modify';
+  String nonremark = 'remark';
+  String noncompleteDate = 'completeDate';
+  String nonstatus = 'status';
 
   Future<Database> get db async {
     if (_db != null) {
@@ -61,7 +83,9 @@ class DbHelper {
         " $C_Password TEXT "
         ")");
     await db.execute(
-        "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT ,$from DATETIME,$to DATETIME,$duration TEXT,$priority TEXT)");
+        "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT ,$from DATETIME,$to DATETIME,$duration TEXT,$priority TEXT,$recurringOpt TEXT, $recurringEvery TEXT, $recurringUntil TEXT, $remark TEXT, $completeDate TEXT, $status TEXT)");
+    await db.execute(
+        "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY AUTOINCREMENT, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate DATETIME,$due DATETIME,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $nonstatus TEXT)");
   }
 
   Future<int> getUserQuantity() async {
@@ -74,12 +98,6 @@ class DbHelper {
     } else {
       return 0;
     }
-  }
-
-  Future<List<Map<String, dynamic>>> getItem(int user_id) async {
-    var dbClient = await db;
-    return dbClient.query(Table_User,
-        where: "$C_UserID = ?", whereArgs: [user_id], limit: 1);
   }
 
   Future<List<Map<String, dynamic>>> getItems() async {
@@ -123,9 +141,8 @@ class DbHelper {
     return res;
   }
 
+  // Recurring
   Future<int> addEvent(Event item) async {
-    //returns number of items inserted as an integer
-    print(item);
     var dbClient = await db;
     //open database
 
@@ -138,35 +155,16 @@ class DbHelper {
     return res;
   }
 
+  Future<List<Map<String, dynamic>>> fetchAEvent(int id) async {
+    var dbClient = await db;
+    return dbClient.query(Table_Event,
+        where: "$recurringId = ?", whereArgs: [id], limit: 1);
+  }
+
   Future<List<Map<String, dynamic>>> fetchAllEvent() async {
     var dbClient = await db;
     return dbClient.query(Table_Event, orderBy: recurringId);
   }
-
-  // Future<List<Event>> fetchEvent() async {
-  //   //returns the memos as a list (array)
-
-  //   final dbClient = await db; //open database
-  //   final maps = await dbClient
-  //       .query(Table_Event); //query all the rows in a table as an array of maps
-
-  //   return List.generate(maps.length, (i) {
-  //     //create a list of memos
-  //     return Event(
-  //       recurringId: maps[i]['recurringId'] as int,
-  //       category: maps[i]['category'] as String,
-  //       subCategory: maps[i]['subCategory'] as String,
-  //       type: maps[i]['type '] as String,
-  //       site: maps[i]['site'] as String,
-  //       task: maps[i]['task'] as String,
-  //       from: maps[i]['fromD'] as String,
-  //       to: maps[i]['toD'] as String,
-  //       duration: maps[i]['duration'] as String,
-  //       priority: maps[i]['priority'] as String,
-  //       // backgroundColor: maps[i]['backgroundColor'] as String,
-  //     );
-  //   });
-  // }
 
   Future<int> deleteEvent(int recurring_Id) async {
     //returns number of items deleted
@@ -187,4 +185,49 @@ class DbHelper {
         where: '$recurringId = ?', whereArgs: [item.recurringId]);
     return res;
   }
+  /*end recurring*/
+
+  // Non-Recurring
+  Future<int> addNonRecurring(nonRecurring item) async {
+    var dbClient = await db;
+    var res = await dbClient.insert(
+      Table_NonRecurring, item.toMap(), //toMap() function from MemoModel
+      conflictAlgorithm:
+          ConflictAlgorithm.ignore, //ignores conflicts due to duplicate entries
+    );
+
+    return res;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchANonRecurring(int id) async {
+    var dbClient = await db;
+    return dbClient.query(Table_NonRecurring,
+        where: "$nonRecurringId = ?", whereArgs: [id], limit: 1);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchAllNonRecurring() async {
+    var dbClient = await db;
+    return dbClient.query(Table_NonRecurring, orderBy: nonRecurringId);
+  }
+
+  Future<int> deleteNonRecurring(int id) async {
+    //returns number of items deleted
+    final dbClient = await db; //open database
+
+    var res = await dbClient.delete(Table_NonRecurring,
+        where: '$nonRecurringId = ?', whereArgs: [id]);
+
+    return res;
+  }
+
+  Future<int> updateNonRecurring(nonRecurring item) async {
+    // returns the number of rows updated
+
+    final dbClient = await db; //open database
+
+    var res = await dbClient.update(Table_NonRecurring, item.toMap(),
+        where: '$nonRecurringId = ?', whereArgs: [item.nonRecurringId]);
+    return res;
+  }
+  /*end non-recurring*/
 }

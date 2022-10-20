@@ -7,39 +7,82 @@ import '../../util/datetime.dart';
 import '../recurrring.dart';
 
 class EventEdit extends StatefulWidget {
-  final Event event;
-  const EventEdit({Key? key, required this.event}) : super(key: key);
+  final String id;
+  const EventEdit({Key? key, required this.id}) : super(key: key);
 
   @override
   State<EventEdit> createState() => _EventEditState();
 }
 
 final _formkey = GlobalKey<FormState>();
-late DateTime fromDate;
-late DateTime toDate;
+late DateTime fromDate = DateTime.now();
+late DateTime toDate = DateTime.now();
+DateTime? recurringDate;
+DateTime? completeDate;
 TextEditingController taskController = TextEditingController();
 TextEditingController durationController = TextEditingController();
+TextEditingController recurringController = TextEditingController();
+final remarkController = TextEditingController();
+String _selectedVal = '';
+String _selectedPriority = '';
+String _selectedStatus = '';
+String _selectedRecurring = '';
+List<Map<String, dynamic>> event_edit = [];
+List<String> list = <String>['One', 'Two', 'Three', 'Four'];
+List<String> priorityList = <String>['Low', 'Moderate', 'High'];
+List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
 
 class _EventEditState extends State<EventEdit> {
   DbHelper dbHelper = DbHelper();
   late int recurringId;
-  String _selectedVal = '';
-  String _selectedPriority = '';
-  List<String> list = <String>['One', 'Two', 'Three', 'Four'];
-  List<String> priorityList = <String>['Low', 'Moderate', 'High'];
-
+  DateTime? recurringDate;
+  DateTime? completeDate;
+  String _selectedStatus = '';
   @override
   void initState() {
     super.initState();
 
-    final event = widget.event;
-    recurringId = event.recurringId!;
-    fromDate = DateTime.parse(event.from);
-    toDate = DateTime.parse(event.to);
-    _selectedVal = event.category;
-    _selectedPriority = event.priority;
-    taskController.text = event.task;
-    durationController.text = event.duration.toString();
+    getData(int.parse(widget.id));
+
+    print(fromDate.toString());
+  }
+
+  Future<void> getData(int id) async {
+    event_edit = await dbHelper.fetchAEvent(id);
+
+    setState(() {
+      recurringId = event_edit[0]['recurringId'];
+      fromDate = DateTime.parse(event_edit[0]['fromD']);
+      toDate = DateTime.parse(event_edit[0]['toD']);
+      _selectedVal = event_edit[0]['category'];
+      _selectedPriority = event_edit[0]['priority'];
+      _selectedStatus = event_edit[0]['status'];
+      print(_selectedStatus);
+      taskController.text = event_edit[0]['task'];
+      durationController.text = event_edit[0]['duration'];
+      _selectedRecurring = event_edit[0]['recurringOpt'];
+      recurringController.text = event_edit[0]['recurringEvery'];
+      remarkController.text = event_edit[0]['remark'];
+      recurringDate = DateTime.parse(event_edit[0]['recurringUntil']);
+
+      if (event_edit[0]['completeDate'] != null) {
+        completeDate = DateTime.parse(event_edit[0]['completeDate']);
+      }
+    });
+  }
+
+  Future pickCompleteDate() async {
+    final picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: fromDate,
+        lastDate: DateTime(2101));
+
+    if (picked != null) {
+      setState(() {
+        completeDate = picked;
+      });
+    }
   }
 
   Future pickFromDateTime({required bool pickdate}) async {
@@ -119,7 +162,13 @@ class _EventEditState extends State<EventEdit> {
           // rule: 'FREQ=DAILY;INTERVAL=1;COUNT=20',
           // backgroundColor: calendarColor.toString(),
           duration: durationController.text,
-          priority: _selectedPriority);
+          priority: _selectedPriority,
+          recurringOpt: _selectedRecurring,
+          recurringEvery: recurringController.text,
+          recurringUntil: recurringDate.toString(),
+          remark: remarkController.text,
+          completeDate: completeDate.toString(),
+          status: _selectedStatus);
 
       await dbHelper.updateEvent(event);
 
@@ -391,6 +440,98 @@ class _EventEditState extends State<EventEdit> {
       );
     }
 
+    Widget remarkField() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFd4dce4)),
+        child: TextFormField(
+          cursorColor: Colors.black,
+          style: const TextStyle(fontSize: 14),
+          decoration: const InputDecoration(hintText: 'Additional Remark.....'),
+          onFieldSubmitted: (_) {},
+          controller: remarkController,
+        ),
+      );
+    }
+
+    Widget completedDate() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.all(0),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFd4dce4)),
+        child: ListTile(
+          title: Text(
+            completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate!),
+            style: const TextStyle(fontSize: 14),
+          ),
+          trailing: const Icon(
+            Icons.calendar_month,
+            color: Colors.black,
+            size: 20,
+          ),
+          onTap: () {
+            pickCompleteDate();
+          },
+        ),
+      );
+    }
+
+    Widget userStatus() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFd4dce4)),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButtonFormField2<String>(
+            iconSize: 30,
+            isExpanded: true,
+            hint: const Text("Choose item"),
+            value: _selectedStatus == '' ? null : _selectedStatus,
+            validator: (value) {
+              return value == null ? 'Please select' : null;
+            },
+            items: statusList
+                .map(
+                  (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(
+                      e,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              String test = val as String;
+              setState(() {
+                _selectedStatus = test;
+              });
+
+              if (_selectedStatus == 'Done') {
+                setState(() {
+                  completeDate = DateTime.now();
+                });
+              }
+            },
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Stack(children: <Widget>[
       Container(
           padding: const EdgeInsets.all(20),
@@ -484,11 +625,38 @@ class _EventEditState extends State<EventEdit> {
                     const Gap(10),
                     userPrio(),
                     const Text(
+                      "Recurring :",
+                      style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(bottom: 20, top: 5),
+                      child: Text(
+                        "*****$_selectedRecurring*****",
+                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                    ),
+                    const Text(
+                      "Remark :",
+                      style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+                    ),
+                    const Gap(10),
+                    remarkField(),
+                    const Text(
+                      "Completed Date : ",
+                      style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+                    ),
+                    const Text(
+                      "( autofill when status is Done )",
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                    const Gap(10),
+                    completedDate(),
+                    const Text(
                       "Status :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                     const Gap(10),
-                    user(),
+                    userStatus(),
                   ]),
             ),
             Row(

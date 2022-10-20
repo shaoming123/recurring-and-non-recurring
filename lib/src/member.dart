@@ -165,7 +165,8 @@ class _MemberState extends State<Member> {
                                   sortColumnIndex: _currentSortColumn,
                                   sortAscending: _isAscending,
                                   headingRowColor: MaterialStateProperty.all(
-                                      Styles.buttonColor),
+                                    Color(0xFF88a4d4),
+                                  ),
                                   columns: [
                                     DataColumn(
                                       label: Text(

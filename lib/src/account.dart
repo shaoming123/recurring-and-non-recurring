@@ -127,7 +127,7 @@ class _AccountState extends State<Account> {
                                         fit: BoxFit.cover,
                                         image: image == null
                                             ? const NetworkImage(
-                                                'https://oflutter.com/wp-content/uploads/2021/02/girl-profile.png')
+                                                'https://invenioptl.com/wp-content/uploads/2022/07/logoip.png')
                                             : FileImage(image!)
                                                 as ImageProvider)),
                               ),

@@ -1,7 +1,15 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ipsolution/model/event.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
+
+// get the difference between two days
+int daysBetween(DateTime from, DateTime to) {
+  from = DateTime(from.year, from.month, from.day);
+  to = DateTime(to.year, to.month, to.day);
+  return (to.difference(from).inHours / 24).round();
+}
 
 class EventDataSource extends CalendarDataSource {
   EventDataSource(List<Event> sources) {
@@ -19,12 +27,68 @@ class EventDataSource extends CalendarDataSource {
   @override
   String getSubject(int index) => getEvent(index).category;
 
-  // @override
-  // String getRecurrenceRule(int index) => 'FREQ=DAILY;INTERVAL=1';
+  @override
+  String getRecurrenceId(int index) => getEvent(index).recurringId.toString();
+
+  @override
+  String getRecurrenceRule(int index) {
+    String freq = getEvent(index).recurringOpt.toUpperCase();
+    String recurringDate = DateFormat('yyyyMMdd')
+        .format(DateTime.parse(getEvent(index).recurringUntil));
+    String recurringEvery = getEvent(index).recurringEvery!;
+
+    late String rule;
+    // Once
+    if (getEvent(index).recurringOpt == 'Once') {
+      String difference = daysBetween(DateTime.parse(getEvent(index).to),
+              DateTime.parse(getEvent(index).recurringUntil))
+          .toString();
+
+      rule = 'FREQ=DAILY;INTERVAL=$difference;UNTIL=$recurringDate';
+
+      //Daily
+    } else if (getEvent(index).recurringOpt == 'Daily') {
+      int dailyInterval = int.parse(getEvent(index).duration) +
+          int.parse(getEvent(index).recurringEvery!);
+
+      rule = 'FREQ=$freq;INTERVAL=$dailyInterval;UNTIL=$recurringDate';
+
+      //Weekly
+    } else if (getEvent(index).recurringOpt == 'Weekly') {
+      String weekday = DateFormat('EEEE')
+          .format(DateTime.parse(getEvent(index).from))
+          .toUpperCase();
+
+      rule =
+          'FREQ=$freq;INTERVAL=$recurringEvery;BYDAY=$weekday;UNTIL=$recurringDate';
+
+      // Monthly
+    } else if (getEvent(index).recurringOpt == 'Monthly') {
+      String dateNumber =
+          DateFormat('dd').format(DateTime.parse(getEvent(index).from));
+
+      rule =
+          'FREQ=$freq;BYMONTHDAY=$dateNumber;INTERVAL=$recurringEvery;UNTIL=$recurringDate';
+
+      // Yearly
+    } else if (getEvent(index).recurringOpt == 'Yearly') {
+      //  rule = 'FREQ=YEARLY;BYMONTHDAY=17;BYMONTH=10;INTERVAL=1;UNTIL=20231229';
+    }
+
+    return rule;
+  }
 
   String getSubCategory(int index) => getEvent(index).subCategory;
 
+  String getRecurringOption(int index) => getEvent(index).recurringOpt;
+
+  String getRecurringDate(int index) => getEvent(index).recurringUntil;
+
+  String getEvery(int index) => getEvent(index).recurringEvery!;
+
   String getType(int index) => getEvent(index).type;
+
+  String getDuration(int index) => getEvent(index).duration;
 
   String getSite(int index) => getEvent(index).site;
 
@@ -32,10 +96,14 @@ class EventDataSource extends CalendarDataSource {
 
   String getPriority(int index) => getEvent(index).priority;
 
+  String getStatus(int index) => getEvent(index).status;
+
   @override
   Color getColor(int index) {
     late Color color;
-    if (getEvent(index).priority == "High") {
+    if (getEvent(index).status == "Done") {
+      color = Colors.grey;
+    } else if (getEvent(index).priority == "High") {
       color = Colors.redAccent;
     } else if (getEvent(index).priority == "Moderate") {
       color = Colors.yellowAccent;

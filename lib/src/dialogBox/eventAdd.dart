@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/src/recurrring.dart';
+import 'package:ipsolution/util/app_styles.dart';
 import 'package:provider/provider.dart';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -22,17 +23,34 @@ class EventAdd extends StatefulWidget {
   State<EventAdd> createState() => _EventAddState();
 }
 
-String _selectedVal = '';
-String _selectedPriority = '';
-List<String> list = <String>['One', 'Two', 'Three', 'Four'];
-List<String> priorityList = <String>['Low', 'Moderate', 'High'];
-final _formkey = GlobalKey<FormState>();
-
 class _EventAddState extends State<EventAdd> {
+  double _animatedHeight = 0.0;
   late DateTime fromDate;
   late DateTime toDate;
+  DateTime? recurringDate;
+  DateTime? completeDate;
   final taskController = TextEditingController();
   final durationController = TextEditingController();
+  final recurringController = TextEditingController();
+  final remarkController = TextEditingController();
+  bool checkDuration = true;
+
+  String _selectedVal = '';
+  String _selectedPriority = '';
+  String _selectedStatus = 'Upcoming';
+  String _selectedRecurring = '';
+  List<String> list = <String>['One', 'Two', 'Three', 'Four'];
+  List<String> priorityList = <String>['Low', 'Moderate', 'High'];
+  List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
+  List<String> recurringOption = <String>[
+    'Once',
+    'Daily',
+    'Weekly',
+    'Monthly',
+    'Yearly'
+  ];
+
+  final _formkey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -47,7 +65,39 @@ class _EventAddState extends State<EventAdd> {
   @override
   void dispose() {
     taskController.dispose();
+    durationController.dispose();
+    recurringController.dispose();
+    remarkController.dispose();
+
     super.dispose();
+  }
+
+  Future pickRecurringDate() async {
+    final picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: fromDate,
+        lastDate: DateTime(2101));
+
+    if (picked != null) {
+      setState(() {
+        recurringDate = picked;
+      });
+    }
+  }
+
+  Future pickCompleteDate() async {
+    final picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: fromDate,
+        lastDate: DateTime(2101));
+
+    if (picked != null) {
+      setState(() {
+        completeDate = picked;
+      });
+    }
   }
 
   Future pickFromDateTime({required bool pickdate}) async {
@@ -149,12 +199,15 @@ class _EventAddState extends State<EventAdd> {
           // rule: 'FREQ=DAILY;INTERVAL=1;COUNT=20',
           // backgroundColor: calendarColor.toString(),
           duration: durationController.text,
-          priority: _selectedPriority);
+          priority: _selectedPriority,
+          recurringOpt: _selectedRecurring,
+          recurringEvery: recurringController.text,
+          recurringUntil: recurringDate.toString(),
+          remark: remarkController.text,
+          completeDate: completeDate.toString(),
+          status: _selectedStatus);
 
-      final isEditing = widget.event != null;
-      final provider = Provider.of<EventProvider>(context, listen: false);
-
-      dbHelper.addEvent(event);
+      await dbHelper.addEvent(event);
 
       Navigator.pop(context);
       Navigator.pushReplacement(
@@ -179,6 +232,8 @@ class _EventAddState extends State<EventAdd> {
   }
 
   contentBox(context) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     Widget user() {
       return Container(
         margin: const EdgeInsets.only(bottom: 30),
@@ -191,7 +246,7 @@ class _EventAddState extends State<EventAdd> {
           child: DropdownButtonFormField2<String>(
             iconSize: 30,
             isExpanded: true,
-            hint: Text("Choose item"),
+            hint: const Text("Choose item"),
             value: _selectedVal == '' ? null : _selectedVal,
             validator: (value) {
               return value == null ? 'Please select' : null;
@@ -234,7 +289,7 @@ class _EventAddState extends State<EventAdd> {
           child: DropdownButtonFormField2<String>(
             iconSize: 30,
             isExpanded: true,
-            hint: Text("Choose item"),
+            hint: const Text("Choose item"),
             value: _selectedPriority == '' ? null : _selectedPriority,
             validator: (value) {
               return value == null ? 'Please select' : null;
@@ -254,6 +309,97 @@ class _EventAddState extends State<EventAdd> {
               String test = val as String;
               setState(() {
                 _selectedPriority = test;
+              });
+            },
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget userStatus() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFd4dce4)),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButtonFormField2<String>(
+            iconSize: 30,
+            isExpanded: true,
+            hint: const Text("Choose item"),
+            value: _selectedStatus == '' ? null : _selectedStatus,
+            validator: (value) {
+              return value == null ? 'Please select' : null;
+            },
+            items: statusList
+                .map(
+                  (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(
+                      e,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              String test = val as String;
+              setState(() {
+                _selectedStatus = test;
+              });
+            },
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget recurringOpt() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFd4dce4)),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButtonFormField2<String>(
+            iconSize: 30,
+            isExpanded: true,
+            hint: const Text("Choose item"),
+            value: _selectedRecurring == '' ? null : _selectedRecurring,
+            validator: (value) {
+              return value == null ? 'Please select' : null;
+            },
+            items: recurringOption
+                .map(
+                  (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(
+                      e,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              String test = val as String;
+              setState(() {
+                _selectedRecurring = test;
+                if (_selectedRecurring == 'Once') {
+                  _animatedHeight = 75.0;
+                } else {
+                  _animatedHeight = 150.0;
+                }
               });
             },
             icon: const Icon(
@@ -289,7 +435,6 @@ class _EventAddState extends State<EventAdd> {
 
     Widget DurationField() {
       return Container(
-        margin: const EdgeInsets.only(bottom: 30),
         padding: const EdgeInsets.symmetric(horizontal: 5),
         decoration: BoxDecoration(
             border: Border.all(color: Colors.white, width: 1),
@@ -394,14 +539,157 @@ class _EventAddState extends State<EventAdd> {
                   size: 20,
                 ),
                 onTap: () {
-                  pickToDateTime(
-                      pickdate: false,
-                      durationDay: int.parse(durationController.text) - 1);
+                  if (durationController.text.isEmpty) {
+                    setState(() {
+                      checkDuration = false;
+                    });
+                  } else {
+                    setState(() {
+                      checkDuration = true;
+                    });
+                    pickToDateTime(
+                        pickdate: false,
+                        durationDay: int.parse(durationController.text) - 1);
+                  }
                 },
               ),
             ),
           ),
         ],
+      );
+    }
+
+    Widget completedDate() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.all(0),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFd4dce4)),
+        child: ListTile(
+          title: Text(
+            completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate!),
+            style: const TextStyle(fontSize: 14),
+          ),
+          trailing: const Icon(
+            Icons.calendar_month,
+            color: Colors.black,
+            size: 20,
+          ),
+          onTap: () {
+            pickCompleteDate();
+          },
+        ),
+      );
+    }
+
+    Widget remarkField() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFd4dce4)),
+        child: TextFormField(
+          cursorColor: Colors.black,
+          style: const TextStyle(fontSize: 14),
+          decoration: const InputDecoration(hintText: 'Additional Remark.....'),
+          onFieldSubmitted: (_) {},
+          controller: remarkController,
+        ),
+      );
+    }
+
+    Widget recurringDetail() {
+      return AnimatedContainer(
+        height: _animatedHeight,
+        color: Colors.transparent,
+        width: width,
+        duration: const Duration(milliseconds: 120),
+        child: Column(
+          children: [
+            _selectedRecurring == 'Once'
+                ? Container()
+                : Row(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "Every : ",
+                          style:
+                              TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white, width: 1),
+                              borderRadius: BorderRadius.circular(12),
+                              color: const Color(0xFFd4dce4)),
+                          child: TextFormField(
+                            cursorColor: Colors.black,
+                            style: const TextStyle(fontSize: 14),
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              hintText: '1',
+                            ),
+                            onFieldSubmitted: (_) {},
+                            controller: recurringController,
+                            validator: (data) {
+                              return data == null &&
+                                      data!.isEmpty &&
+                                      _selectedRecurring != 'Once'
+                                  ? 'Field cannot be empty'
+                                  : null;
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+            Row(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    " Until : ",
+                    style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white, width: 1),
+                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFFd4dce4)),
+                    child: ListTile(
+                      title: Text(
+                        recurringDate == null
+                            ? 'dd/mm/yy'
+                            : Utils.toDate(recurringDate!),
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      trailing: const Icon(
+                        Icons.arrow_drop_down,
+                        color: Colors.black,
+                        size: 30,
+                      ),
+                      onTap: () {
+                        pickRecurringDate();
+                      },
+                    ),
+                  ),
+                )
+              ],
+            )
+          ],
+        ),
       );
     }
 
@@ -485,6 +773,18 @@ class _EventAddState extends State<EventAdd> {
                     ),
                     const Gap(10),
                     DurationField(),
+                    checkDuration != true
+                        ? Container(
+                            margin: const EdgeInsets.only(bottom: 30),
+                            child: const Text(
+                              "Please enter your duration !",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          )
+                        : Container(
+                            margin: const EdgeInsets.only(bottom: 30),
+                          ),
+
                     const Text(
                       "Time :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
@@ -498,11 +798,37 @@ class _EventAddState extends State<EventAdd> {
                     const Gap(10),
                     userPrio(),
                     const Text(
+                      "Recurring :",
+                      style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+                    ),
+                    const Gap(10),
+                    recurringOpt(),
+                    const Gap(10),
+                    // extend recurring
+                    recurringDetail(),
+                    const Gap(10),
+                    const Text(
+                      "Remark :",
+                      style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+                    ),
+                    const Gap(10),
+                    remarkField(),
+                    const Text(
+                      "Completed Date : ",
+                      style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+                    ),
+                    const Text(
+                      "( autofill when status is Done )",
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                    const Gap(10),
+                    completedDate(),
+                    const Text(
                       "Status :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                     const Gap(10),
-                    user(),
+                    userStatus(),
                   ]),
             ),
             Align(

@@ -59,9 +59,10 @@ class _NavbarState extends State<Navbar> {
               ),
             ),
             currentAccountPicture: CircleAvatar(
+              backgroundColor: Colors.transparent,
               child: ClipOval(
                 child: Image.network(
-                  'https://oflutter.com/wp-content/uploads/2021/02/girl-profile.png',
+                  'https://invenioptl.com/wp-content/uploads/2022/07/logoip.png',
                   fit: BoxFit.cover,
                   width: 90,
                   height: 90,
@@ -97,9 +98,7 @@ class _NavbarState extends State<Navbar> {
             leading: const Icon(Icons.report),
             title: const Text('Report'),
             onTap: () => Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => Report())
-                
-                ),
+                context, MaterialPageRoute(builder: (context) => Report())),
           ),
           const Divider(),
           ListTile(

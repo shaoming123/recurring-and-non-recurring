@@ -1,61 +1,54 @@
 import 'package:flutter/material.dart';
 
-class Event {
+class nonRecurring {
   late String category;
-  late int? recurringId;
+  late int? nonRecurringId;
   late String subCategory;
   late String type;
   late String site;
   late String task;
-  late String from;
-  late String to;
-  late String duration;
-  late String priority;
-  late String recurringOpt;
-  String? recurringEvery;
-  late String recurringUntil;
+  late String owner;
+  late String startDate;
+  late String due;
+  late String status;
+  late String modify;
   String? remark;
   String? completeDate;
-  late String status;
+
   // late String backgroundColor;
   // final String rule;
 
-  Event({
-    this.recurringId,
+  nonRecurring({
+    this.nonRecurringId,
     required this.category,
     required this.subCategory,
     required this.type,
     required this.site,
     required this.task,
-    required this.from,
-    required this.to,
-    required this.duration,
-    required this.priority,
-    required this.recurringOpt,
-    this.recurringEvery,
-    required this.recurringUntil,
+    required this.owner,
+    required this.due,
+    required this.status,
+    required this.startDate,
+    required this.modify,
     this.remark,
     this.completeDate,
-    required this.status,
+
     // required this.backgroundColor,
     // required this.rule
   });
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
-      'recurringId': recurringId,
+      'nonRecurringId': nonRecurringId,
       'category': category,
       'subCategory': subCategory,
       'type': type,
       'site': site,
       'task': task,
-      'fromD': from,
-      'toD': to,
-      'duration': duration,
-      'priority': priority,
-      'recurringOpt': recurringOpt,
-      'recurringEvery': recurringEvery,
-      'recurringUntil': recurringUntil,
+      'owner': owner,
+      'due': due,
+      'startDate': startDate,
+      'modify': modify,
       'remark': remark,
       'completeDate': completeDate,
       'status': status,
@@ -64,20 +57,17 @@ class Event {
     return map;
   }
 
-  Event.fromMap(Map<String, dynamic> map) {
+  nonRecurring.fromMap(Map<String, dynamic> map) {
     category = map['category'];
     subCategory = map['subCategory'];
-    recurringId = map['recurringId'];
+    nonRecurringId = map['nonRecurringId'];
     type = map['type'];
     site = map['site'];
     task = map['task'];
-    from = map['fromD'];
-    to = map['toD'];
-    duration = map['duration'];
-    priority = map['priority'];
-    recurringOpt = map['recurringOpt'];
-    recurringEvery = map['recurringEvery'];
-    recurringUntil = map['recurringUntil'];
+    owner = map['owner'];
+    startDate = map['startDate'];
+    due = map['due'];
+    modify = map['modify'];
     remark = map['remark'];
     completeDate = map['completeDate'];
     status = map['status'];

@@ -31,7 +31,7 @@ class _RecurringState extends State<Recurring> {
 
   Future<void> _refreshEvent() async {
     final data = await dbHelper.fetchAllEvent();
-    print(data.length);
+
     setState(() {
       allEvents = [];
 
@@ -43,8 +43,6 @@ class _RecurringState extends State<Recurring> {
 
   @override
   Widget build(BuildContext context) {
-    final events = Provider.of<EventProvider>(context).events;
-
     final CalendarController _calendarController = CalendarController();
     GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     double width = MediaQuery.of(context).size.width;
@@ -168,6 +166,8 @@ class _RecurringState extends State<Recurring> {
                 dataSource: EventDataSource(allEvents),
                 backgroundColor: Colors.white,
                 view: CalendarView.month,
+                allowViewNavigation: true,
+                showDatePickerButton: true,
                 allowedViews: const <CalendarView>[
                   CalendarView.month,
                   CalendarView.week,
@@ -179,10 +179,13 @@ class _RecurringState extends State<Recurring> {
                 // controller: _calendarController,
                 monthViewSettings: const MonthViewSettings(
                   showAgenda: true,
-                  agendaItemHeight: 150,
+                  agendaItemHeight: 80,
+
                   // appointmentDisplayMode:
                   //     MonthAppointmentDisplayMode.appointment
                 ),
+                scheduleViewSettings: const ScheduleViewSettings(
+                    hideEmptyScheduleWeek: true, appointmentItemHeight: 80),
 
                 onTap: calendarTapped,
                 todayHighlightColor: Styles.buttonColor,
@@ -234,18 +237,13 @@ class _RecurringState extends State<Recurring> {
         showDialog(
             context: context,
             builder: (BuildContext context) {
-              
-              return EventEdit(event: event);
+              return EventEdit(id: event.recurrenceId);
             });
       },
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: (event.priority == "High")
-              ? Colors.redAccent
-              : (event.priority == "Moderate")
-                  ? Colors.yellowAccent
-                  : Colors.greenAccent,
+          color: event.color,
           borderRadius: BorderRadius.all(
             Radius.circular(10),
           ),
@@ -261,15 +259,15 @@ class _RecurringState extends State<Recurring> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(event.task,
+            Text(event.recurrenceId,
                 style: TextStyle(
                     fontSize: 16,
                     color: Styles.textColor,
                     fontWeight: FontWeight.w700)),
             Text(
-                DateFormat('hh:mm a').format(DateTime.parse(event.from)) +
+                DateFormat('hh:mm a').format(event.startTime) +
                     ' - ' +
-                    DateFormat('hh:mm a').format(DateTime.parse(event.to)),
+                    DateFormat('hh:mm a').format(event.endTime),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
