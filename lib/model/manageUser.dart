@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/account.dart';
+import 'package:ipsolution/src/dialogBox/addMember.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../src/member.dart';
@@ -15,7 +16,7 @@ Future updateSP(UserModel? user, bool add) async {
   if (add) {
     sp.setString("user_name", user!.user_name);
     sp.setString("password", user.password);
-    // sp.setString("photoName", user.photoName!);
+    sp.setString("email", user.email);
   } else {
     sp.remove('user_id');
     sp.remove('user_name');
@@ -24,11 +25,11 @@ Future updateSP(UserModel? user, bool add) async {
   }
 }
 
-void updateAccount(
-    int userid, String username, String password, context) async {
-  UserModel userModel = UserModel(userid, username, password);
+void updateAccount(UserModel user, context) async {
+  // UserModel userModel =
+  //     UserModel(user_id: userid, user_name: username, password: password, email: email,);
 
-  await dbHelper.updateUser(userModel).then((value) {
+  await dbHelper.updateUser(user).then((value) {
     if (value == 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -36,7 +37,7 @@ void updateAccount(
         ),
       );
 
-      updateSP(userModel, true).whenComplete(() {
+      updateSP(user, true).whenComplete(() {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => Account()));
       });

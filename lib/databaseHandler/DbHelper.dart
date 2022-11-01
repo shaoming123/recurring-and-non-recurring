@@ -25,6 +25,13 @@ class DbHelper {
   String C_UserName = 'user_name';
   String C_Password = 'password';
   String C_PhotoName = 'photoName';
+  String C_Role = 'role';
+  String C_Email = 'email';
+  String C_Position = 'position';
+  String C_LeadFunc = 'leadFunc';
+  String C_Site = 'site';
+  String C_SiteLead = 'siteLead';
+  String C_Active = 'active';
 
   //event
   String recurringId = 'recurringId';
@@ -35,6 +42,7 @@ class DbHelper {
   String task = 'task';
   String from = 'fromD';
   String to = 'toD';
+  String person = 'person';
   String duration = 'duration';
   String priority = 'priority';
   String recurringOpt = 'recurringOpt';
@@ -80,10 +88,17 @@ class DbHelper {
     await db.execute("CREATE TABLE $Table_User ("
         " $C_UserID INTEGER PRIMARY KEY AUTOINCREMENT, "
         " $C_UserName TEXT, "
-        " $C_Password TEXT "
+        " $C_Password TEXT, "
+        " $C_Email TEXT, "
+        " $C_Role TEXT, "
+        " $C_Position TEXT, "
+        " $C_LeadFunc TEXT, "
+        " $C_Site TEXT, "
+        " $C_SiteLead TEXT, "
+        " $C_Active TEXT "
         ")");
     await db.execute(
-        "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT ,$from DATETIME,$to DATETIME,$duration TEXT,$priority TEXT,$recurringOpt TEXT, $recurringEvery TEXT, $recurringUntil TEXT, $remark TEXT, $completeDate TEXT, $status TEXT)");
+        "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT ,$from DATETIME,$to DATETIME, $duration TEXT,$priority TEXT,$recurringOpt TEXT, $recurringEvery TEXT, $recurringUntil TEXT, $remark TEXT, $completeDate TEXT, $status TEXT, $person TEXT)");
     await db.execute(
         "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY AUTOINCREMENT, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate DATETIME,$due DATETIME,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $nonstatus TEXT)");
   }
@@ -98,6 +113,12 @@ class DbHelper {
     } else {
       return 0;
     }
+  }
+
+  Future<List<Map<String, dynamic>>> getAUser(int id) async {
+    var dbClient = await db;
+    return dbClient.query(Table_User,
+        where: "$C_UserID = ?", whereArgs: [id], limit: 1);
   }
 
   Future<List<Map<String, dynamic>>> getItems() async {
@@ -130,6 +151,15 @@ class DbHelper {
     var dbClient = await db;
     var res = await dbClient.update(Table_User, user.toMap(),
         where: '$C_UserID = ?', whereArgs: [user.user_id]);
+
+    return res;
+  }
+
+  Future<int> updateUserActive(String active, int id) async {
+    var dbClient = await db;
+    var res = await dbClient.rawUpdate(
+        'UPDATE $Table_User SET $C_Active = ? WHERE $C_UserID = ?',
+        [active, id]);
 
     return res;
   }

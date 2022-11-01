@@ -21,6 +21,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
   DateTime startDate = DateTime.now();
   String _selectedVal = '';
   String _selectedUser = '';
+  String _selectedSite = '';
   DateTime? completeDate;
   DateTime? modify;
   List<Map<String, dynamic>> nonRecurring_edit = [];
@@ -28,6 +29,17 @@ class _editNonRecurringState extends State<editNonRecurring> {
   TextEditingController statusController = TextEditingController();
   TextEditingController remarkController = TextEditingController();
   List<String> list = <String>['One', 'Two', 'Three', 'Four'];
+  List<String> siteList = <String>[
+    'HQ',
+    'CRZ',
+    'PR8',
+    'PCR',
+    'AD2',
+    'SKE',
+    'SKP',
+    'SPP',
+    'ALL SITE'
+  ];
   List<dynamic> user = [];
   List<int> userid = [];
   @override
@@ -46,6 +58,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
       due = DateTime.parse(nonRecurring_edit[0]['due']);
       modify = DateTime.parse(nonRecurring_edit[0]['modify']);
       _selectedVal = nonRecurring_edit[0]['category'];
+      _selectedSite = nonRecurring_edit[0]['site'];
       _selectedUser = nonRecurring_edit[0]['owner'];
       statusController.text = nonRecurring_edit[0]['status'];
       taskController.text = nonRecurring_edit[0]['task'];
@@ -124,7 +137,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
           category: _selectedVal,
           subCategory: _selectedVal,
           type: _selectedVal,
-          site: _selectedVal,
+          site: _selectedSite,
           task: taskController.text,
           owner: _selectedUser,
           startDate: startDate.toString(),
@@ -248,6 +261,60 @@ class _editNonRecurringState extends State<editNonRecurring> {
                   String test = val as String;
                   setState(() {
                     _selectedVal = test;
+                  });
+                },
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget dropdownSite() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Site',
+            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButtonFormField2<String>(
+                iconSize: 30,
+                isExpanded: true,
+                hint: const Text("Choose item"),
+                value: _selectedSite == '' ? null : _selectedSite,
+                validator: (value) {
+                  return value == null ? 'Please select' : null;
+                },
+                items: siteList
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(
+                          e,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (val) {
+                  String test = val as String;
+                  setState(() {
+                    _selectedSite = test;
                   });
                 },
                 icon: const Icon(
@@ -468,7 +535,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
                 dropdownList("Category"),
                 dropdownList("Sub-Category"),
                 dropdownList("Type"),
-                dropdownList("Site"),
+                dropdownSite(),
                 buildTextField("Task", "description", taskController),
                 dropdownOwner(),
                 deadlineSelect(),

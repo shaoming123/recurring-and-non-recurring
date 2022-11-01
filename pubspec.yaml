@@ -60,6 +60,9 @@ dependencies:
 
   percent_indicator: ^4.0.1
 
+  multiselect: ^0.0.4
+  get: ^4.6.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

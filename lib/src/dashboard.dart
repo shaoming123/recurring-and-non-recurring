@@ -2,7 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
+import 'package:ipsolution/model/event.dart';
+import 'package:ipsolution/model/manageUser.dart';
+import 'package:ipsolution/src/dashboardDetails.dart';
 import 'package:ipsolution/src/navbar.dart';
+import 'package:ipsolution/src/non_recurring.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,6 +19,86 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+
+  List<Map<String, dynamic>> completed = [];
+  List<Map<String, dynamic>> late = [];
+  List<Map<String, dynamic>> progress = [];
+  List<Map<String, dynamic>> upcoming = [];
+
+  List<Map<String, dynamic>> completedNon = [];
+  List<Map<String, dynamic>> lateNon = [];
+  List<Map<String, dynamic>> progressNon = [];
+  List<Map<String, dynamic>> upcomingNon = [];
+  @override
+  void initState() {
+    super.initState();
+    refresh();
+  }
+
+  Future<void> refresh() async {
+    final taskData = await dbHelper.fetchAllEvent();
+    final nonRecurringData = await dbHelper.fetchAllNonRecurring();
+
+    final SharedPreferences sp = await _pref;
+    String userID = sp.getInt("user_id").toString();
+    String username = sp.getString("user_name")!;
+    List<String> personList = [];
+    setState(() {
+      for (int x = 0; x < taskData.length; x++) {
+        personList = taskData[x]["person"].split(',');
+
+        for (int i = 0; i < personList.length; i++) {
+          if (personList[i] == username) {
+            DateTime dateStart = DateTime.now(); //YOUR DATE GOES HERE
+            DateTime dateEnd = DateTime.parse(taskData[x]["toD"]);
+            bool isValidDate =
+                dateStart.isBefore(dateEnd); // YOUR DATE GOES HERE
+            if (taskData[x]["status"] == "Done") {
+              completed.add(taskData[x]);
+            } else if (isValidDate == false) {
+              late.add(taskData[x]);
+            } else if (taskData[x]["status"] == "In-Progress") {
+              progress.add(taskData[x]);
+            } else {
+              upcoming.add(taskData[x]);
+            }
+          }
+        }
+      }
+
+      for (int x = 0; x < nonRecurringData.length; x++) {
+        if (nonRecurringData[x]["owner"] == userID) {
+          DateTime dateStart = DateTime.now(); //YOUR DATE GOES HERE
+          DateTime dateEnd = DateTime.parse(nonRecurringData[x]["due"]);
+          bool isValidDate = dateStart.isBefore(dateEnd); // YOUR DATE GOES HERE
+          if (nonRecurringData[x]["status"] == "100") {
+            completedNon.add(nonRecurringData[x]);
+          } else if (isValidDate == false) {
+            lateNon.add(nonRecurringData[x]);
+          } else if (int.parse(nonRecurringData[x]["status"]) > 0) {
+            progressNon.add(nonRecurringData[x]);
+          } else {
+            upcomingNon.add(nonRecurringData[x]);
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    completed = [];
+    late = [];
+    progress = [];
+    upcoming = [];
+
+    completedNon = [];
+    lateNon = [];
+    progressNon = [];
+    upcomingNon = [];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,10 +178,10 @@ class _DashboardState extends State<Dashboard> {
                             alignment: Alignment.bottomRight,
                             child: Column(
                               children: [
-                                const Expanded(
+                                Expanded(
                                   flex: 5,
                                   child: ListTile(
-                                    title: Padding(
+                                    title: const Padding(
                                       padding: EdgeInsets.only(bottom: 8.0),
                                       child: Text(
                                         "Upcoming",
@@ -107,7 +191,8 @@ class _DashboardState extends State<Dashboard> {
                                       ),
                                     ),
                                     subtitle: Text(
-                                      "3",
+                                      (upcoming.length + upcomingNon.length)
+                                          .toString(),
                                       style: TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
@@ -125,7 +210,18 @@ class _DashboardState extends State<Dashboard> {
                                           "Details",
                                           style: TextStyle(fontSize: 14),
                                         ),
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    DashboardDetails(
+                                                      task: upcoming,
+                                                      nonRecurring: upcomingNon,
+                                                      detailName: 'Upcoming',
+                                                    )),
+                                          );
+                                        },
                                       ),
                                       const SizedBox(
                                         width: 8,
@@ -186,7 +282,7 @@ class _DashboardState extends State<Dashboard> {
                             alignment: Alignment.bottomRight,
                             child: Column(
                               children: [
-                                const Expanded(
+                                Expanded(
                                   flex: 5,
                                   child: ListTile(
                                     title: Padding(
@@ -199,7 +295,8 @@ class _DashboardState extends State<Dashboard> {
                                       ),
                                     ),
                                     subtitle: Text(
-                                      "2",
+                                      (progress.length + progressNon.length)
+                                          .toString(),
                                       style: TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
@@ -217,7 +314,18 @@ class _DashboardState extends State<Dashboard> {
                                           "Details",
                                           style: TextStyle(fontSize: 14),
                                         ),
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    DashboardDetails(
+                                                      task: progress,
+                                                      nonRecurring: progressNon,
+                                                      detailName: 'In-Progress',
+                                                    )),
+                                          );
+                                        },
                                       ),
                                       const SizedBox(
                                         width: 8,
@@ -280,7 +388,7 @@ class _DashboardState extends State<Dashboard> {
                             alignment: Alignment.bottomRight,
                             child: Column(
                               children: [
-                                const Expanded(
+                                Expanded(
                                   flex: 5,
                                   child: ListTile(
                                     title: Padding(
@@ -293,7 +401,7 @@ class _DashboardState extends State<Dashboard> {
                                       ),
                                     ),
                                     subtitle: Text(
-                                      "0",
+                                      (late.length + lateNon.length).toString(),
                                       style: TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
@@ -311,7 +419,18 @@ class _DashboardState extends State<Dashboard> {
                                           "Details",
                                           style: TextStyle(fontSize: 14),
                                         ),
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    DashboardDetails(
+                                                      task: late,
+                                                      nonRecurring: lateNon,
+                                                      detailName: 'Late',
+                                                    )),
+                                          );
+                                        },
                                       ),
                                       const SizedBox(
                                         width: 8,
@@ -374,7 +493,7 @@ class _DashboardState extends State<Dashboard> {
                             alignment: Alignment.bottomRight,
                             child: Column(
                               children: [
-                                const Expanded(
+                                Expanded(
                                   flex: 5,
                                   child: ListTile(
                                     title: Padding(
@@ -387,7 +506,8 @@ class _DashboardState extends State<Dashboard> {
                                       ),
                                     ),
                                     subtitle: Text(
-                                      "3",
+                                      (completed.length + completedNon.length)
+                                          .toString(),
                                       style: TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
@@ -405,7 +525,19 @@ class _DashboardState extends State<Dashboard> {
                                           "Details",
                                           style: TextStyle(fontSize: 14),
                                         ),
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    DashboardDetails(
+                                                      task: completed,
+                                                      nonRecurring:
+                                                          completedNon,
+                                                      detailName: 'Completed',
+                                                    )),
+                                          );
+                                        },
                                       ),
                                       const SizedBox(
                                         width: 8,

@@ -14,7 +14,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/manageUser.dart';
 
 class Task extends StatefulWidget {
-  const Task({Key? key}) : super(key: key);
+  final List<Map<String, dynamic>> allNonRecurring;
+  final List<Map<String, dynamic>> foundNonRecurring;
+  final List<Map<String, dynamic>> LatenonRecurring;
+  final List<Map<String, dynamic>> ActivenonRecurring;
+  final List<Map<String, dynamic>> CompletednonRecurring;
+  const Task({
+    Key? key,
+    required this.allNonRecurring,
+    required this.foundNonRecurring,
+    required this.LatenonRecurring,
+    required this.ActivenonRecurring,
+    required this.CompletednonRecurring,
+  }) : super(key: key);
   @override
   _TaskState createState() => _TaskState();
 }
@@ -22,45 +34,59 @@ class Task extends StatefulWidget {
 final textcontroller = TextEditingController();
 List<String> type = <String>['Late', 'Active', 'Completed', 'All'];
 String _selectedVal = "Late";
+String _selectedUser = "";
 bool _showContent = false;
 Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
 class _TaskState extends State<Task> {
-  List<Map<String, dynamic>> allNonRecurring = [];
-  List<Map<String, dynamic>> _foundNonRecurring = [];
-  List<Map<String, dynamic>> LatenonRecurring = [];
-  List<Map<String, dynamic>> ActivenonRecurring = [];
-  List<Map<String, dynamic>> CompletednonRecurring = [];
-
   @override
   void initState() {
     super.initState();
-    _refresh();
+    getUserId();
   }
 
-  void _refresh() async {
-    final data = await dbHelper.fetchAllNonRecurring();
+  Future<void> getUserId() async {
     final SharedPreferences sp = await _pref;
-    setState(() {
-      allNonRecurring = data;
-      _foundNonRecurring = data;
 
-      for (int x = 0; x < data.length; x++) {
-        final dayLeft = daysBetween(DateTime.parse(data[x]["startDate"]),
-            DateTime.parse(data[x]["due"]));
-        if (data[x]["status"] == '100') {
-          CompletednonRecurring.add(data[x]);
-        } else if (dayLeft.isNegative) {
-          LatenonRecurring.add(data[x]);
-        } else {
-          ActivenonRecurring.add(data[x]);
-        }
-      }
+    setState(() {
+      _selectedUser = sp.getInt("user_id")!.toString();
     });
-    sp.setString("totalTasks", _foundNonRecurring.length.toString());
-    sp.setString("completedTasks", CompletednonRecurring.length.toString());
-    sp.setString("overdueTasks", LatenonRecurring.length.toString());
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    // widget.allNonRecurring = [];
+    // foundNonRecurring = [];
+    // LatenonRecurring = [];
+    // ActivenonRecurring = [];
+    // CompletednonRecurring = [];
+  }
+
+  // void _refresh() async {
+  //   final data = await dbHelper.fetchAllNonRecurring();
+
+  //   final SharedPreferences sp = await _pref;
+  //   String userID = sp.getInt("user_id").toString();
+  //   setState(() {
+  //     for (int x = 0; x < data.length; x++) {
+  //       if (data[x]["owner"] == userID) {
+  //         final dayLeft = daysBetween(DateTime.parse(data[x]["startDate"]),
+  //             DateTime.parse(data[x]["due"]));
+  //         allNonRecurring.add(data[x]);
+  //         widget.foundNonRecurring.add(data[x]);
+  //         if (data[x]["status"] == '100') {
+  //            widget.CompletednonRecurring.add(data[x]);
+  //         } else if (dayLeft.isNegative) {
+  //            widget.LatenonRecurring.add(data[x]);
+  //         } else if (dayLeft > 0) {
+  //           widget.ActivenonRecurring.add(data[x]);
+  //         }
+  //       }
+  //     }
+  //   });
+  // }
 
   int daysBetween(DateTime from, DateTime to) {
     from = DateTime(from.year, from.month, from.day);
@@ -166,7 +192,8 @@ class _TaskState extends State<Task> {
                               showDialog(
                                   context: context,
                                   builder: (BuildContext context) {
-                                    return const addNonRecurring();
+                                    return addNonRecurring(
+                                        userId: _selectedUser);
                                   });
                             }),
                             child: Padding(
@@ -253,7 +280,7 @@ class _TaskState extends State<Task> {
                                         top: -12, end: -20),
                                     padding: const EdgeInsets.all(5),
                                     badgeContent: Text(
-                                      LatenonRecurring.length.toString(),
+                                      widget.LatenonRecurring.length.toString(),
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 12,
@@ -271,7 +298,8 @@ class _TaskState extends State<Task> {
                                         top: -12, end: -20),
                                     padding: const EdgeInsets.all(5),
                                     badgeContent: Text(
-                                      ActivenonRecurring.length.toString(),
+                                      widget.ActivenonRecurring.length
+                                          .toString(),
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 12,
@@ -289,7 +317,8 @@ class _TaskState extends State<Task> {
                                         top: -12, end: -20),
                                     padding: const EdgeInsets.all(5),
                                     badgeContent: Text(
-                                      CompletednonRecurring.length.toString(),
+                                      widget.CompletednonRecurring.length
+                                          .toString(),
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 12,
@@ -307,7 +336,8 @@ class _TaskState extends State<Task> {
                                         top: -12, end: -20),
                                     padding: const EdgeInsets.all(5),
                                     badgeContent: Text(
-                                      _foundNonRecurring.length.toString(),
+                                      widget.foundNonRecurring.length
+                                          .toString(),
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 12,
@@ -417,37 +447,37 @@ class _TaskState extends State<Task> {
             ))),
             DataColumn(label: Text('')),
           ],
-          rows: List.generate(LatenonRecurring.length, (index) {
-            final dayLeft = daysBetween(
-                DateTime.parse(LatenonRecurring[index]["startDate"]),
-                DateTime.parse(LatenonRecurring[index]["due"]));
+          rows: List.generate(widget.LatenonRecurring.length, (index) {
+            final dayLeft = daysBetween(DateTime.now(),
+                DateTime.parse(widget.LatenonRecurring[index]["due"]));
 
             return DataRow(
               cells: [
                 DataCell(Text((index + 1).toString())),
-                DataCell(Text(LatenonRecurring[index]["task"])),
+                DataCell(Text(widget.LatenonRecurring[index]["task"])),
                 DataCell(Text(
-                  LatenonRecurring[index]["category"],
+                  widget.LatenonRecurring[index]["category"],
                 )),
                 DataCell(Text(
-                  LatenonRecurring[index]["subCategory"],
+                  widget.LatenonRecurring[index]["subCategory"],
                 )),
                 DataCell(Text(
-                  LatenonRecurring[index]["type"],
+                  widget.LatenonRecurring[index]["type"],
                 )),
                 DataCell(Text(
-                  LatenonRecurring[index]["site"],
+                  widget.LatenonRecurring[index]["site"],
                 )),
                 DataCell(LinearPercentIndicator(
                     barRadius: const Radius.circular(5),
                     width: 100.0,
                     lineHeight: 20.0,
                     percent:
-                        double.parse(LatenonRecurring[index]["status"]) / 100,
+                        double.parse(widget.LatenonRecurring[index]["status"]) /
+                            100,
                     backgroundColor: Colors.grey,
                     progressColor: Colors.blue,
                     center: Text(
-                      LatenonRecurring[index]["status"],
+                      widget.LatenonRecurring[index]["status"],
                       style: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.bold),
                     ))),
@@ -467,15 +497,17 @@ class _TaskState extends State<Task> {
                     )))),
                 DataCell(Text(
                   DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(LatenonRecurring[index]["due"]))
+                      .format(
+                          DateTime.parse(widget.LatenonRecurring[index]["due"]))
                       .toString(),
                 )),
                 DataCell(Text(
-                  LatenonRecurring[index]["remark"],
+                  widget.LatenonRecurring[index]["remark"],
                 )),
                 DataCell(Text(
                   DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(LatenonRecurring[index]["modify"]))
+                      .format(DateTime.parse(
+                          widget.LatenonRecurring[index]["modify"]))
                       .toString(),
                 )),
                 DataCell(IconButton(
@@ -485,7 +517,7 @@ class _TaskState extends State<Task> {
                         context: context,
                         builder: (BuildContext context) {
                           return editNonRecurring(
-                            id: LatenonRecurring[index]["nonRecurringId"]
+                            id: widget.LatenonRecurring[index]["nonRecurringId"]
                                 .toString(),
                           );
                         });
@@ -495,7 +527,7 @@ class _TaskState extends State<Task> {
                     icon: const Icon(Icons.delete),
                     onPressed: () {
                       removeNonRecurring(
-                          LatenonRecurring[index]["nonRecurringId"]);
+                          widget.LatenonRecurring[index]["nonRecurringId"]);
                     })),
               ],
               // onSelectChanged: (e) {
@@ -503,9 +535,9 @@ class _TaskState extends State<Task> {
               //       context: context,
               //       builder: (BuildContext context) {
               //         return DialogBox(
-              //             id: _foundNonRecurring[index]["user_id"].toString(),
-              //             name: _foundNonRecurring[index]['user_name'],
-              //             password: _foundNonRecurring[index]['password'],
+              //             id: widget.foundNonRecurring[index]["user_id"].toString(),
+              //             name: widget.foundNonRecurring[index]['user_name'],
+              //             password: widget.foundNonRecurring[index]['password'],
               //             isEditing: false);
               //       });
               // }
@@ -590,36 +622,36 @@ class _TaskState extends State<Task> {
             ))),
             DataColumn(label: Text('')),
           ],
-          rows: List.generate(ActivenonRecurring.length, (index) {
-            final dayLeft = daysBetween(
-                DateTime.parse(ActivenonRecurring[index]["startDate"]),
-                DateTime.parse(ActivenonRecurring[index]["due"]));
+          rows: List.generate(widget.ActivenonRecurring.length, (index) {
+            final dayLeft = daysBetween(DateTime.now(),
+                DateTime.parse(widget.ActivenonRecurring[index]["due"]));
             return DataRow(
               cells: [
                 DataCell(Text((index + 1).toString())),
-                DataCell(Text(ActivenonRecurring[index]["task"])),
+                DataCell(Text(widget.ActivenonRecurring[index]["task"])),
                 DataCell(Text(
-                  ActivenonRecurring[index]["category"],
+                  widget.ActivenonRecurring[index]["category"],
                 )),
                 DataCell(Text(
-                  ActivenonRecurring[index]["subCategory"],
+                  widget.ActivenonRecurring[index]["subCategory"],
                 )),
                 DataCell(Text(
-                  ActivenonRecurring[index]["type"],
+                  widget.ActivenonRecurring[index]["type"],
                 )),
                 DataCell(Text(
-                  ActivenonRecurring[index]["site"],
+                  widget.ActivenonRecurring[index]["site"],
                 )),
                 DataCell(LinearPercentIndicator(
                     barRadius: const Radius.circular(5),
                     width: 100.0,
                     lineHeight: 20.0,
-                    percent:
-                        double.parse(ActivenonRecurring[index]["status"]) / 100,
+                    percent: double.parse(
+                            widget.ActivenonRecurring[index]["status"]) /
+                        100,
                     backgroundColor: Colors.grey,
                     progressColor: Colors.blue,
                     center: Text(
-                      ActivenonRecurring[index]["status"],
+                      widget.ActivenonRecurring[index]["status"],
                       style: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.bold),
                     ))),
@@ -641,19 +673,22 @@ class _TaskState extends State<Task> {
                             : Text(
                                 "$dayLeft DAYS LEFT",
                                 style: Styles.dayLeftActive,
-                              )))),
+                              )
+                              
+                              ))),
                 DataCell(Text(
                   DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(ActivenonRecurring[index]["due"]))
+                      .format(DateTime.parse(
+                          widget.ActivenonRecurring[index]["due"]))
                       .toString(),
                 )),
                 DataCell(Text(
-                  ActivenonRecurring[index]["remark"],
+                  widget.ActivenonRecurring[index]["remark"],
                 )),
                 DataCell(Text(
                   DateFormat('dd/MM/yyyy')
-                      .format(
-                          DateTime.parse(ActivenonRecurring[index]["modify"]))
+                      .format(DateTime.parse(
+                          widget.ActivenonRecurring[index]["modify"]))
                       .toString(),
                 )),
                 DataCell(IconButton(
@@ -663,7 +698,8 @@ class _TaskState extends State<Task> {
                         context: context,
                         builder: (BuildContext context) {
                           return editNonRecurring(
-                            id: ActivenonRecurring[index]["nonRecurringId"]
+                            id: widget.ActivenonRecurring[index]
+                                    ["nonRecurringId"]
                                 .toString(),
                           );
                         });
@@ -673,7 +709,7 @@ class _TaskState extends State<Task> {
                     icon: const Icon(Icons.delete),
                     onPressed: () {
                       removeNonRecurring(
-                          ActivenonRecurring[index]["nonRecurringId"]);
+                          widget.ActivenonRecurring[index]["nonRecurringId"]);
                     })),
               ],
               // onSelectChanged: (e) {
@@ -681,14 +717,15 @@ class _TaskState extends State<Task> {
               //       context: context,
               //       builder: (BuildContext context) {
               //         return DialogBox(
-              //             id: _foundNonRecurring[index]["user_id"].toString(),
-              //             name: _foundNonRecurring[index]['user_name'],
-              //             password: _foundNonRecurring[index]['password'],
+              //             id: widget.foundNonRecurring[index]["user_id"].toString(),
+              //             name: widget.foundNonRecurring[index]['user_name'],
+              //             password: widget.foundNonRecurring[index]['password'],
               //             isEditing: false);
               //       });
               // }
             );
-          })),
+          })
+          ),
     );
   }
 
@@ -768,54 +805,53 @@ class _TaskState extends State<Task> {
             ))),
             DataColumn(label: Text('')),
           ],
-          rows: List.generate(CompletednonRecurring.length, (index) {
-            final dayLeft = daysBetween(
-                DateTime.parse(CompletednonRecurring[index]["startDate"]),
-                DateTime.parse(CompletednonRecurring[index]["due"]));
+          rows: List.generate(widget.CompletednonRecurring.length, (index) {
+            final dayLeft = daysBetween(DateTime.now(),
+                DateTime.parse(widget.CompletednonRecurring[index]["due"]));
             return DataRow(
               cells: [
                 DataCell(Text((index + 1).toString())),
-                DataCell(Text(CompletednonRecurring[index]["task"])),
+                DataCell(Text(widget.CompletednonRecurring[index]["task"])),
                 DataCell(Text(
-                  CompletednonRecurring[index]["category"],
+                  widget.CompletednonRecurring[index]["category"],
                 )),
                 DataCell(Text(
-                  CompletednonRecurring[index]["subCategory"],
+                  widget.CompletednonRecurring[index]["subCategory"],
                 )),
                 DataCell(Text(
-                  CompletednonRecurring[index]["type"],
+                  widget.CompletednonRecurring[index]["type"],
                 )),
                 DataCell(Text(
-                  CompletednonRecurring[index]["site"],
+                  widget.CompletednonRecurring[index]["site"],
                 )),
                 DataCell(LinearPercentIndicator(
                     barRadius: const Radius.circular(5),
                     width: 100.0,
                     lineHeight: 20.0,
-                    percent:
-                        double.parse(CompletednonRecurring[index]["status"]) /
-                            100,
+                    percent: double.parse(
+                            widget.CompletednonRecurring[index]["status"]) /
+                        100,
                     backgroundColor: Colors.grey,
                     progressColor: Colors.blue,
                     center: Text(
-                      CompletednonRecurring[index]["status"],
+                      widget.CompletednonRecurring[index]["status"],
                       style: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.bold),
                     ))),
                 DataCell(Center(child: Text("No Review Needed"))),
                 DataCell(Text(
                   DateFormat('dd/MM/yyyy')
-                      .format(
-                          DateTime.parse(CompletednonRecurring[index]["due"]))
+                      .format(DateTime.parse(
+                          widget.CompletednonRecurring[index]["due"]))
                       .toString(),
                 )),
                 DataCell(Text(
-                  CompletednonRecurring[index]["remark"],
+                  widget.CompletednonRecurring[index]["remark"],
                 )),
                 DataCell(Text(
                   DateFormat('dd/MM/yyyy')
                       .format(DateTime.parse(
-                          CompletednonRecurring[index]["modify"]))
+                          widget.CompletednonRecurring[index]["modify"]))
                       .toString(),
                 )),
                 DataCell(IconButton(
@@ -825,7 +861,8 @@ class _TaskState extends State<Task> {
                         context: context,
                         builder: (BuildContext context) {
                           return editNonRecurring(
-                            id: CompletednonRecurring[index]["nonRecurringId"]
+                            id: widget.CompletednonRecurring[index]
+                                    ["nonRecurringId"]
                                 .toString(),
                           );
                         });
@@ -834,8 +871,8 @@ class _TaskState extends State<Task> {
                 DataCell(IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () {
-                      removeNonRecurring(
-                          CompletednonRecurring[index]["nonRecurringId"]);
+                      removeNonRecurring(widget.CompletednonRecurring[index]
+                          ["nonRecurringId"]);
                     })),
               ],
               // onSelectChanged: (e) {
@@ -843,9 +880,9 @@ class _TaskState extends State<Task> {
               //       context: context,
               //       builder: (BuildContext context) {
               //         return DialogBox(
-              //             id: _foundNonRecurring[index]["user_id"].toString(),
-              //             name: _foundNonRecurring[index]['user_name'],
-              //             password: _foundNonRecurring[index]['password'],
+              //             id: widget.foundNonRecurring[index]["user_id"].toString(),
+              //             name: widget.foundNonRecurring[index]['user_name'],
+              //             password: widget.foundNonRecurring[index]['password'],
               //             isEditing: false);
               //       });
               // }
@@ -930,40 +967,40 @@ class _TaskState extends State<Task> {
             ))),
             DataColumn(label: Text('')),
           ],
-          rows: List.generate(_foundNonRecurring.length, (index) {
-            final dayLeft = daysBetween(
-                DateTime.parse(_foundNonRecurring[index]["startDate"]),
-                DateTime.parse(_foundNonRecurring[index]["due"]));
+          rows: List.generate(widget.foundNonRecurring.length, (index) {
+            final dayLeft = daysBetween(DateTime.now(),
+                DateTime.parse(widget.foundNonRecurring[index]["due"]));
             return DataRow(
               cells: [
                 DataCell(Text((index + 1).toString())),
-                DataCell(Text(_foundNonRecurring[index]["task"])),
+                DataCell(Text(widget.foundNonRecurring[index]["task"])),
                 DataCell(Text(
-                  _foundNonRecurring[index]["category"],
+                  widget.foundNonRecurring[index]["category"],
                 )),
                 DataCell(Text(
-                  _foundNonRecurring[index]["subCategory"],
+                  widget.foundNonRecurring[index]["subCategory"],
                 )),
                 DataCell(Text(
-                  _foundNonRecurring[index]["type"],
+                  widget.foundNonRecurring[index]["type"],
                 )),
                 DataCell(Text(
-                  _foundNonRecurring[index]["site"],
+                  widget.foundNonRecurring[index]["site"],
                 )),
                 DataCell(LinearPercentIndicator(
                     barRadius: const Radius.circular(5),
                     width: 100.0,
                     lineHeight: 20.0,
-                    percent:
-                        double.parse(_foundNonRecurring[index]["status"]) / 100,
+                    percent: double.parse(
+                            widget.foundNonRecurring[index]["status"]) /
+                        100,
                     backgroundColor: Colors.grey,
                     progressColor: Colors.blue,
                     center: Text(
-                      _foundNonRecurring[index]["status"],
+                      widget.foundNonRecurring[index]["status"],
                       style: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.bold),
                     ))),
-                DataCell(_foundNonRecurring[index]["status"] != '100'
+                DataCell(widget.foundNonRecurring[index]["status"] != '100'
                     ? Container(
                         width: 100,
                         height: 20,
@@ -988,16 +1025,17 @@ class _TaskState extends State<Task> {
                     : Text("No Review Needed")),
                 DataCell(Text(
                   DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(_foundNonRecurring[index]["due"]))
+                      .format(DateTime.parse(
+                          widget.foundNonRecurring[index]["due"]))
                       .toString(),
                 )),
                 DataCell(Text(
-                  _foundNonRecurring[index]["remark"],
+                  widget.foundNonRecurring[index]["remark"],
                 )),
                 DataCell(Text(
                   DateFormat('dd/MM/yyyy')
-                      .format(
-                          DateTime.parse(_foundNonRecurring[index]["modify"]))
+                      .format(DateTime.parse(
+                          widget.foundNonRecurring[index]["modify"]))
                       .toString(),
                 )),
                 DataCell(IconButton(
@@ -1007,7 +1045,8 @@ class _TaskState extends State<Task> {
                         context: context,
                         builder: (BuildContext context) {
                           return editNonRecurring(
-                            id: _foundNonRecurring[index]["nonRecurringId"]
+                            id: widget.foundNonRecurring[index]
+                                    ["nonRecurringId"]
                                 .toString(),
                           );
                         });
@@ -1017,7 +1056,7 @@ class _TaskState extends State<Task> {
                     icon: const Icon(Icons.delete),
                     onPressed: () {
                       removeNonRecurring(
-                          _foundNonRecurring[index]["nonRecurringId"]);
+                          widget.foundNonRecurring[index]["nonRecurringId"]);
                     })),
               ],
               // onSelectChanged: (e) {
@@ -1025,9 +1064,9 @@ class _TaskState extends State<Task> {
               //       context: context,
               //       builder: (BuildContext context) {
               //         return DialogBox(
-              //             id: _foundNonRecurring[index]["user_id"].toString(),
-              //             name: _foundNonRecurring[index]['user_name'],
-              //             password: _foundNonRecurring[index]['password'],
+              //             id: widget.foundNonRecurring[index]["user_id"].toString(),
+              //             name: widget.foundNonRecurring[index]['user_name'],
+              //             password: widget.foundNonRecurring[index]['password'],
               //             isEditing: false);
               //       });
               // }

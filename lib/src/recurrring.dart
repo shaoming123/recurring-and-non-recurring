@@ -6,6 +6,7 @@ import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 import '../model/eventDataSource.dart';
@@ -21,8 +22,10 @@ class Recurring extends StatefulWidget {
 }
 
 List<Event> allEvents = [];
+List<String> personList = [];
 
 class _RecurringState extends State<Recurring> {
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   @override
   void initState() {
     super.initState();
@@ -32,13 +35,28 @@ class _RecurringState extends State<Recurring> {
   Future<void> _refreshEvent() async {
     final data = await dbHelper.fetchAllEvent();
 
+    final SharedPreferences sp = await _pref;
+    String username = sp.getString("user_name")!;
+    allEvents = [];
     setState(() {
-      allEvents = [];
-
       for (int i = 0; i < data.length; i++) {
-        allEvents.add(Event.fromMap(data[i]));
+        personList = [];
+        personList = data[i]["person"].split(',');
+
+        for (int x = 0; x < personList.length; x++) {
+          if (personList[x] == username) {
+            allEvents.add(Event.fromMap(data[i]));
+          }
+        }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    personList = [];
+    allEvents = [];
   }
 
   @override
@@ -170,22 +188,24 @@ class _RecurringState extends State<Recurring> {
                 showDatePickerButton: true,
                 allowedViews: const <CalendarView>[
                   CalendarView.month,
-                  CalendarView.week,
+                  CalendarView.timelineWeek,
                   CalendarView.day,
                   CalendarView.schedule
                 ],
                 initialSelectedDate: DateTime.now(),
-
+                timeSlotViewSettings:
+                    TimeSlotViewSettings(timelineAppointmentHeight: height / 5),
                 // controller: _calendarController,
-                monthViewSettings: const MonthViewSettings(
+                monthViewSettings: MonthViewSettings(
                   showAgenda: true,
-                  agendaItemHeight: 80,
+                  agendaItemHeight: height / 5,
 
                   // appointmentDisplayMode:
                   //     MonthAppointmentDisplayMode.appointment
                 ),
-                scheduleViewSettings: const ScheduleViewSettings(
-                    hideEmptyScheduleWeek: true, appointmentItemHeight: 80),
+                scheduleViewSettings: ScheduleViewSettings(
+                    hideEmptyScheduleWeek: true,
+                    appointmentItemHeight: height / 5),
 
                 onTap: calendarTapped,
                 todayHighlightColor: Styles.buttonColor,
@@ -241,6 +261,8 @@ class _RecurringState extends State<Recurring> {
             });
       },
       child: Container(
+        // width: details.bounds.width,
+
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: event.color,
@@ -259,21 +281,44 @@ class _RecurringState extends State<Recurring> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(event.recurrenceId,
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Styles.textColor,
-                    fontWeight: FontWeight.w700)),
-            Text(
-                DateFormat('hh:mm a').format(event.startTime) +
-                    ' - ' +
-                    DateFormat('hh:mm a').format(event.endTime),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Styles.textColor,
-                    fontWeight: FontWeight.w700)),
+            Expanded(
+              flex: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(2.0),
+                child: Text(event.recurrenceId,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Styles.textColor,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(2.0),
+                child: Text(
+                    DateFormat('hh:mm a').format(event.startTime) +
+                        ' - ' +
+                        DateFormat('hh:mm a').format(event.endTime),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Styles.textColor,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ),
+            Expanded(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: Text(event.notes,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Styles.textColor,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ),
           ],
         ),
       ),

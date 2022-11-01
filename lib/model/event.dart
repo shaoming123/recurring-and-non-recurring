@@ -9,10 +9,11 @@ class Event {
   late String task;
   late String from;
   late String to;
+  late String person;
   late String duration;
   late String priority;
   late String recurringOpt;
-  String? recurringEvery;
+  late String recurringEvery;
   late String recurringUntil;
   String? remark;
   String? completeDate;
@@ -29,10 +30,11 @@ class Event {
     required this.task,
     required this.from,
     required this.to,
+    required this.person,
     required this.duration,
     required this.priority,
     required this.recurringOpt,
-    this.recurringEvery,
+    required this.recurringEvery,
     required this.recurringUntil,
     this.remark,
     this.completeDate,
@@ -51,6 +53,7 @@ class Event {
       'task': task,
       'fromD': from,
       'toD': to,
+      'person': person,
       'duration': duration,
       'priority': priority,
       'recurringOpt': recurringOpt,
@@ -73,10 +76,11 @@ class Event {
     task = map['task'];
     from = map['fromD'];
     to = map['toD'];
+    person = map['person'];
     duration = map['duration'];
     priority = map['priority'];
     recurringOpt = map['recurringOpt'];
-    recurringEvery = map['recurringEvery'];
+     recurringEvery = map['recurringEvery'];
     recurringUntil = map['recurringUntil'];
     remark = map['remark'];
     completeDate = map['completeDate'];

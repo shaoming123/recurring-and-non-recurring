@@ -1,8 +1,12 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get_rx/get_rx.dart';
 import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/src/account.dart';
 import 'package:ipsolution/src/member.dart';
+import 'package:multiselect/multiselect.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/user.dart';
 
@@ -13,12 +17,69 @@ class AddMember extends StatefulWidget {
   State<AddMember> createState() => _AddMemberState();
 }
 
-final username = TextEditingController();
-final password = TextEditingController();
-int user_id = 0;
-
 class _AddMemberState extends State<AddMember> {
+  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   final _formkey = GlobalKey<FormState>();
+  final username = TextEditingController();
+  final password = TextEditingController();
+  final email = TextEditingController();
+  String _selectedRole = '';
+  String active = 'Active';
+  var selectedOption = ''.obs;
+  var selectedSiteOption = ''.obs;
+  var selectedSiteLeadOption = ''.obs;
+  bool checkFunctionAccess = false;
+  List<String> selectedPosition = <String>[];
+  List<String> selectedSite = <String>[];
+  List<String> selectedSiteLead = <String>[];
+  List<String> positiondropdownList = [
+    "position_one",
+    "position_two",
+    "position_three",
+    "position_four",
+    "position_five",
+    "position_six",
+  ];
+
+  List<String> sitedropdownList = [
+    "site_one",
+    "site_two",
+    "site_three",
+    "site_four",
+    "site_five",
+    "site_six",
+  ];
+
+  List<String> siteLeaddropdownList = [
+    "siteLead_one",
+    "siteLead_two",
+    "siteLead_three",
+    "siteLead_four",
+    "siteLead_five",
+    "siteLead_six",
+  ];
+  List<String> roleList = ["Super Admin", "Manager", "Leader", "Staff"];
+  String? userRole;
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  void _refresh() async {
+    final SharedPreferences sp = await _pref;
+
+    setState(() {
+      userRole = sp.getString("role")!;
+      if (userRole == 'Leader') {
+        roleList.remove("Super Admin");
+        roleList.remove("Manager");
+      } else if (userRole == 'Manager') {
+        roleList.remove("Super Admin");
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -35,15 +96,47 @@ class _AddMemberState extends State<AddMember> {
 
   Future<void> addUser() async {
     if (_formkey.currentState!.validate()) {
-      await dbHelper.saveData(UserModel(user_id, username.text, password.text));
+      if (selectedPosition.isEmpty) {
+        AlertDialog alert = AlertDialog(
+          title: const Text("Error"),
+          content: const Text("Function Access cannot be empty !"),
+          actions: [
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return alert;
+          },
+        );
+      } else {
+        String _selectedPos = selectedPosition.join(",");
+        String _selectedSite = selectedSite.join(",");
+        String _selectedSiteLead = selectedSiteLead.join(",");
 
-      username.text = '';
-      password.text = '';
-      Navigator.pop(context);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Member()),
-      );
+        await dbHelper.saveData(UserModel(
+            user_name: username.text,
+            password: password.text,
+            email: email.text,
+            role: _selectedRole,
+            leadFunc: '',
+            position: _selectedPos,
+            site: _selectedSite,
+            siteLead: _selectedSiteLead,
+            active: active));
+
+        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Member()),
+        );
+      }
     }
   }
 
@@ -78,6 +171,195 @@ class _AddMemberState extends State<AddMember> {
                     ? 'Field cannot be empty'
                     : null;
               },
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget roleSelect() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Role',
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButtonFormField2<String>(
+                iconSize: 30,
+                isExpanded: true,
+                hint: const Text("Choose item"),
+                value: _selectedRole == '' ? null : _selectedRole,
+                validator: (value) {
+                  return value == null ? 'Please select' : null;
+                },
+                items: roleList
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(
+                          e,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (val) {
+                  String test = val as String;
+                  setState(() {
+                    _selectedRole = test;
+                  });
+                },
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget positionSelect() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Function Access',
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropDownMultiSelect(
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+                options: positiondropdownList,
+
+                // whenEmpty: 'Select position',
+                onChanged: (value) {
+                  setState(() {
+                    selectedPosition = value;
+                    selectedOption.value = "";
+
+                    selectedPosition.forEach((element) {
+                      selectedOption.value =
+                          selectedOption.value + "  " + element;
+                    });
+
+                    // if (selectedPosition.isNotEmpty) {
+                    //   checkFunctionAccess = true;
+                    // }
+                  });
+                },
+                selectedValues: selectedPosition,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget siteSelect() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Site In-Charge',
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropDownMultiSelect(
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+                options: sitedropdownList,
+
+                // whenEmpty: 'Select position',
+                onChanged: (value) {
+                  selectedSite = value;
+                  selectedSiteOption.value = "";
+
+                  selectedSite.forEach((element) {
+                    selectedSiteOption.value =
+                        selectedSiteOption.value + "  " + element;
+                  });
+                },
+                selectedValues: selectedSite,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget siteLeadSelect() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Does this user hold any leadership role on the Site?',
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropDownMultiSelect(
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+                options: siteLeaddropdownList,
+
+                // whenEmpty: 'Select position',
+                onChanged: (value) {
+                  selectedSiteLead = value;
+                  selectedSiteLeadOption.value = "";
+
+                  selectedSiteLead.forEach((element) {
+                    selectedSiteLeadOption.value =
+                        selectedSiteLeadOption.value + "  " + element;
+                  });
+                },
+                selectedValues: selectedSiteLead,
+              ),
             ),
           ),
         ],
@@ -120,7 +402,13 @@ class _AddMemberState extends State<AddMember> {
               key: _formkey,
               child: Column(children: <Widget>[
                 buildTextField("Username", "Username", username, true),
-                buildTextField("Password", "Password", password, true)
+                buildTextField("Password", "Password", password, true),
+                buildTextField(
+                    "Email Address", "example@gmail.com", email, true),
+                roleSelect(),
+                positionSelect(),
+                siteSelect(),
+                siteLeadSelect(),
               ]),
             ),
             Align(

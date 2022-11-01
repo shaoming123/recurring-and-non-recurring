@@ -1,4 +1,6 @@
 // ignore: file_names
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
@@ -40,7 +42,16 @@ class _SignUpState extends State<SignUp> {
 
       _formKey.currentState!.save();
 
-      UserModel user_model = UserModel(userQuantity, username, password);
+      UserModel user_model = UserModel(
+          user_name: username,
+          password: password,
+          role: 'Super Admin',
+          email: username,
+          position: "position_one",
+          leadFunc: '',
+          site: '',
+          siteLead: '',
+          active: 'Active');
       await dbHelper.saveData(user_model).then((userData) {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => Login()));

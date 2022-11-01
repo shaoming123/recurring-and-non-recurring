@@ -5,6 +5,7 @@ import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../model/eventDataSource.dart';
 import '../model/manageUser.dart';
 import 'accordion/teamTask.dart';
 
@@ -15,26 +16,65 @@ class NonRecurring extends StatefulWidget {
   State<NonRecurring> createState() => _NonRecurringState();
 }
 
-String completedTask = '';
-String totalTasks = '';
-String overdueTasks = '';
-Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-
 class _NonRecurringState extends State<NonRecurring> {
+  List<Map<String, dynamic>> allNonRecurring = [];
+  List<Map<String, dynamic>> foundNonRecurring = [];
+  List<Map<String, dynamic>> LatenonRecurring = [];
+  List<Map<String, dynamic>> ActivenonRecurring = [];
+  List<Map<String, dynamic>> CompletednonRecurring = [];
+  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  String completedTask = '0';
+  String totalTasks = '0';
+  String overdueTasks = '0';
+  String completedTasksPer = '0';
   @override
   void initState() {
-    getTasksData();
     super.initState();
+    _refresh();
   }
 
-  Future<void> getTasksData() async {
-    final SharedPreferences sp = await _pref;
+  void _refresh() async {
+    final data = await dbHelper.fetchAllNonRecurring();
 
+    final SharedPreferences sp = await _pref;
+    String userID = sp.getInt("user_id").toString();
     setState(() {
-      totalTasks = sp.getString("totalTasks")!;
-      completedTask = sp.getString("completedTasks")!;
-      overdueTasks = sp.getString("overdueTasks")!;
+      for (int x = 0; x < data.length; x++) {
+        if (data[x]["owner"] == userID) {
+          final dayLeft = daysBetween(DateTime.parse(data[x]["startDate"]),
+              DateTime.parse(data[x]["due"]));
+          allNonRecurring.add(data[x]);
+          foundNonRecurring.add(data[x]);
+          if (data[x]["status"] == '100') {
+            CompletednonRecurring.add(data[x]);
+          } else if (dayLeft.isNegative) {
+            LatenonRecurring.add(data[x]);
+          } else if (dayLeft > 0) {
+            ActivenonRecurring.add(data[x]);
+          }
+        }
+      }
+      completedTask = CompletednonRecurring.length.toString();
+      overdueTasks = LatenonRecurring.length.toString();
+      totalTasks = allNonRecurring.length.toString();
+
+      if (completedTask != '0') {
+        completedTasksPer =
+            ((int.parse(completedTask) / int.parse(totalTasks)) * 100)
+                .toStringAsFixed(0)
+                .toString();
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    allNonRecurring = [];
+    foundNonRecurring = [];
+    LatenonRecurring = [];
+    ActivenonRecurring = [];
+    CompletednonRecurring = [];
   }
 
   @override
@@ -95,7 +135,7 @@ class _NonRecurringState extends State<NonRecurring> {
                           style:
                               TextStyle(color: Styles.textColor, fontSize: 14)),
                       const Gap(5),
-                      Text(completedTask,
+                      Text(completedTasksPer + "%",
                           style: TextStyle(
                               color: Colors.black,
                               fontSize: 25,
@@ -137,7 +177,12 @@ class _NonRecurringState extends State<NonRecurring> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      const Task(),
+                      Task(
+                          allNonRecurring: allNonRecurring,
+                          foundNonRecurring: foundNonRecurring,
+                          LatenonRecurring: LatenonRecurring,
+                          ActivenonRecurring: ActivenonRecurring,
+                          CompletednonRecurring: CompletednonRecurring),
                       const Gap(20),
                       const TeamTask(),
                     ],

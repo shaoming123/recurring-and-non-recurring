@@ -30,14 +30,24 @@ class EventDataSource extends CalendarDataSource {
   @override
   String getRecurrenceId(int index) => getEvent(index).recurringId.toString();
 
+  String getRecurringOption(int index) => getEvent(index).recurringOpt;
+
+  String getRecurringDate(int index) => getEvent(index).recurringUntil;
+
+  String getRecurringEvery(int index) {
+    return getEvent(index).recurringEvery;
+  }
+
   @override
   String getRecurrenceRule(int index) {
     String freq = getEvent(index).recurringOpt.toUpperCase();
     String recurringDate = DateFormat('yyyyMMdd')
         .format(DateTime.parse(getEvent(index).recurringUntil));
-    String recurringEvery = getEvent(index).recurringEvery!;
-
+    String recurringEvery = getEvent(index).recurringEvery.toString();
+    // print(getEvent(index).recurringId);
     late String rule;
+    print(getEvent(index).recurringEvery);
+
     // Once
     if (getEvent(index).recurringOpt == 'Once') {
       String difference = daysBetween(DateTime.parse(getEvent(index).to),
@@ -49,7 +59,7 @@ class EventDataSource extends CalendarDataSource {
       //Daily
     } else if (getEvent(index).recurringOpt == 'Daily') {
       int dailyInterval = int.parse(getEvent(index).duration) +
-          int.parse(getEvent(index).recurringEvery!);
+          int.parse(getEvent(index).recurringEvery);
 
       rule = 'FREQ=$freq;INTERVAL=$dailyInterval;UNTIL=$recurringDate';
 
@@ -80,11 +90,7 @@ class EventDataSource extends CalendarDataSource {
 
   String getSubCategory(int index) => getEvent(index).subCategory;
 
-  String getRecurringOption(int index) => getEvent(index).recurringOpt;
-
-  String getRecurringDate(int index) => getEvent(index).recurringUntil;
-
-  String getEvery(int index) => getEvent(index).recurringEvery!;
+  String getPerson(int index) => getEvent(index).person;
 
   String getType(int index) => getEvent(index).type;
 
@@ -92,7 +98,7 @@ class EventDataSource extends CalendarDataSource {
 
   String getSite(int index) => getEvent(index).site;
 
-  String getTask(int index) => getEvent(index).task;
+  String getNotes(int index) => getEvent(index).task;
 
   String getPriority(int index) => getEvent(index).priority;
 
@@ -106,7 +112,7 @@ class EventDataSource extends CalendarDataSource {
     } else if (getEvent(index).priority == "High") {
       color = Colors.redAccent;
     } else if (getEvent(index).priority == "Moderate") {
-      color = Colors.yellowAccent;
+      color = Colors.yellow;
     } else {
       color = Colors.greenAccent;
     }

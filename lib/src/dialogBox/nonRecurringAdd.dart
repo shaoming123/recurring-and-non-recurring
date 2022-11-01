@@ -9,7 +9,8 @@ import '../../util/datetime.dart';
 import '../non_recurring.dart';
 
 class addNonRecurring extends StatefulWidget {
-  const addNonRecurring({super.key});
+  final String userId;
+  const addNonRecurring({super.key, required this.userId});
 
   @override
   State<addNonRecurring> createState() => _addNonRecurringState();
@@ -21,11 +22,23 @@ class _addNonRecurringState extends State<addNonRecurring> {
   DateTime startDate = DateTime.now();
   String _selectedVal = '';
   String _selectedUser = '';
+  String _selectedSite = '';
   DateTime? completeDate;
   final taskController = TextEditingController();
   final statusController = TextEditingController();
   final remarkController = TextEditingController();
   List<String> list = <String>['One', 'Two', 'Three', 'Four'];
+  List<String> siteList = <String>[
+    'HQ',
+    'CRZ',
+    'PR8',
+    'PCR',
+    'AD2',
+    'SKE',
+    'SKP',
+    'SPP',
+    'ALL SITE'
+  ];
   List<dynamic> user = [];
   List<int> userid = [];
   @override
@@ -47,7 +60,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
 
   Future<void> getData() async {
     final data = await dbHelper.getItems();
+    print(widget.userId);
     setState(() {
+      _selectedUser = widget.userId;
       for (int i = 0; i < data.length; i++) {
         user.add(
             {'userId': data[i]["user_id"], 'username': data[i]["user_name"]});
@@ -102,11 +117,11 @@ class _addNonRecurringState extends State<addNonRecurring> {
     if (isValid) {
       if (due == null) {
         AlertDialog alert = AlertDialog(
-          title: Text("Error"),
-          content: Text("Please select your deadline !"),
+          title: const Text("Error"),
+          content: const Text("Please select your deadline !"),
           actions: [
             TextButton(
-              child: Text("OK"),
+              child: const Text("OK"),
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -124,7 +139,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
             category: _selectedVal,
             subCategory: _selectedVal,
             type: _selectedVal,
-            site: _selectedVal,
+            site: _selectedSite,
             task: taskController.text,
             owner: _selectedUser,
             startDate: startDate.toString(),
@@ -137,9 +152,10 @@ class _addNonRecurringState extends State<addNonRecurring> {
         await dbHelper.addNonRecurring(nonrecurring);
 
         Navigator.pop(context);
+
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => NonRecurring()),
+          MaterialPageRoute(builder: (context) => const NonRecurring()),
         );
       }
     }
@@ -171,7 +187,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
         children: [
           Text(
             labelText,
-            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
           const Gap(10),
           Container(
@@ -209,7 +225,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
         children: [
           Text(
             labelText,
-            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
           const Gap(10),
           Container(
@@ -256,12 +272,66 @@ class _addNonRecurringState extends State<addNonRecurring> {
       );
     }
 
-    Widget dropdownOwner() {
+    Widget dropdownSite() {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
+            'Site',
+            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButtonFormField2<String>(
+                iconSize: 30,
+                isExpanded: true,
+                hint: const Text("Choose item"),
+                value: _selectedSite == '' ? null : _selectedSite,
+                validator: (value) {
+                  return value == null ? 'Please select' : null;
+                },
+                items: siteList
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(
+                          e,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (val) {
+                  String test = val as String;
+                  setState(() {
+                    _selectedSite = test;
+                  });
+                },
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget dropdownOwner() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
             "Owner",
             style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
@@ -314,7 +384,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             "Deadline",
             style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
@@ -350,11 +420,11 @@ class _addNonRecurringState extends State<addNonRecurring> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             "Created On",
             style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
-          Text(
+          const Text(
             "( autofill )",
             style: TextStyle(color: Colors.grey, fontSize: 14),
           ),
@@ -390,11 +460,11 @@ class _addNonRecurringState extends State<addNonRecurring> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             "Completed Date",
             style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
-          Text(
+          const Text(
             "( autofill when status = 100 )",
             style: TextStyle(color: Colors.grey, fontSize: 14),
           ),
@@ -463,7 +533,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 dropdownList("Category"),
                 dropdownList("Sub-Category"),
                 dropdownList("Type"),
-                dropdownList("Site"),
+                dropdownSite(),
                 buildTextField("Task", "description", taskController),
                 dropdownOwner(),
                 deadlineSelect(),
@@ -471,7 +541,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 buildTextField(
                     "Remark", "Additional Remark...", remarkController),
                 Container(
-                    margin: EdgeInsets.only(bottom: 30),
+                    margin: const EdgeInsets.only(bottom: 30),
                     padding: const EdgeInsets.all(20.0),
                     decoration:
                         BoxDecoration(border: Border.all(color: Colors.white)),

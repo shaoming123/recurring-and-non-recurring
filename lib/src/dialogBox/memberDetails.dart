@@ -1,7 +1,11 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 import 'package:ipsolution/model/manageUser.dart';
+import 'package:ipsolution/src/dialogBox/addMember.dart';
 import 'package:ipsolution/src/member.dart';
+import 'package:multiselect/multiselect.dart';
 
 import '../../model/user.dart';
 import '../../util/app_styles.dart';
@@ -9,175 +13,424 @@ import '../../util/constant.dart';
 
 class DialogBox extends StatefulWidget {
   final String id;
-  final String name;
-  final String password;
+
   final bool isEditing;
 
-  const DialogBox(
-      {Key? key,
-      required this.id,
-      required this.name,
-      required this.password,
-      required this.isEditing})
+  const DialogBox({Key? key, required this.id, required this.isEditing})
       : super(key: key);
 
   @override
   State<DialogBox> createState() => _DialogBoxState();
 }
 
+String userRole = '';
+String userActive = '';
+String leadFunction = '';
+List<String> userPosition = <String>[];
+List<String> userSite = <String>[];
+List<String> userSiteLead = <String>[];
+List<Map<String, dynamic>> userDetails = [];
+var selectedOption = ''.obs;
+var selectedSiteOption = ''.obs;
+var selectedSiteLeadOption = ''.obs;
+List<String> roleList = ["Super Admin", "Manager", "Leader", "Staff"];
+List<String> positiondropdownList = [
+  "position_one",
+  "position_two",
+  "position_three",
+  "position_four",
+  "position_five",
+  "position_six",
+];
+
+List<String> sitedropdownList = [
+  "site_one",
+  "site_two",
+  "site_three",
+  "site_four",
+  "site_five",
+  "site_six",
+];
+
+List<String> siteLeaddropdownList = [
+  "siteLead_one",
+  "siteLead_two",
+  "siteLead_three",
+  "siteLead_four",
+  "siteLead_five",
+  "siteLead_six",
+];
+
 class _DialogBoxState extends State<DialogBox> {
+  final _formkey = GlobalKey<FormState>();
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    getUserData(int.parse(widget.id));
+  }
 
-    usernameController.text = widget.name;
-    passwordController.text = widget.password;
+  Future<void> getUserData(int id) async {
+    userDetails = await dbHelper.getAUser(id);
+
+    setState(() {
+      usernameController.text = userDetails[0]['user_name'];
+      passwordController.text = userDetails[0]['password'];
+      emailController.text = userDetails[0]['email'];
+      userRole = userDetails[0]['role'];
+      userPosition = userDetails[0]['position'].split(",");
+      print(userPosition);
+      if (userDetails[0]['site'] != '') {
+        userSite = userDetails[0]['site'].split(",");
+      }
+      if (userDetails[0]['siteLead'] != '') {
+        userSiteLead = userDetails[0]['siteLead'].split(",");
+      }
+      userActive = userDetails[0]['active'];
+    });
   }
 
   Future<void> _updateUser(int id) async {
-    await dbHelper.updateUser(
-        UserModel(id, usernameController.text, passwordController.text));
+    if (_formkey.currentState!.validate()) {
+      String _selectedPos = userPosition.join(",");
+      String _selectedSite = userSite.join(",");
+      String _selectedSiteLead = userSiteLead.join(",");
 
-    Navigator.pop(context);
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const Member()),
-    );
+      await dbHelper.updateUser(UserModel(
+          user_id: id,
+          user_name: usernameController.text,
+          password: passwordController.text,
+          email: emailController.text,
+          role: userRole,
+          position: _selectedPos,
+          site: _selectedSite,
+          siteLead: _selectedSiteLead,
+          active: userActive));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Updated Successfully!"),
+        ),
+      );
+      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Member()),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(Constants.padding),
+    return SingleChildScrollView(
+      child: Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Constants.padding),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        child: contentBox(context),
       ),
-      elevation: 0,
-      backgroundColor: Colors.transparent,
-      child: contentBox(context),
     );
   }
 
   contentBox(context) {
-    return SingleChildScrollView(
-      child: Stack(
-        children: <Widget>[
+    Widget buildTextField(String labelText, String placeholder,
+        TextEditingController? controllerText, bool editable) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            labelText,
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
           Container(
-            padding: const EdgeInsets.only(
-                left: Constants.padding,
-                top: Constants.padding,
-                right: Constants.padding,
-                bottom: Constants.padding),
-            margin: const EdgeInsets.only(top: Constants.avatarRadius),
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
             decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(Constants.padding),
-                boxShadow: [
-                  const BoxShadow(
-                      color: Colors.black,
-                      offset: Offset(0, 10),
-                      blurRadius: 10),
-                ]),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text("Member Details", style: Styles.subtitle),
-                const Gap(15),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 30.0),
-                  child: TextFormField(
-                    enabled: false,
-                    decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.only(bottom: 3),
-                        labelText: "ID",
-                        labelStyle: const TextStyle(fontSize: 18),
-                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                        hintText: widget.id.toString(),
-                        hintStyle: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        )),
-                  ),
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: TextFormField(
+              enabled: widget.isEditing == true ? true : false,
+              cursorColor: Colors.black,
+              style: const TextStyle(fontSize: 14),
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(hintText: placeholder),
+              onFieldSubmitted: (_) {},
+              controller: controllerText,
+              validator: (duration) {
+                return duration != null && duration.isEmpty
+                    ? 'Field cannot be empty'
+                    : null;
+              },
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget roleSelect() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Role',
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButtonFormField2<String>(
+                iconSize: 30,
+                isExpanded: true,
+                hint: const Text("Choose item"),
+                value: userRole == '' ? null : userRole,
+                validator: (value) {
+                  return value == null ? 'Please select' : null;
+                },
+                items: roleList
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(
+                          e,
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.black),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: widget.isEditing
+                    ? (val) {
+                        String test = val as String;
+                        setState(() {
+                          userRole = test;
+                        });
+                      }
+                    : null,
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 30.0),
-                  child: TextFormField(
-                    controller: usernameController,
-                    enabled: widget.isEditing ? true : false,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.only(bottom: 3),
-                      labelText: "Username",
-                      labelStyle: TextStyle(fontSize: 18),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                  ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget positionSelect() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Function Access',
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropDownMultiSelect(
+              enabled: widget.isEditing == true ? true : false,
+              options: positiondropdownList,
+              // whenEmpty: 'Select position',
+              onChanged: (value) {
+                setState(() {
+                  userPosition = value;
+                  selectedOption.value = "";
+
+                  userPosition.forEach((element) {
+                    selectedOption.value =
+                        selectedOption.value + "  " + element;
+                  });
+                });
+              },
+              selectedValues: userPosition,
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget siteSelect() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Site In-Charge',
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropDownMultiSelect(
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10.0),
-                  child: TextFormField(
-                    controller: passwordController,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    enabled: widget.isEditing ? true : false,
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.only(bottom: 3),
-                      labelText: "Password",
-                      labelStyle: TextStyle(fontSize: 18),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                  ),
+                options: sitedropdownList,
+
+                // whenEmpty: 'Select position',
+                onChanged: (value) {
+                  userSite = value;
+                  selectedSiteOption.value = "";
+
+                  userSite.forEach((element) {
+                    selectedSiteOption.value =
+                        selectedSiteOption.value + "  " + element;
+                  });
+                },
+                selectedValues: userSite,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget siteLeadSelect() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Does this user hold any leadership role on the Site?',
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropDownMultiSelect(
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
                 ),
-                const Gap(20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(fontSize: 18),
-                        )),
-                    TextButton(
+                options: siteLeaddropdownList,
+
+                // whenEmpty: 'Select position',
+                onChanged: (value) {
+                  userSiteLead = value;
+                  selectedSiteLeadOption.value = "";
+
+                  userSiteLead.forEach((element) {
+                    selectedSiteLeadOption.value =
+                        selectedSiteLeadOption.value + "  " + element;
+                  });
+                },
+                selectedValues: userSiteLead,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Stack(children: <Widget>[
+      Container(
+          padding: const EdgeInsets.all(20),
+          margin: const EdgeInsets.only(top: 45),
+          decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              color: const Color(0xFF384464),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                const BoxShadow(
+                    color: Colors.black, offset: Offset(0, 10), blurRadius: 10),
+              ]),
+          child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(widget.isEditing ? "Edit Member" : "Member Details",
+                    style: TextStyle(
+                        color: Color(0xFFd4dce4),
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700)),
+                IconButton(
+                  icon: const Icon(
+                    Icons.cancel_outlined,
+                    color: Color(0XFFd4dce4),
+                    size: 30,
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+            const Gap(20),
+            Form(
+              key: _formkey,
+              child: Column(children: <Widget>[
+                buildTextField(
+                    "Username", "Username", usernameController, true),
+                buildTextField(
+                    "Password", "Password", passwordController, true),
+                buildTextField("Email Address", "example@gmail.com",
+                    emailController, true),
+                roleSelect(),
+                positionSelect(),
+                siteSelect(),
+                siteLeadSelect(),
+              ]),
+            ),
+            widget.isEditing
+                ? Align(
+                    alignment: Alignment.bottomRight,
+                    child: TextButton(
+                        style: ButtonStyle(
+                          padding: MaterialStateProperty.all<EdgeInsets>(
+                            const EdgeInsets.all(10),
+                          ),
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              const Color(0xFF60b4b4)),
+                          shape: MaterialStateProperty.all(
+                              RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.0))),
+                        ),
                         onPressed: () {
                           _updateUser(int.parse(widget.id));
                         },
                         child: const Text(
                           "Save",
-                          style: TextStyle(fontSize: 18),
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: Color(0xFFd4dce4),
+                              fontWeight: FontWeight.w700),
                         )),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Positioned(
-          //   left: Constants.padding,
-          //   right: Constants.padding,
-          //   child: CircleAvatar(
-          //     backgroundColor: Colors.transparent,
-          //     radius: Constants.avatarRadius,
-          //     child: ClipRRect(
-          //         borderRadius:
-          //             BorderRadius.all(Radius.circular(Constants.avatarRadius)),
-          //         child: Image.asset("assets/model.jpeg")),
-          //   ),
-          // ),
-        ],
-      ),
-    );
+                  )
+                : Container(),
+          ]))
+    ]);
   }
 }

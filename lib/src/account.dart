@@ -32,6 +32,11 @@ class _AccountState extends State<Account> {
   late int userid;
   final email = TextEditingController();
   final phone = TextEditingController();
+  final userRole = TextEditingController();
+  final site = TextEditingController();
+  final siteLead = TextEditingController();
+  String active = '';
+  final function = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -47,7 +52,12 @@ class _AccountState extends State<Account> {
       userid = sp.getInt("user_id")!;
       username.text = sp.getString("user_name")!;
       password.text = sp.getString("password")!;
-      email.text = "Alex@gmail.com";
+      email.text = sp.getString("email")!;
+      userRole.text = sp.getString("role")!;
+      function.text = sp.getString("position")!;
+      site.text = sp.getString("site")!;
+      siteLead.text = sp.getString("siteLead")!;
+      active = sp.getString("active")!;
       phone.text = "0125524215";
     });
   }
@@ -167,8 +177,13 @@ class _AccountState extends State<Account> {
                               "Password", "********", true, true, password),
                           buildTextField(
                               "Phone No", "0123342234", false, true, phone),
-                          // buildTextField("Role", "-", false, false, null),
-                          // buildTextField("Function", "-", false, false, null),
+
+                          buildTextField("Role", "-", false, false, userRole),
+                          buildTextField(
+                              "Function", "-", false, false, function),
+                          buildTextField(
+                              "Site In-Charge", "-", false, false, site),
+                          buildTextField("Site", "-", false, false, siteLead),
                           // buildTextField("Site", "-", false, false, null),
                         ],
                       ),
@@ -201,8 +216,18 @@ class _AccountState extends State<Account> {
                             onPressed: (() {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
-                                updateAccount(userid, username.text,
-                                    password.text, context);
+                                updateAccount(
+                                    UserModel(
+                                        user_id: userid,
+                                        user_name: username.text,
+                                        password: password.text,
+                                        email: email.text,
+                                        role: userRole.text,
+                                        position: function.text,
+                                        site: site.text,
+                                        siteLead: siteLead.text,
+                                        active: active),
+                                    context);
                               }
                             }),
                             child: const Text(
@@ -232,7 +257,7 @@ class _AccountState extends State<Account> {
       bool editable,
       TextEditingController? controllerText) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 35.0),
+      padding: const EdgeInsets.only(bottom: 30.0),
       child: TextFormField(
         controller: controllerText,
         enabled: editable,

@@ -86,8 +86,11 @@ class _ReportState extends State<Report> {
         key: scaffoldKey,
         drawer: const Navbar(), //set gobal key defined above
         body: Container(
-            margin: EdgeInsets.symmetric(
-                vertical: height * 0.08, horizontal: width * 0.02),
+            margin: EdgeInsets.only(
+                top: height * 0.08,
+                bottom: height * 0.02,
+                left: width * 0.02,
+                right: width * 0.02),
             child: Column(children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

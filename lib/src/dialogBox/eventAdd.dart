@@ -3,14 +3,17 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/src/recurrring.dart';
 import 'package:ipsolution/util/app_styles.dart';
+import 'package:multiselect/multiselect.dart';
 import 'package:provider/provider.dart';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/manageUser.dart';
 import '../../provider/event_provider.dart';
@@ -23,23 +26,40 @@ class EventAdd extends StatefulWidget {
   State<EventAdd> createState() => _EventAddState();
 }
 
+Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
 class _EventAddState extends State<EventAdd> {
-  double _animatedHeight = 0.0;
-  late DateTime fromDate;
-  late DateTime toDate;
-  DateTime? recurringDate;
-  DateTime? completeDate;
   final taskController = TextEditingController();
   final durationController = TextEditingController();
   final recurringController = TextEditingController();
   final remarkController = TextEditingController();
-  bool checkDuration = true;
+  final _formkey = GlobalKey<FormState>();
+  double _animatedHeight = 0.0;
+  late DateTime fromDate = DateTime.now();
+  late DateTime toDate;
+  DateTime? recurringDate;
+  DateTime? completeDate;
 
+  bool checkDuration = true;
+  List<String> _selectedUser = [];
   String _selectedVal = '';
   String _selectedPriority = '';
   String _selectedStatus = 'Upcoming';
   String _selectedRecurring = '';
+  String _selectedSite = '';
   List<String> list = <String>['One', 'Two', 'Three', 'Four'];
+  List<String> siteList = <String>[
+    'HQ',
+    'CRZ',
+    'PR8',
+    'PCR',
+    'AD2',
+    'SKE',
+    'SKP',
+    'SPP',
+    'ALL SITE'
+  ];
   List<String> priorityList = <String>['Low', 'Moderate', 'High'];
   List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
   List<String> recurringOption = <String>[
@@ -49,17 +69,16 @@ class _EventAddState extends State<EventAdd> {
     'Monthly',
     'Yearly'
   ];
+  List<String> userList = [];
+  bool checkUser = false;
 
-  final _formkey = GlobalKey<FormState>();
-
+  var selectedOption = ''.obs;
   @override
   void initState() {
     super.initState();
-
-    fromDate = DateTime.now();
-    toDate = DateTime.now();
-
-    // toDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 17, 30);
+    getUserData();
+    fromDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 9, 00);
+    toDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 17, 30);
   }
 
   @override
@@ -72,10 +91,24 @@ class _EventAddState extends State<EventAdd> {
     super.dispose();
   }
 
-  Future pickRecurringDate() async {
+  Future<void> getUserData() async {
+    final data = await dbHelper.getItems();
+    final SharedPreferences sp = await _pref;
+
+    String user = sp.getString("user_name")!;
+    setState(() {
+      userList = [];
+      _selectedUser.add(user);
+      for (int i = 0; i < data.length; i++) {
+        userList.add(data[i]["user_name"]);
+      }
+    });
+  }
+
+  Future<void> pickRecurringDate() async {
     final picked = await showDatePicker(
         context: context,
-        initialDate: DateTime.now(),
+        initialDate: fromDate,
         firstDate: fromDate,
         lastDate: DateTime(2101));
 
@@ -188,20 +221,23 @@ class _EventAddState extends State<EventAdd> {
     final isValid = _formkey.currentState!.validate();
 
     if (isValid) {
+      String selectedUser = _selectedUser.join(",");
       final event = Event(
           category: _selectedVal,
           subCategory: _selectedVal,
           type: _selectedVal,
-          site: _selectedVal,
+          site: _selectedSite,
           task: taskController.text,
           from: fromDate.toString(),
           to: toDate.toString(),
+          person: selectedUser,
           // rule: 'FREQ=DAILY;INTERVAL=1;COUNT=20',
           // backgroundColor: calendarColor.toString(),
           duration: durationController.text,
           priority: _selectedPriority,
           recurringOpt: _selectedRecurring,
-          recurringEvery: recurringController.text,
+          recurringEvery:
+              recurringController.text.isEmpty ? '0' : recurringController.text,
           recurringUntil: recurringDate.toString(),
           remark: remarkController.text,
           completeDate: completeDate.toString(),
@@ -209,7 +245,6 @@ class _EventAddState extends State<EventAdd> {
 
       await dbHelper.addEvent(event);
 
-      Navigator.pop(context);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const Recurring()),
@@ -266,6 +301,90 @@ class _EventAddState extends State<EventAdd> {
               String test = val as String;
               setState(() {
                 _selectedVal = test;
+              });
+            },
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget userTotal() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropDownMultiSelect(
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+
+                options: userList,
+
+                // whenEmpty: 'Select position',
+                onChanged: (value) {
+                  setState(() {
+                    _selectedUser = value;
+                    selectedOption.value = "";
+
+                    _selectedUser.forEach((element) {
+                      selectedOption.value =
+                          selectedOption.value + "  " + element;
+                    });
+                  });
+                },
+                selectedValues: _selectedUser,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget userSite() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFd4dce4)),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButtonFormField2<String>(
+            iconSize: 30,
+            isExpanded: true,
+            hint: const Text("Choose item"),
+            value: _selectedSite == '' ? null : _selectedSite,
+            validator: (value) {
+              return value == null ? 'Please select' : null;
+            },
+            items: siteList
+                .map(
+                  (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(
+                      e,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: (val) {
+              String test = val as String;
+              setState(() {
+                _selectedSite = test;
               });
             },
             icon: const Icon(
@@ -754,7 +873,7 @@ class _EventAddState extends State<EventAdd> {
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                     const Gap(10),
-                    user(),
+                    userSite(),
                     const Text(
                       "Task :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
@@ -791,6 +910,12 @@ class _EventAddState extends State<EventAdd> {
                     ),
                     const Gap(10),
                     TimeSelect(),
+                    const Text(
+                      "Person :",
+                      style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+                    ),
+                    const Gap(10),
+                    userTotal(),
                     const Text(
                       "Priority :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),

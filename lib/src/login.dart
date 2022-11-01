@@ -39,7 +39,7 @@ class _LoginState extends State<Login> {
       password = passwordController.text;
 
       await dbHelper.getLoginUser(username, password).then((userData) {
-        if (userData != null) {
+        if (userData != null && userData.active == 'Active') {
           setSP(userData).whenComplete(() {
             Navigator.pushAndRemoveUntil(
                 context,
@@ -77,6 +77,12 @@ class _LoginState extends State<Login> {
     sp.setInt("user_id", user.user_id!);
     sp.setString("user_name", user.user_name);
     sp.setString("password", user.password);
+    sp.setString("email", user.email);
+    sp.setString("role", user.role);
+    sp.setString("position", user.position);
+    sp.setString("site", user.site!);
+    sp.setString("siteLead", user.siteLead!);
+    sp.setString("active", user.active);
     // sp.setString("photoName", user.photoName!);
   }
 
