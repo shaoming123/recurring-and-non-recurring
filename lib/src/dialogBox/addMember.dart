@@ -136,7 +136,7 @@ class _AddMemberState extends State<AddMember> {
         // ));
 
         Map<String, dynamic> data = {
-          "dataTable" : "user_details",
+          "dataTable": "user_details",
           "username": username.text,
           "password": password.text,
           "email": email.text,
