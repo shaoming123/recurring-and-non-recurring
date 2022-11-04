@@ -11,6 +11,8 @@ import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../util/checkInternet.dart';
+
 class Account extends StatefulWidget {
   const Account({super.key});
 
@@ -29,9 +31,14 @@ class _AccountState extends State<Account> {
 
   final username = TextEditingController();
   final password = TextEditingController();
-  String userid = "";
+  late int userid;
   final email = TextEditingController();
   final phone = TextEditingController();
+  final userRole = TextEditingController();
+  final site = TextEditingController();
+  final siteLead = TextEditingController();
+  String active = '';
+  final function = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -44,11 +51,16 @@ class _AccountState extends State<Account> {
     final SharedPreferences sp = await _pref;
 
     setState(() {
-      userid = sp.getString("user_id")!;
+      userid = sp.getInt("user_id")!;
       username.text = sp.getString("user_name")!;
       password.text = sp.getString("password")!;
-      email.text = "Alex@gmail.com";
-      phone.text = "0125524215";
+      email.text = sp.getString("email")!;
+      userRole.text = sp.getString("role")!;
+      function.text = sp.getString("position")!;
+      site.text = sp.getString("site")!;
+      siteLead.text = sp.getString("siteLead")!;
+      active = sp.getString("active")!;
+      phone.text = sp.getString("phone")!;
     });
   }
 
@@ -127,7 +139,7 @@ class _AccountState extends State<Account> {
                                         fit: BoxFit.cover,
                                         image: image == null
                                             ? const NetworkImage(
-                                                'https://oflutter.com/wp-content/uploads/2021/02/girl-profile.png')
+                                                'https://invenioptl.com/wp-content/uploads/2022/07/logoip.png')
                                             : FileImage(image!)
                                                 as ImageProvider)),
                               ),
@@ -165,10 +177,14 @@ class _AccountState extends State<Account> {
                               "E-mail", "alexd@gmail.com", false, true, email),
                           buildTextField(
                               "Password", "********", true, true, password),
+                          phoneTextField("Phone No", "", false, true, phone),
+
+                          buildTextField("Role", "-", false, false, userRole),
                           buildTextField(
-                              "Phone No", "0123342234", false, true, phone),
-                          // buildTextField("Role", "-", false, false, null),
-                          // buildTextField("Function", "-", false, false, null),
+                              "Function", "-", false, false, function),
+                          buildTextField(
+                              "Site In-Charge", "-", false, false, site),
+                          buildTextField("Site", "-", false, false, siteLead),
                           // buildTextField("Site", "-", false, false, null),
                         ],
                       ),
@@ -198,11 +214,32 @@ class _AccountState extends State<Account> {
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20)),
                             ),
-                            onPressed: (() {
+                            onPressed: (() async {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
-                                updateAccount(
-                                    userid, username.text, password.text, context);
+
+                                await Internet.isInternet()
+                                    .then((connection) async {
+                                  if (connection) {
+                                    await updateAccount(
+                                        UserModel(
+                                            user_id: userid,
+                                            user_name: username.text,
+                                            password: password.text,
+                                            email: email.text,
+                                            role: userRole.text,
+                                            position: function.text,
+                                            site: site.text,
+                                            siteLead: siteLead.text,
+                                            phone: phone.text,
+                                            active: active),
+                                        context);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text("No Internet !")));
+                                  }
+                                });
                               }
                             }),
                             child: const Text(
@@ -232,7 +269,7 @@ class _AccountState extends State<Account> {
       bool editable,
       TextEditingController? controllerText) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 35.0),
+      padding: const EdgeInsets.only(bottom: 30.0),
       child: TextFormField(
         controller: controllerText,
         enabled: editable,
@@ -263,6 +300,46 @@ class _AccountState extends State<Account> {
 
           return null;
         },
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
+      ),
+    );
+  }
+
+  Widget phoneTextField(
+      String labelText,
+      String placeholder,
+      bool isPasswordTextField,
+      bool editable,
+      TextEditingController? controllerText) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 30.0),
+      child: TextFormField(
+        controller: controllerText,
+        enabled: editable,
+        obscureText: isPasswordTextField ? showPassword : false,
+        decoration: InputDecoration(
+          suffixIcon: isPasswordTextField
+              ? IconButton(
+                  onPressed: () {
+                    setState(() {
+                      showPassword = !showPassword;
+                    });
+                  },
+                  icon: const Icon(
+                    Icons.remove_red_eye,
+                    color: Colors.grey,
+                  ),
+                )
+              : null,
+          contentPadding: const EdgeInsets.only(bottom: 3),
+          labelText: labelText,
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          hintText: placeholder,
+        ),
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,

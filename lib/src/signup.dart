@@ -1,9 +1,12 @@
 // ignore: file_names
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/Login.dart';
 import 'package:ipsolution/src/dashboard.dart';
+import 'package:ipsolution/src/dialogBox/addMember.dart';
 import 'package:ipsolution/util/app_styles.dart';
 
 import '../util/fade_animation.dart';
@@ -22,7 +25,7 @@ class _SignUpState extends State<SignUp> {
 
   late String username;
   late String password;
-  late int userQuantity;
+  late int userQuantity = 0;
 
   var dbHelper;
 
@@ -39,10 +42,16 @@ class _SignUpState extends State<SignUp> {
 
       _formKey.currentState!.save();
 
-      userQuantity = await dbHelper.getUserQuantity() + 1;
-      print(userQuantity);
-      UserModel user_model =
-          UserModel(userQuantity.toString(), username, password);
+      UserModel user_model = UserModel(
+          user_name: username,
+          password: password,
+          role: 'Super Admin',
+          email: username,
+          position: "position_one",
+          leadFunc: '',
+          site: '',
+          siteLead: '',
+          active: 'Active');
       await dbHelper.saveData(user_model).then((userData) {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => Login()));
