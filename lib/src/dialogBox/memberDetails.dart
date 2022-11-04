@@ -6,9 +6,10 @@ import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/src/dialogBox/addMember.dart';
 import 'package:ipsolution/src/member.dart';
 import 'package:multiselect/multiselect.dart';
-
+import 'package:http/http.dart' as http;
 import '../../model/user.dart';
 import '../../util/app_styles.dart';
+import '../../util/checkInternet.dart';
 import '../../util/constant.dart';
 
 class DialogBox extends StatefulWidget {
@@ -23,50 +24,56 @@ class DialogBox extends StatefulWidget {
   State<DialogBox> createState() => _DialogBoxState();
 }
 
-String userRole = '';
-String userActive = '';
-String leadFunction = '';
-List<String> userPosition = <String>[];
-List<String> userSite = <String>[];
-List<String> userSiteLead = <String>[];
-List<Map<String, dynamic>> userDetails = [];
-var selectedOption = ''.obs;
-var selectedSiteOption = ''.obs;
-var selectedSiteLeadOption = ''.obs;
-List<String> roleList = ["Super Admin", "Manager", "Leader", "Staff"];
-List<String> positiondropdownList = [
-  "position_one",
-  "position_two",
-  "position_three",
-  "position_four",
-  "position_five",
-  "position_six",
-];
-
-List<String> sitedropdownList = [
-  "site_one",
-  "site_two",
-  "site_three",
-  "site_four",
-  "site_five",
-  "site_six",
-];
-
-List<String> siteLeaddropdownList = [
-  "siteLead_one",
-  "siteLead_two",
-  "siteLead_three",
-  "siteLead_four",
-  "siteLead_five",
-  "siteLead_six",
-];
-
 class _DialogBoxState extends State<DialogBox> {
   final _formkey = GlobalKey<FormState>();
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController emailController = TextEditingController();
+  List<String> userPosition = <String>[];
+  List<String> userSite = <String>[];
+  List<String> userSiteLead = <String>[];
+  List<Map<String, dynamic>> userDetails = [];
 
+  String userRole = '';
+  String userActive = '';
+  String leadFunction = '';
+
+  var selectedOption = ''.obs;
+  var selectedSiteOption = ''.obs;
+  var selectedSiteLeadOption = ''.obs;
+  List<String> roleList = ["Super Admin", "Manager", "Leader", "Staff"];
+  List<String> positiondropdownList = [
+    "Authority & Developer",
+    "Community Management",
+    "Defect",
+    "Financial Management",
+    "Human Resources Management",
+    "ICT",
+    "Legal",
+    "Maintenance Management",
+    "Marketing & Creative",
+    "Operations",
+    "Procurement",
+    "Statistic",
+  ];
+
+  List<String> sitedropdownList = [
+    "CRZ",
+    "SKE",
+    "PR8",
+    "PCR",
+    "SPP",
+    "SKP",
+  ];
+
+  List<String> siteLeaddropdownList = [
+    "CRZ",
+    "SKE",
+    "PR8",
+    "PCR",
+    "SPP",
+    "SKP",
+  ];
   @override
   void initState() {
     super.initState();
@@ -82,11 +89,11 @@ class _DialogBoxState extends State<DialogBox> {
       emailController.text = userDetails[0]['email'];
       userRole = userDetails[0]['role'];
       userPosition = userDetails[0]['position'].split(",");
-      print(userPosition);
-      if (userDetails[0]['site'] != '') {
+
+      if (userDetails[0]['site'] != '-') {
         userSite = userDetails[0]['site'].split(",");
       }
-      if (userDetails[0]['siteLead'] != '') {
+      if (userDetails[0]['siteLead'] != '-') {
         userSiteLead = userDetails[0]['siteLead'].split(",");
       }
       userActive = userDetails[0]['active'];
@@ -98,28 +105,44 @@ class _DialogBoxState extends State<DialogBox> {
       String _selectedPos = userPosition.join(",");
       String _selectedSite = userSite.join(",");
       String _selectedSiteLead = userSiteLead.join(",");
+      var url = 'http://192.168.1.111/testdb/edit.php';
 
-      await dbHelper.updateUser(UserModel(
-          user_id: id,
-          user_name: usernameController.text,
-          password: passwordController.text,
-          email: emailController.text,
-          role: userRole,
-          position: _selectedPos,
-          site: _selectedSite,
-          siteLead: _selectedSiteLead,
-          active: userActive));
+      // await dbHelper.updateUser(UserModel(
+      //     user_id: id,
+      //     user_name: usernameController.text,
+      //     password: passwordController.text,
+      //     email: emailController.text,
+      //     role: userRole,
+      //     position: _selectedPos,
+      //     site: _selectedSite,
+      //     siteLead: _selectedSiteLead,
+      //     active: userActive));
+      Map<String, dynamic> data = {
+        "id": id.toString(),
+        "username": usernameController.text,
+        "password": passwordController.text,
+        "email": emailController.text,
+        "role": userRole,
+        "position": _selectedPos,
+        "site": _selectedSite.isEmpty ? '-' : _selectedSite,
+        "siteLead": _selectedSiteLead.isEmpty ? '-' : _selectedSiteLead,
+        "active": userActive
+      };
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Updated Successfully!"),
-        ),
-      );
-      Navigator.pop(context);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Member()),
-      );
+      final response = await http.post(Uri.parse(url), body: data);
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Updated Successfully!"),
+          ),
+        );
+        Navigator.pop(context);
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const Member()));
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Updated Unsuccessful !")));
+      }
     }
   }
 
@@ -250,6 +273,7 @@ class _DialogBoxState extends State<DialogBox> {
                 borderRadius: BorderRadius.circular(12),
                 color: const Color(0xFFd4dce4)),
             child: DropDownMultiSelect(
+              decoration: InputDecoration(border: InputBorder.none),
               enabled: widget.isEditing == true ? true : false,
               options: positiondropdownList,
               // whenEmpty: 'Select position',
@@ -290,6 +314,7 @@ class _DialogBoxState extends State<DialogBox> {
                 color: const Color(0xFFd4dce4)),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
+                decoration: InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
@@ -333,6 +358,7 @@ class _DialogBoxState extends State<DialogBox> {
                 color: const Color(0xFFd4dce4)),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
+                decoration: InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
@@ -418,8 +444,15 @@ class _DialogBoxState extends State<DialogBox> {
                               RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.0))),
                         ),
-                        onPressed: () {
-                          _updateUser(int.parse(widget.id));
+                        onPressed: () async {
+                          await Internet.isInternet().then((connection) async {
+                            if (connection) {
+                              await _updateUser(int.parse(widget.id));
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("No Internet !")));
+                            }
+                          });
                         },
                         child: const Text(
                           "Save",

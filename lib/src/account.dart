@@ -11,6 +11,8 @@ import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../util/checkInternet.dart';
+
 class Account extends StatefulWidget {
   const Account({super.key});
 
@@ -58,7 +60,7 @@ class _AccountState extends State<Account> {
       site.text = sp.getString("site")!;
       siteLead.text = sp.getString("siteLead")!;
       active = sp.getString("active")!;
-      phone.text = "0125524215";
+      phone.text = sp.getString("phone")!;
     });
   }
 
@@ -175,8 +177,7 @@ class _AccountState extends State<Account> {
                               "E-mail", "alexd@gmail.com", false, true, email),
                           buildTextField(
                               "Password", "********", true, true, password),
-                          buildTextField(
-                              "Phone No", "0123342234", false, true, phone),
+                          phoneTextField("Phone No", "", false, true, phone),
 
                           buildTextField("Role", "-", false, false, userRole),
                           buildTextField(
@@ -213,21 +214,32 @@ class _AccountState extends State<Account> {
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20)),
                             ),
-                            onPressed: (() {
+                            onPressed: (() async {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
-                                updateAccount(
-                                    UserModel(
-                                        user_id: userid,
-                                        user_name: username.text,
-                                        password: password.text,
-                                        email: email.text,
-                                        role: userRole.text,
-                                        position: function.text,
-                                        site: site.text,
-                                        siteLead: siteLead.text,
-                                        active: active),
-                                    context);
+
+                                await Internet.isInternet()
+                                    .then((connection) async {
+                                  if (connection) {
+                                    await updateAccount(
+                                        UserModel(
+                                            user_id: userid,
+                                            user_name: username.text,
+                                            password: password.text,
+                                            email: email.text,
+                                            role: userRole.text,
+                                            position: function.text,
+                                            site: site.text,
+                                            siteLead: siteLead.text,
+                                            phone: phone.text,
+                                            active: active),
+                                        context);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text("No Internet !")));
+                                  }
+                                });
                               }
                             }),
                             child: const Text(
@@ -288,6 +300,46 @@ class _AccountState extends State<Account> {
 
           return null;
         },
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
+      ),
+    );
+  }
+
+  Widget phoneTextField(
+      String labelText,
+      String placeholder,
+      bool isPasswordTextField,
+      bool editable,
+      TextEditingController? controllerText) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 30.0),
+      child: TextFormField(
+        controller: controllerText,
+        enabled: editable,
+        obscureText: isPasswordTextField ? showPassword : false,
+        decoration: InputDecoration(
+          suffixIcon: isPasswordTextField
+              ? IconButton(
+                  onPressed: () {
+                    setState(() {
+                      showPassword = !showPassword;
+                    });
+                  },
+                  icon: const Icon(
+                    Icons.remove_red_eye,
+                    color: Colors.grey,
+                  ),
+                )
+              : null,
+          contentPadding: const EdgeInsets.only(bottom: 3),
+          labelText: labelText,
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          hintText: placeholder,
+        ),
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,

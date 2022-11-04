@@ -7,8 +7,9 @@ import 'package:ipsolution/src/account.dart';
 import 'package:ipsolution/src/member.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:http/http.dart' as http;
 import '../../model/user.dart';
+import '../../util/checkInternet.dart';
 
 class AddMember extends StatefulWidget {
   const AddMember({super.key});
@@ -116,26 +117,47 @@ class _AddMemberState extends State<AddMember> {
           },
         );
       } else {
+        var url = 'http://192.168.1.111/testdb/add.php';
         String _selectedPos = selectedPosition.join(",");
         String _selectedSite = selectedSite.join(",");
         String _selectedSiteLead = selectedSiteLead.join(",");
 
-        await dbHelper.saveData(UserModel(
-            user_name: username.text,
-            password: password.text,
-            email: email.text,
-            role: _selectedRole,
-            leadFunc: '',
-            position: _selectedPos,
-            site: _selectedSite,
-            siteLead: _selectedSiteLead,
-            active: active));
+        /* add to sqlite */
+        // await dbHelper.saveData(UserModel(
+        //     user_name: username.text,
+        //     password: password.text,
+        //     email: email.text,
+        //     role: _selectedRole,
+        //     leadFunc: '',
+        //     position: _selectedPos,
+        //     site: _selectedSite,
+        //     siteLead: _selectedSiteLead,
+        //     active: active
+        // ));
 
-        Navigator.pop(context);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Member()),
-        );
+        Map<String, dynamic> data = {
+          "dataTable" : "user_details",
+          "username": username.text,
+          "password": password.text,
+          "email": email.text,
+          "role": _selectedRole,
+          "leadFunc": '',
+          "position": _selectedPos,
+          "site": _selectedSite.isEmpty ? '-' : _selectedSite,
+          "siteLead": _selectedSiteLead.isEmpty ? '-' : _selectedSiteLead,
+          "active": active
+        };
+
+        final response = await http.post(Uri.parse(url), body: data);
+
+        if (response.statusCode == 200) {
+          Navigator.pop(context);
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => const Member()));
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text("Adding Unsuccessful !")));
+        }
       }
     }
   }
@@ -250,6 +272,7 @@ class _AddMemberState extends State<AddMember> {
                 color: const Color(0xFFd4dce4)),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
+                decoration: InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
@@ -299,6 +322,7 @@ class _AddMemberState extends State<AddMember> {
                 color: const Color(0xFFd4dce4)),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
+                decoration: InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
@@ -342,6 +366,7 @@ class _AddMemberState extends State<AddMember> {
                 color: const Color(0xFFd4dce4)),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
+                decoration: InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
@@ -423,8 +448,15 @@ class _AddMemberState extends State<AddMember> {
                     shape: MaterialStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0))),
                   ),
-                  onPressed: () {
-                    addUser();
+                  onPressed: () async {
+                    await Internet.isInternet().then((connection) async {
+                      if (connection) {
+                        await addUser();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("No Internet !")));
+                      }
+                    });
                   },
                   child: const Text(
                     "Save",

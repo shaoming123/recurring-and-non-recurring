@@ -1,12 +1,15 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:intl/intl.dart';
 import 'package:ipsolution/model/user.dart';
 
 import '../../model/manageUser.dart';
 import '../../model/nonRecurring.dart';
+import '../../util/checkInternet.dart';
 import '../../util/datetime.dart';
 import '../non_recurring.dart';
+import 'package:http/http.dart' as http;
 
 class addNonRecurring extends StatefulWidget {
   final String userId;
@@ -135,28 +138,52 @@ class _addNonRecurringState extends State<addNonRecurring> {
           },
         );
       } else {
-        final nonrecurring = nonRecurring(
-            category: _selectedVal,
-            subCategory: _selectedVal,
-            type: _selectedVal,
-            site: _selectedSite,
-            task: taskController.text,
-            owner: _selectedUser,
-            startDate: startDate.toString(),
-            due: due.toString(),
-            modify: DateTime.now().toString(),
-            remark: remarkController.text,
-            completeDate: completeDate.toString(),
-            status: statusController.text);
+        var url = 'http://192.168.1.111/testdb/add.php';
+        // final nonrecurring = nonRecurring(
+        //     category: _selectedVal,
+        //     subCategory: _selectedVal,
+        //     type: _selectedVal,
+        //     site: _selectedSite,
+        //     task: taskController.text,
+        //     owner: _selectedUser,
+        //     startDate: startDate.toString(),
+        //     due: due.toString(),
+        //     modify: DateTime.now().toString(),
+        //     remark: remarkController.text,
+        //     completeDate: completeDate.toString(),
+        //     status: statusController.text);
 
-        await dbHelper.addNonRecurring(nonrecurring);
+        // await dbHelper.addNonRecurring(nonrecurring);
 
-        Navigator.pop(context);
+        Map<String, dynamic> data = {
+          "dataTable": "nonrecurring",
+          "category": _selectedVal,
+          "subCategory": _selectedVal,
+          "type": _selectedVal,
+          "site": _selectedSite,
+          "task": taskController.text,
+          "owner": _selectedUser,
+          "startDate": DateFormat("yyyy-MM-dd").format(startDate).toString(),
+          "due": DateFormat("yyyy-MM-dd").format(due!).toString(),
+          "modify": DateFormat("yyyy-MM-dd").format(DateTime.now()).toString(),
+          "remark": remarkController.text,
+          "completeDate":
+              DateFormat("yyyy-MM-dd").format(completeDate!).toString(),
+          "status": statusController.text
+        };
+        final response = await http.post(Uri.parse(url), body: data);
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const NonRecurring()),
-        );
+        if (response.statusCode == 200) {
+          Navigator.pop(context);
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const NonRecurring()),
+          );
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text("Adding Unsuccessful !")));
+        }
       }
     }
   }
@@ -355,7 +382,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 items: List.generate(
                   user.length,
                   (index) => DropdownMenuItem(
-                    value: user[index]["userId"].toString(),
+                    value: user[index]["username"].toString(),
                     child: Text(
                       user[index]["username"].toString(),
                       style: const TextStyle(fontSize: 14),
@@ -565,8 +592,16 @@ class _addNonRecurringState extends State<addNonRecurring> {
                     shape: MaterialStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0))),
                   ),
-                  onPressed: () {
-                    saveNonRecurring();
+                  onPressed: () async {
+                    await Internet.isInternet().then((connection) async {
+                      if (connection) {
+                        await saveNonRecurring();
+                        ;
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("No Internet !")));
+                      }
+                    });
                   },
                   child: const Text(
                     "Save",

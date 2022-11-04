@@ -31,6 +31,7 @@ class DbHelper {
   String C_LeadFunc = 'leadFunc';
   String C_Site = 'site';
   String C_SiteLead = 'siteLead';
+  String C_Phone = 'phone';
   String C_Active = 'active';
 
   //event
@@ -86,7 +87,7 @@ class DbHelper {
 
   _onCreate(Database db, int intVersion) async {
     await db.execute("CREATE TABLE $Table_User ("
-        " $C_UserID INTEGER PRIMARY KEY AUTOINCREMENT, "
+        " $C_UserID INTEGER PRIMARY KEY, "
         " $C_UserName TEXT, "
         " $C_Password TEXT, "
         " $C_Email TEXT, "
@@ -95,12 +96,13 @@ class DbHelper {
         " $C_LeadFunc TEXT, "
         " $C_Site TEXT, "
         " $C_SiteLead TEXT, "
+        " $C_Phone TEXT, "
         " $C_Active TEXT "
         ")");
     await db.execute(
-        "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT ,$from DATETIME,$to DATETIME, $duration TEXT,$priority TEXT,$recurringOpt TEXT, $recurringEvery TEXT, $recurringUntil TEXT, $remark TEXT, $completeDate TEXT, $status TEXT, $person TEXT)");
+        "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT ,$from TEXT,$to TEXT, $duration TEXT,$priority TEXT,$recurringOpt TEXT, $recurringEvery TEXT, $recurringUntil TEXT, $remark TEXT, $completeDate TEXT, $status TEXT, $person TEXT)");
     await db.execute(
-        "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY AUTOINCREMENT, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate DATETIME,$due DATETIME,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $nonstatus TEXT)");
+        "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY AUTOINCREMENT, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate TEXT,$due TEXT,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $nonstatus TEXT)");
   }
 
   Future<int> getUserQuantity() async {
@@ -171,6 +173,12 @@ class DbHelper {
     return res;
   }
 
+  Future<int> deleteAllUser() async {
+    var dbClient = await db;
+    var res = await dbClient.delete(Table_User);
+    return res;
+  }
+
   // Recurring
   Future<int> addEvent(Event item) async {
     var dbClient = await db;
@@ -215,6 +223,13 @@ class DbHelper {
         where: '$recurringId = ?', whereArgs: [item.recurringId]);
     return res;
   }
+
+  Future<int> deleteAllEvent() async {
+    var dbClient = await db;
+    var res = await dbClient.delete(Table_Event);
+    return res;
+  }
+
   /*end recurring*/
 
   // Non-Recurring
@@ -247,6 +262,12 @@ class DbHelper {
     var res = await dbClient.delete(Table_NonRecurring,
         where: '$nonRecurringId = ?', whereArgs: [id]);
 
+    return res;
+  }
+
+  Future<int> deleteAllNonRecurring() async {
+    var dbClient = await db;
+    var res = await dbClient.delete(Table_NonRecurring);
     return res;
   }
 

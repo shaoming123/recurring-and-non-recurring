@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/event.dart';
+import 'package:ipsolution/src/listfolder/category.dart';
 import 'package:ipsolution/src/recurrring.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:multiselect/multiselect.dart';
@@ -60,6 +61,7 @@ class _EventAddState extends State<EventAdd> {
     'SPP',
     'ALL SITE'
   ];
+  List<Map<String, dynamic>> category = [];
   List<String> priorityList = <String>['Low', 'Moderate', 'High'];
   List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
   List<String> recurringOption = <String>[
@@ -77,8 +79,13 @@ class _EventAddState extends State<EventAdd> {
   void initState() {
     super.initState();
     getUserData();
-    fromDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 9, 00);
-    toDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 17, 30);
+
+    setState(() {
+      fromDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 9, 00);
+      toDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 17, 30);
+      category = ListFile().category;
+      print(category);
+    });
   }
 
   @override

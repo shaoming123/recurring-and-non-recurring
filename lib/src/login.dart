@@ -1,4 +1,6 @@
 // ignore: file_names
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
@@ -7,7 +9,7 @@ import 'package:ipsolution/src/dialogBox/addMember.dart';
 import 'package:ipsolution/src/signup.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:http/http.dart' as http;
 import '../util/fade_animation.dart';
 
 class Login extends StatefulWidget {
@@ -38,14 +40,35 @@ class _LoginState extends State<Login> {
       username = userController.text;
       password = passwordController.text;
 
-      await dbHelper.getLoginUser(username, password).then((userData) {
-        if (userData != null && userData.active == 'Active') {
-          setSP(userData).whenComplete(() {
+      var url = 'http://192.168.1.111/testdb/login.php';
+      var response = await http.post(Uri.parse(url), body: {
+        "username": username,
+        "password": password,
+      });
+      final data = json.decode(response.body);
+      print(data);
+      if (data != null && data != "Error") {
+        final dataModel = UserModel(
+          user_id: int.parse(data[0]["id"]),
+          user_name: data[0]["username"],
+          password: data[0]["password"],
+          email: data[0]["email"],
+          role: data[0]["role"],
+          position: data[0]["position"],
+          leadFunc: data[0]["leadFunc"],
+          site: data[0]["site"],
+          phone: data[0]["phone"],
+          active: data[0]["active"],
+          siteLead: data[0]["siteLead"],
+        );
+        if (dataModel.active == "Active") {
+          // final dataModel = UserModel.fromMap(data);
+
+          setSP(dataModel).whenComplete(() {
             Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => Dashboard()),
                 (Route<dynamic> route) => false);
-
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text("Login Successfully"),
@@ -59,15 +82,43 @@ class _LoginState extends State<Login> {
             ),
           );
         }
-      }).catchError((error) {
-        print(error);
-
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Username and Password Incorrect!"),
           ),
         );
-      });
+      }
+      // await dbHelper.getLoginUser(username, password).then((userData) {
+      //   if (userData != null && userData.active == 'Active') {
+      //     setSP(userData).whenComplete(() {
+      //       Navigator.pushAndRemoveUntil(
+      //           context,
+      //           MaterialPageRoute(builder: (_) => Dashboard()),
+      //           (Route<dynamic> route) => false);
+
+      //       ScaffoldMessenger.of(context).showSnackBar(
+      //         const SnackBar(
+      //           content: Text("Login Successfully"),
+      //         ),
+      //       );
+      //     });
+      //   } else {
+      //     ScaffoldMessenger.of(context).showSnackBar(
+      //       const SnackBar(
+      //         content: Text("Username and Password Incorrect!"),
+      //       ),
+      //     );
+      //   }
+      // }).catchError((error) {
+      //   print(error);
+
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(
+      //       content: Text("Username and Password Incorrect!"),
+      //     ),
+      //   );
+      // });
     }
   }
 
@@ -76,12 +127,14 @@ class _LoginState extends State<Login> {
 
     sp.setInt("user_id", user.user_id!);
     sp.setString("user_name", user.user_name);
+
     sp.setString("password", user.password);
     sp.setString("email", user.email);
     sp.setString("role", user.role);
     sp.setString("position", user.position);
     sp.setString("site", user.site!);
     sp.setString("siteLead", user.siteLead!);
+    sp.setString("phone", user.phone!);
     sp.setString("active", user.active);
     // sp.setString("photoName", user.photoName!);
   }

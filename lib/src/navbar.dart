@@ -24,6 +24,7 @@ class _NavbarState extends State<Navbar> {
   late DbHelper dbHelper;
   String username = "";
   String email = "";
+  String userRole = "";
   @override
   void initState() {
     super.initState();
@@ -37,6 +38,7 @@ class _NavbarState extends State<Navbar> {
 
     setState(() {
       username = sp.getString("user_name")!;
+      userRole = sp.getString("role")!;
       email = sp.getString("email")!;
     });
   }
@@ -132,12 +134,14 @@ class _NavbarState extends State<Navbar> {
             onTap: () => Navigator.pushReplacement(context,
                 MaterialPageRoute(builder: (context) => const Account())),
           ),
-          ListTile(
-            leading: const Icon(Icons.supervisor_account),
-            title: const Text('Member'),
-            onTap: () => Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => Member())),
-          ),
+          userRole == "Super Admin"
+              ? ListTile(
+                  leading: const Icon(Icons.supervisor_account),
+                  title: const Text('Member'),
+                  onTap: () => Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => Member())),
+                )
+              : Container(),
           const Divider(),
           const Gap(50),
           ListTile(

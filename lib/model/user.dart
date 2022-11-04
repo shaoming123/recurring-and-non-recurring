@@ -10,6 +10,7 @@ class UserModel {
   late String position;
   late String? site;
   late String? siteLead;
+  late String? phone;
   late String active;
   // late String? photoName =
   //     'https://oflutter.com/wp-content/uploads/2021/02/girl-profile.png';
@@ -24,6 +25,7 @@ class UserModel {
     required this.position,
     this.site,
     this.siteLead,
+    this.phone,
     required this.active,
   });
 
@@ -38,6 +40,7 @@ class UserModel {
       'position': position,
       'site': site,
       'siteLead': siteLead,
+      'phone': phone,
       'active': active,
       // 'photoName': photoName
     };
@@ -53,6 +56,7 @@ class UserModel {
     leadFunc = map['leadFunc'];
     site = map['site'];
     siteLead = map['siteLead'];
+    phone = map['phone'];
     active = map['active'];
     position = map['position'];
     // photoName = map['photoName'];

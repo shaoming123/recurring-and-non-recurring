@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:intl/intl.dart';
 import 'package:ipsolution/src/accordion/task.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
 import '../model/manageUser.dart';
+import '../util/checkInternet.dart';
+import '../util/conMysql.dart';
 import 'accordion/teamTask.dart';
 
 class NonRecurring extends StatefulWidget {
@@ -17,35 +21,43 @@ class NonRecurring extends StatefulWidget {
 }
 
 class _NonRecurringState extends State<NonRecurring> {
-  List<Map<String, dynamic>> allNonRecurring = [];
-  List<Map<String, dynamic>> foundNonRecurring = [];
-  List<Map<String, dynamic>> LatenonRecurring = [];
-  List<Map<String, dynamic>> ActivenonRecurring = [];
-  List<Map<String, dynamic>> CompletednonRecurring = [];
   Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   String completedTask = '0';
   String totalTasks = '0';
   String overdueTasks = '0';
   String completedTasksPer = '0';
+  DbHelper dbHelper = DbHelper();
+  List<Map<String, dynamic>> allNonRecurring = [];
+  List<Map<String, dynamic>> foundNonRecurring = [];
+  List<Map<String, dynamic>> LatenonRecurring = [];
+  List<Map<String, dynamic>> ActivenonRecurring = [];
+  List<Map<String, dynamic>> CompletednonRecurring = [];
   @override
   void initState() {
     super.initState();
     _refresh();
   }
 
-  void _refresh() async {
+  Future<void> _refresh() async {
+    await Internet.isInternet().then((connection) async {
+      if (connection) {
+        await Controller().addNonRecurringToSqlite();
+      }
+    });
     final data = await dbHelper.fetchAllNonRecurring();
 
     final SharedPreferences sp = await _pref;
-    String userID = sp.getInt("user_id").toString();
+    String userName = sp.getString("user_name")!;
     setState(() {
       for (int x = 0; x < data.length; x++) {
-        if (data[x]["owner"] == userID) {
-          final dayLeft = daysBetween(DateTime.parse(data[x]["startDate"]),
+        if (data[x]["owner"] == userName) {
+          final dayLeft = daysBetween(
+              DateTime.parse(DateFormat('yyyy-MM-dd').format(DateTime.now())),
               DateTime.parse(data[x]["due"]));
           allNonRecurring.add(data[x]);
           foundNonRecurring.add(data[x]);
           if (data[x]["status"] == '100') {
+            print(data[x]);
             CompletednonRecurring.add(data[x]);
           } else if (dayLeft.isNegative) {
             LatenonRecurring.add(data[x]);
@@ -54,6 +66,7 @@ class _NonRecurringState extends State<NonRecurring> {
           }
         }
       }
+
       completedTask = CompletednonRecurring.length.toString();
       overdueTasks = LatenonRecurring.length.toString();
       totalTasks = allNonRecurring.length.toString();
@@ -67,15 +80,15 @@ class _NonRecurringState extends State<NonRecurring> {
     });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    allNonRecurring = [];
-    foundNonRecurring = [];
-    LatenonRecurring = [];
-    ActivenonRecurring = [];
-    CompletednonRecurring = [];
-  }
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   allNonRecurring = [];
+  //   foundNonRecurring = [];
+  //   LatenonRecurring = [];
+  //   ActivenonRecurring = [];
+  //   CompletednonRecurring = [];
+  // }
 
   @override
   Widget build(BuildContext context) {

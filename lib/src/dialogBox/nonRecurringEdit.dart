@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-
+import 'package:http/http.dart' as http;
 import '../../model/manageUser.dart';
 import '../../model/nonRecurring.dart';
+import '../../util/checkInternet.dart';
 import '../../util/datetime.dart';
 import '../non_recurring.dart';
 
@@ -14,6 +17,8 @@ class editNonRecurring extends StatefulWidget {
   @override
   State<editNonRecurring> createState() => _editNonRecurringState();
 }
+
+late List<dynamic> user = [];
 
 class _editNonRecurringState extends State<editNonRecurring> {
   final _formkey = GlobalKey<FormState>();
@@ -40,24 +45,27 @@ class _editNonRecurringState extends State<editNonRecurring> {
     'SPP',
     'ALL SITE'
   ];
-  List<dynamic> user = [];
+
   List<int> userid = [];
   @override
   void initState() {
     super.initState();
 
     getDataDetails(int.parse(widget.id));
-    getUserData();
   }
 
   Future<void> getDataDetails(int id) async {
     nonRecurring_edit = await dbHelper.fetchANonRecurring(id);
+    var url = 'http://192.168.1.111/testdb/read.php';
+    var response =
+        await http.post(Uri.parse(url), body: {"tableName": "user_details"});
 
+    List userData = json.decode(response.body);
     setState(() {
-      startDate = DateTime.parse(nonRecurring_edit[0]['startDate']);
-      due = DateTime.parse(nonRecurring_edit[0]['due']);
-      modify = DateTime.parse(nonRecurring_edit[0]['modify']);
-      _selectedVal = nonRecurring_edit[0]['category'];
+      user = userData;
+
+      _selectedVal = "One";
+      //  _selectedVal = nonRecurring_edit[0]['category'];
       _selectedSite = nonRecurring_edit[0]['site'];
       _selectedUser = nonRecurring_edit[0]['owner'];
       statusController.text = nonRecurring_edit[0]['status'];
@@ -67,16 +75,25 @@ class _editNonRecurringState extends State<editNonRecurring> {
       if (nonRecurring_edit[0]['completeDate'] != null) {
         completeDate = DateTime.parse(nonRecurring_edit[0]['completeDate']);
       }
-    });
-  }
-
-  Future<void> getUserData() async {
-    final data = await dbHelper.getItems();
-    setState(() {
-      for (int i = 0; i < data.length; i++) {
-        user.add(
-            {'userId': data[i]["user_id"], 'username': data[i]["user_name"]});
+      if (nonRecurring_edit[0]['startDate'] != null) {
+        startDate = DateTime.parse(nonRecurring_edit[0]['startDate']);
       }
+      if (nonRecurring_edit[0]['due'] != null) {
+        due = DateTime.parse(nonRecurring_edit[0]['due']);
+      }
+      if (nonRecurring_edit[0]['modify'] != null &&
+          nonRecurring_edit[0]['modify'].isNotEmpty) {
+        modify = DateTime.parse(nonRecurring_edit[0]['modify']);
+      }
+
+      // for (int i = 0; i < userData.length; i++) {
+      //   if (_selectedUser != userData[i]["username"]) {
+      //     user.add({
+      //       'userId': userData[i]["id"],
+      //       'username': userData[i]["username"]
+      //     });
+      //   }
+      // }
     });
   }
 
@@ -132,34 +149,57 @@ class _editNonRecurringState extends State<editNonRecurring> {
     }
 
     if (isValid) {
-      final nonrecurring = nonRecurring(
-          nonRecurringId: id,
-          category: _selectedVal,
-          subCategory: _selectedVal,
-          type: _selectedVal,
-          site: _selectedSite,
-          task: taskController.text,
-          owner: _selectedUser,
-          startDate: startDate.toString(),
-          due: due.toString(),
-          modify: DateTime.now().toString(),
-          remark: remarkController.text,
-          completeDate: completeDate.toString(),
-          status: statusController.text);
+      var url = 'http://192.168.1.111/testdb/edit.php';
+      // final nonrecurring = nonRecurring(
+      //     nonRecurringId: id,
+      //     category: _selectedVal,
+      //     subCategory: _selectedVal,
+      //     type: _selectedVal,
+      //     site: _selectedSite,
+      //     task: taskController.text,
+      //     owner: _selectedUser,
+      //     startDate: startDate.toString(),
+      //     due: due.toString(),
+      //     modify: DateTime.now().toString(),
+      //     remark: remarkController.text,
+      //     completeDate: completeDate.toString(),
+      //     status: statusController.text);
 
-      await dbHelper.updateNonRecurring(nonrecurring);
+      // await dbHelper.updateNonRecurring(nonrecurring);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Updated Successfully!"),
-        ),
-      );
+      Map<String, dynamic> data = {
+        "nonRecurringId": id.toString(),
+        "category": _selectedVal,
+        "subCategory": _selectedVal,
+        "type": _selectedVal,
+        "site": _selectedSite,
+        "task": taskController.text,
+        "owner": _selectedUser,
+        "startDate": startDate.toString(),
+        "due": due.toString(),
+        "modify": DateTime.now().toString(),
+        "remark": remarkController.text,
+        "completeDate": completeDate.toString(),
+        "status": statusController.text
+      };
 
-      Navigator.pop(context);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => NonRecurring()),
-      );
+      final response = await http.post(Uri.parse(url), body: data);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Updated Successfully!"),
+          ),
+        );
+        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => NonRecurring()),
+        );
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Updated Unsuccessful !")));
+      }
     }
   }
 
@@ -357,7 +397,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
                 items: List.generate(
                   user.length,
                   (index) => DropdownMenuItem(
-                    value: user[index]["userId"].toString(),
+                    value: user[index]["username"].toString(),
                     child: Text(
                       user[index]["username"].toString(),
                       style: const TextStyle(fontSize: 14),
@@ -567,8 +607,15 @@ class _editNonRecurringState extends State<editNonRecurring> {
                     shape: MaterialStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0))),
                   ),
-                  onPressed: () {
-                    updateNonRecurring(int.parse(widget.id));
+                  onPressed: () async {
+                    await Internet.isInternet().then((connection) async {
+                      if (connection) {
+                        await updateNonRecurring(int.parse(widget.id));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("No Internet !")));
+                      }
+                    });
                   },
                   child: const Text(
                     "Update",

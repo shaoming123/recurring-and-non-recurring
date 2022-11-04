@@ -372,706 +372,755 @@ class _TaskState extends State<Task> {
   }
 
   Widget lateView() {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-          headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
-          showCheckboxColumn: false,
-          columns: const [
-            DataColumn(label: Text('No.')),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Task',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Catehory',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Sub-Category',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Type',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Site',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Stage',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Day Left',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Due',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Remark',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Last Mod.',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Action',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(label: Text('')),
-          ],
-          rows: List.generate(widget.LatenonRecurring.length, (index) {
-            final dayLeft = daysBetween(DateTime.now(),
-                DateTime.parse(widget.LatenonRecurring[index]["due"]));
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+            headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
+            showCheckboxColumn: false,
+            columns: const [
+              DataColumn(label: Text('No.')),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Task',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Cetegory',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Sub-Category',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Type',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Site',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Stage',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Day Left',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Due',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Remark',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Last Mod.',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Action',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(label: Text('')),
+            ],
+            rows: List.generate(widget.LatenonRecurring.length, (index) {
+              final dayLeft = daysBetween(
+                  DateTime.parse(
+                      DateFormat('yyyy-MM-dd').format(DateTime.now())),
+                  DateTime.parse(widget.LatenonRecurring[index]["due"]));
 
-            return DataRow(
-              cells: [
-                DataCell(Text((index + 1).toString())),
-                DataCell(Text(widget.LatenonRecurring[index]["task"])),
-                DataCell(Text(
-                  widget.LatenonRecurring[index]["category"],
-                )),
-                DataCell(Text(
-                  widget.LatenonRecurring[index]["subCategory"],
-                )),
-                DataCell(Text(
-                  widget.LatenonRecurring[index]["type"],
-                )),
-                DataCell(Text(
-                  widget.LatenonRecurring[index]["site"],
-                )),
-                DataCell(LinearPercentIndicator(
-                    barRadius: const Radius.circular(5),
-                    width: 100.0,
-                    lineHeight: 20.0,
-                    percent:
-                        double.parse(widget.LatenonRecurring[index]["status"]) /
-                            100,
-                    backgroundColor: Colors.grey,
-                    progressColor: Colors.blue,
-                    center: Text(
-                      widget.LatenonRecurring[index]["status"],
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ))),
-                DataCell(Container(
-                    width: 100,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: Styles.lateColor,
+              return DataRow(
+                cells: [
+                  DataCell(Text((index + 1).toString())),
+                  DataCell(Container(
+                    margin: EdgeInsets.symmetric(vertical: 15),
+                    child: Text(
+                      widget.LatenonRecurring[index]["task"],
+                      softWrap: true,
                     ),
-                    child: Center(
-                        child: Text(
-                      "${dayLeft.abs()} DAYS LATE",
-                      style: TextStyle(
-                          color: Color(0xFFf43a2c),
-                          fontWeight: FontWeight.bold),
-                    )))),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(
-                          DateTime.parse(widget.LatenonRecurring[index]["due"]))
-                      .toString(),
-                )),
-                DataCell(Text(
-                  widget.LatenonRecurring[index]["remark"],
-                )),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(
-                          widget.LatenonRecurring[index]["modify"]))
-                      .toString(),
-                )),
-                DataCell(IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return editNonRecurring(
-                            id: widget.LatenonRecurring[index]["nonRecurringId"]
-                                .toString(),
-                          );
-                        });
-                  },
-                )),
-                DataCell(IconButton(
-                    icon: const Icon(Icons.delete),
+                  )),
+                  DataCell(Text(
+                    widget.LatenonRecurring[index]["category"],
+                  )),
+                  DataCell(Text(
+                    widget.LatenonRecurring[index]["subCategory"],
+                  )),
+                  DataCell(Text(
+                    widget.LatenonRecurring[index]["type"],
+                  )),
+                  DataCell(Text(
+                    widget.LatenonRecurring[index]["site"],
+                  )),
+                  DataCell(LinearPercentIndicator(
+                      barRadius: const Radius.circular(5),
+                      width: 100.0,
+                      lineHeight: 20.0,
+                      percent: double.parse(
+                              widget.LatenonRecurring[index]["status"]) /
+                          100,
+                      backgroundColor: Colors.grey,
+                      progressColor: Colors.blue,
+                      center: Text(
+                        widget.LatenonRecurring[index]["status"],
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ))),
+                  DataCell(Container(
+                      width: 100,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: Styles.lateColor,
+                      ),
+                      child: Center(
+                          child: Text(
+                        "${dayLeft.abs()} DAYS LATE",
+                        style: TextStyle(
+                            color: Color(0xFFf43a2c),
+                            fontWeight: FontWeight.bold),
+                      )))),
+                  DataCell(Text(
+                    DateFormat('dd/MM/yyyy')
+                        .format(DateTime.parse(
+                            widget.LatenonRecurring[index]["due"]))
+                        .toString(),
+                  )),
+                  DataCell(Container(
+                    margin: EdgeInsets.symmetric(vertical: 15),
+                    child: Text(
+                      widget.LatenonRecurring[index]["remark"],
+                    ),
+                  )),
+                  DataCell(Text(
+                    DateFormat('dd/MM/yyyy')
+                        .format(DateTime.parse(
+                            widget.LatenonRecurring[index]["modify"]))
+                        .toString(),
+                  )),
+                  DataCell(IconButton(
+                    icon: const Icon(Icons.edit),
                     onPressed: () {
-                      removeNonRecurring(
-                          widget.LatenonRecurring[index]["nonRecurringId"]);
-                    })),
-              ],
-              // onSelectChanged: (e) {
-              //   showDialog(
-              //       context: context,
-              //       builder: (BuildContext context) {
-              //         return DialogBox(
-              //             id: widget.foundNonRecurring[index]["user_id"].toString(),
-              //             name: widget.foundNonRecurring[index]['user_name'],
-              //             password: widget.foundNonRecurring[index]['password'],
-              //             isEditing: false);
-              //       });
-              // }
-            );
-          })),
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return editNonRecurring(
+                              id: widget.LatenonRecurring[index]
+                                      ["nonRecurringId"]
+                                  .toString(),
+                            );
+                          });
+                    },
+                  )),
+                  DataCell(IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        removeNonRecurring(
+                            widget.LatenonRecurring[index]["nonRecurringId"]);
+                      })),
+                ],
+                // onSelectChanged: (e) {
+                //   showDialog(
+                //       context: context,
+                //       builder: (BuildContext context) {
+                //         return DialogBox(
+                //             id: widget.foundNonRecurring[index]["user_id"].toString(),
+                //             name: widget.foundNonRecurring[index]['user_name'],
+                //             password: widget.foundNonRecurring[index]['password'],
+                //             isEditing: false);
+                //       });
+                // }
+              );
+            })),
+      ),
     );
   }
 
   Widget activeView() {
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-          headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
-          showCheckboxColumn: false,
-          columns: const [
-            DataColumn(label: Text('No.')),
-            DataColumn(
-                label: Expanded(
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+            headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
+            showCheckboxColumn: false,
+            columns: const [
+              DataColumn(label: Text('No.')),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Task',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Catehory',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Sub-Category',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Type',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Site',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Stage',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Day Left',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Due',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Remark',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Last Mod.',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Action',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(label: Text('')),
+            ],
+            rows: List.generate(widget.ActivenonRecurring.length, (index) {
+              final dayLeft = daysBetween(
+                  DateTime.parse(
+                      DateFormat('yyyy-MM-dd').format(DateTime.now())),
+                  DateTime.parse(widget.ActivenonRecurring[index]["due"]));
+              return DataRow(
+                cells: [
+                  DataCell(Text((index + 1).toString())),
+                  DataCell(Container(
+                      margin: EdgeInsets.symmetric(vertical: 15),
+                      child: Text(widget.ActivenonRecurring[index]["task"]))),
+                  DataCell(Text(
+                    widget.ActivenonRecurring[index]["category"],
+                  )),
+                  DataCell(Text(
+                    widget.ActivenonRecurring[index]["subCategory"],
+                  )),
+                  DataCell(Text(
+                    widget.ActivenonRecurring[index]["type"],
+                  )),
+                  DataCell(Text(
+                    widget.ActivenonRecurring[index]["site"],
+                  )),
+                  DataCell(LinearPercentIndicator(
+                      barRadius: const Radius.circular(5),
+                      width: 100.0,
+                      lineHeight: 20.0,
+                      percent: double.parse(
+                              widget.ActivenonRecurring[index]["status"]) /
+                          100,
+                      backgroundColor: Colors.grey,
+                      progressColor: Colors.blue,
+                      center: Text(
+                        widget.ActivenonRecurring[index]["status"],
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ))),
+                  DataCell(Container(
+                      width: 100,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: dayLeft.isNegative
+                            ? Styles.lateColor
+                            : Styles.activeColor,
+                      ),
+                      child: Center(
+                          child: dayLeft.isNegative
+                              ? Text(
+                                  dayLeft.abs().toString() + " DAYS LATE",
+                                  style: Styles.dayLeftLate,
+                                )
+                              : Text(
+                                  "$dayLeft DAYS LEFT",
+                                  style: Styles.dayLeftActive,
+                                )))),
+                  DataCell(Text(
+                    DateFormat('dd/MM/yyyy')
+                        .format(DateTime.parse(
+                            widget.ActivenonRecurring[index]["due"]))
+                        .toString(),
+                  )),
+                  DataCell(Container(
+                    margin: EdgeInsets.symmetric(vertical: 15),
                     child: Text(
-              'Task',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Catehory',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Sub-Category',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Type',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Site',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Stage',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Day Left',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Due',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Remark',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Last Mod.',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Action',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(label: Text('')),
-          ],
-          rows: List.generate(widget.ActivenonRecurring.length, (index) {
-            final dayLeft = daysBetween(DateTime.now(),
-                DateTime.parse(widget.ActivenonRecurring[index]["due"]));
-            return DataRow(
-              cells: [
-                DataCell(Text((index + 1).toString())),
-                DataCell(Text(widget.ActivenonRecurring[index]["task"])),
-                DataCell(Text(
-                  widget.ActivenonRecurring[index]["category"],
-                )),
-                DataCell(Text(
-                  widget.ActivenonRecurring[index]["subCategory"],
-                )),
-                DataCell(Text(
-                  widget.ActivenonRecurring[index]["type"],
-                )),
-                DataCell(Text(
-                  widget.ActivenonRecurring[index]["site"],
-                )),
-                DataCell(LinearPercentIndicator(
-                    barRadius: const Radius.circular(5),
-                    width: 100.0,
-                    lineHeight: 20.0,
-                    percent: double.parse(
-                            widget.ActivenonRecurring[index]["status"]) /
-                        100,
-                    backgroundColor: Colors.grey,
-                    progressColor: Colors.blue,
-                    center: Text(
-                      widget.ActivenonRecurring[index]["status"],
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ))),
-                DataCell(Container(
-                    width: 100,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: dayLeft.isNegative
-                          ? Styles.lateColor
-                          : Styles.activeColor,
+                      widget.ActivenonRecurring[index]["remark"],
                     ),
-                    child: Center(
-                        child: dayLeft.isNegative
-                            ? Text(
-                                dayLeft.abs().toString() + " DAYS LATE",
-                                style: Styles.dayLeftLate,
-                              )
-                            : Text(
-                                "$dayLeft DAYS LEFT",
-                                style: Styles.dayLeftActive,
-                              )
-                              
-                              ))),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(
-                          widget.ActivenonRecurring[index]["due"]))
-                      .toString(),
-                )),
-                DataCell(Text(
-                  widget.ActivenonRecurring[index]["remark"],
-                )),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(
-                          widget.ActivenonRecurring[index]["modify"]))
-                      .toString(),
-                )),
-                DataCell(IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return editNonRecurring(
-                            id: widget.ActivenonRecurring[index]
-                                    ["nonRecurringId"]
-                                .toString(),
-                          );
-                        });
-                  },
-                )),
-                DataCell(IconButton(
-                    icon: const Icon(Icons.delete),
+                  )),
+                  DataCell(Text(
+                    DateFormat('dd/MM/yyyy')
+                        .format(DateTime.parse(
+                            widget.ActivenonRecurring[index]["modify"]))
+                        .toString(),
+                  )),
+                  DataCell(IconButton(
+                    icon: const Icon(Icons.edit),
                     onPressed: () {
-                      removeNonRecurring(
-                          widget.ActivenonRecurring[index]["nonRecurringId"]);
-                    })),
-              ],
-              // onSelectChanged: (e) {
-              //   showDialog(
-              //       context: context,
-              //       builder: (BuildContext context) {
-              //         return DialogBox(
-              //             id: widget.foundNonRecurring[index]["user_id"].toString(),
-              //             name: widget.foundNonRecurring[index]['user_name'],
-              //             password: widget.foundNonRecurring[index]['password'],
-              //             isEditing: false);
-              //       });
-              // }
-            );
-          })
-          ),
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return editNonRecurring(
+                              id: widget.ActivenonRecurring[index]
+                                      ["nonRecurringId"]
+                                  .toString(),
+                            );
+                          });
+                    },
+                  )),
+                  DataCell(IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        removeNonRecurring(
+                            widget.ActivenonRecurring[index]["nonRecurringId"]);
+                      })),
+                ],
+                // onSelectChanged: (e) {
+                //   showDialog(
+                //       context: context,
+                //       builder: (BuildContext context) {
+                //         return DialogBox(
+                //             id: widget.foundNonRecurring[index]["user_id"].toString(),
+                //             name: widget.foundNonRecurring[index]['user_name'],
+                //             password: widget.foundNonRecurring[index]['password'],
+                //             isEditing: false);
+                //       });
+                // }
+              );
+            })),
+      ),
     );
   }
 
   Widget completeView() {
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-          headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
-          showCheckboxColumn: false,
-          columns: const [
-            DataColumn(label: Text('No.')),
-            DataColumn(
-                label: Expanded(
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+            headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
+            showCheckboxColumn: false,
+            columns: const [
+              DataColumn(label: Text('No.')),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Task',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Catehory',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Sub-Category',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Type',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Site',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Stage',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Day Left/Checked?',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Due',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Remark',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Last Mod.',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Action',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(label: Text('')),
+            ],
+            rows: List.generate(widget.CompletednonRecurring.length, (index) {
+              final dayLeft = daysBetween(
+                  DateTime.parse(
+                      DateFormat('yyyy-MM-dd').format(DateTime.now())),
+                  DateTime.parse(widget.CompletednonRecurring[index]["due"]));
+              return DataRow(
+                cells: [
+                  DataCell(Text((index + 1).toString())),
+                  DataCell(Container(
+                      margin: EdgeInsets.symmetric(vertical: 15),
+                      child:
+                          Text(widget.CompletednonRecurring[index]["task"]))),
+                  DataCell(Text(
+                    widget.CompletednonRecurring[index]["category"],
+                  )),
+                  DataCell(Text(
+                    widget.CompletednonRecurring[index]["subCategory"],
+                  )),
+                  DataCell(Text(
+                    widget.CompletednonRecurring[index]["type"],
+                  )),
+                  DataCell(Text(
+                    widget.CompletednonRecurring[index]["site"],
+                  )),
+                  DataCell(LinearPercentIndicator(
+                      barRadius: const Radius.circular(5),
+                      width: 100.0,
+                      lineHeight: 20.0,
+                      percent: double.parse(
+                              widget.CompletednonRecurring[index]["status"]) /
+                          100,
+                      backgroundColor: Colors.grey,
+                      progressColor: Colors.blue,
+                      center: Text(
+                        widget.CompletednonRecurring[index]["status"],
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ))),
+                  DataCell(Center(child: Text("No Review Needed"))),
+                  DataCell(Text(
+                    DateFormat('dd/MM/yyyy')
+                        .format(DateTime.parse(
+                            widget.CompletednonRecurring[index]["due"]))
+                        .toString(),
+                  )),
+                  DataCell(Container(
+                    margin: EdgeInsets.symmetric(vertical: 15),
                     child: Text(
-              'Task',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Catehory',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Sub-Category',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Type',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Site',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Stage',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Day Left/Checked?',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Due',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Remark',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Last Mod.',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Action',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(label: Text('')),
-          ],
-          rows: List.generate(widget.CompletednonRecurring.length, (index) {
-            final dayLeft = daysBetween(DateTime.now(),
-                DateTime.parse(widget.CompletednonRecurring[index]["due"]));
-            return DataRow(
-              cells: [
-                DataCell(Text((index + 1).toString())),
-                DataCell(Text(widget.CompletednonRecurring[index]["task"])),
-                DataCell(Text(
-                  widget.CompletednonRecurring[index]["category"],
-                )),
-                DataCell(Text(
-                  widget.CompletednonRecurring[index]["subCategory"],
-                )),
-                DataCell(Text(
-                  widget.CompletednonRecurring[index]["type"],
-                )),
-                DataCell(Text(
-                  widget.CompletednonRecurring[index]["site"],
-                )),
-                DataCell(LinearPercentIndicator(
-                    barRadius: const Radius.circular(5),
-                    width: 100.0,
-                    lineHeight: 20.0,
-                    percent: double.parse(
-                            widget.CompletednonRecurring[index]["status"]) /
-                        100,
-                    backgroundColor: Colors.grey,
-                    progressColor: Colors.blue,
-                    center: Text(
-                      widget.CompletednonRecurring[index]["status"],
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ))),
-                DataCell(Center(child: Text("No Review Needed"))),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(
-                          widget.CompletednonRecurring[index]["due"]))
-                      .toString(),
-                )),
-                DataCell(Text(
-                  widget.CompletednonRecurring[index]["remark"],
-                )),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(
-                          widget.CompletednonRecurring[index]["modify"]))
-                      .toString(),
-                )),
-                DataCell(IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return editNonRecurring(
-                            id: widget.CompletednonRecurring[index]
-                                    ["nonRecurringId"]
-                                .toString(),
-                          );
-                        });
-                  },
-                )),
-                DataCell(IconButton(
-                    icon: const Icon(Icons.delete),
+                      widget.CompletednonRecurring[index]["remark"],
+                    ),
+                  )),
+                  DataCell(Text(
+                    widget.CompletednonRecurring[index]["modify"].isEmpty
+                        ? ""
+                        : DateFormat('dd/MM/yyyy')
+                            .format(DateTime.parse(
+                                widget.CompletednonRecurring[index]["modify"]))
+                            .toString(),
+                  )),
+                  DataCell(IconButton(
+                    icon: const Icon(Icons.edit),
                     onPressed: () {
-                      removeNonRecurring(widget.CompletednonRecurring[index]
-                          ["nonRecurringId"]);
-                    })),
-              ],
-              // onSelectChanged: (e) {
-              //   showDialog(
-              //       context: context,
-              //       builder: (BuildContext context) {
-              //         return DialogBox(
-              //             id: widget.foundNonRecurring[index]["user_id"].toString(),
-              //             name: widget.foundNonRecurring[index]['user_name'],
-              //             password: widget.foundNonRecurring[index]['password'],
-              //             isEditing: false);
-              //       });
-              // }
-            );
-          })),
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return editNonRecurring(
+                              id: widget.CompletednonRecurring[index]
+                                      ["nonRecurringId"]
+                                  .toString(),
+                            );
+                          });
+                    },
+                  )),
+                  DataCell(IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        removeNonRecurring(widget.CompletednonRecurring[index]
+                            ["nonRecurringId"]);
+                      })),
+                ],
+                // onSelectChanged: (e) {
+                //   showDialog(
+                //       context: context,
+                //       builder: (BuildContext context) {
+                //         return DialogBox(
+                //             id: widget.foundNonRecurring[index]["user_id"].toString(),
+                //             name: widget.foundNonRecurring[index]['user_name'],
+                //             password: widget.foundNonRecurring[index]['password'],
+                //             isEditing: false);
+                //       });
+                // }
+              );
+            })),
+      ),
     );
   }
 
   Widget allView() {
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-          headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
-          showCheckboxColumn: false,
-          columns: const [
-            DataColumn(label: Text('No.')),
-            DataColumn(
-                label: Expanded(
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+            headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
+            showCheckboxColumn: false,
+            columns: const [
+              DataColumn(label: Text('No.')),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Task',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Category',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Sub-Category',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Type',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Site',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Stage',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Day Left/Check by',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Due',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Remark',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Last Mod.',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Action',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(label: Text('')),
+            ],
+            rows: List.generate(widget.foundNonRecurring.length, (index) {
+              final dayLeft = daysBetween(
+                  DateTime.parse(
+                      DateFormat('yyyy-MM-dd').format(DateTime.now())),
+                  DateTime.parse(widget.foundNonRecurring[index]["due"]));
+              return DataRow(
+                cells: [
+                  DataCell(Text((index + 1).toString())),
+                  DataCell(Container(
+                      margin: EdgeInsets.symmetric(vertical: 15),
+                      child: Text(widget.foundNonRecurring[index]["task"]))),
+                  DataCell(Text(
+                    widget.foundNonRecurring[index]["category"],
+                  )),
+                  DataCell(Text(
+                    widget.foundNonRecurring[index]["subCategory"],
+                  )),
+                  DataCell(Text(
+                    widget.foundNonRecurring[index]["type"],
+                  )),
+                  DataCell(Text(
+                    widget.foundNonRecurring[index]["site"],
+                  )),
+                  DataCell(LinearPercentIndicator(
+                      barRadius: const Radius.circular(5),
+                      width: 100.0,
+                      lineHeight: 20.0,
+                      percent: double.parse(
+                              widget.foundNonRecurring[index]["status"]) /
+                          100,
+                      backgroundColor: Colors.grey,
+                      progressColor: Colors.blue,
+                      center: Text(
+                        widget.foundNonRecurring[index]["status"],
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ))),
+                  DataCell(widget.foundNonRecurring[index]["status"] != '100'
+                      ? Container(
+                          width: 100,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(5),
+                            color: dayLeft.isNegative
+                                ? Styles.lateColor
+                                : Styles.activeColor,
+                          ),
+                          child: Center(
+                              child: dayLeft.isNegative
+                                  ? Text(
+                                      dayLeft.abs().toString() + " DAYS LATE",
+                                      style: TextStyle(
+                                          color: Color(0xFFf43a2c),
+                                          fontWeight: FontWeight.bold),
+                                    )
+                                  : Text(
+                                      "$dayLeft DAYS LEFT",
+                                      style: Styles.dayLeftActive,
+                                    )))
+                      : Text("No Review Needed")),
+                  DataCell(Text(
+                    DateFormat('dd/MM/yyyy')
+                        .format(DateTime.parse(
+                            widget.foundNonRecurring[index]["due"]))
+                        .toString(),
+                  )),
+                  DataCell(Container(
+                    margin: EdgeInsets.symmetric(vertical: 15),
                     child: Text(
-              'Task',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Catehory',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Sub-Category',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Type',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Site',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Stage',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Day Left/Check by',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Due',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Remark',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Last Mod.',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Action',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(label: Text('')),
-          ],
-          rows: List.generate(widget.foundNonRecurring.length, (index) {
-            final dayLeft = daysBetween(DateTime.now(),
-                DateTime.parse(widget.foundNonRecurring[index]["due"]));
-            return DataRow(
-              cells: [
-                DataCell(Text((index + 1).toString())),
-                DataCell(Text(widget.foundNonRecurring[index]["task"])),
-                DataCell(Text(
-                  widget.foundNonRecurring[index]["category"],
-                )),
-                DataCell(Text(
-                  widget.foundNonRecurring[index]["subCategory"],
-                )),
-                DataCell(Text(
-                  widget.foundNonRecurring[index]["type"],
-                )),
-                DataCell(Text(
-                  widget.foundNonRecurring[index]["site"],
-                )),
-                DataCell(LinearPercentIndicator(
-                    barRadius: const Radius.circular(5),
-                    width: 100.0,
-                    lineHeight: 20.0,
-                    percent: double.parse(
-                            widget.foundNonRecurring[index]["status"]) /
-                        100,
-                    backgroundColor: Colors.grey,
-                    progressColor: Colors.blue,
-                    center: Text(
-                      widget.foundNonRecurring[index]["status"],
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ))),
-                DataCell(widget.foundNonRecurring[index]["status"] != '100'
-                    ? Container(
-                        width: 100,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          color: dayLeft.isNegative
-                              ? Styles.lateColor
-                              : Styles.activeColor,
-                        ),
-                        child: Center(
-                            child: dayLeft.isNegative
-                                ? Text(
-                                    dayLeft.abs().toString() + " DAYS LATE",
-                                    style: TextStyle(
-                                        color: Color(0xFFf43a2c),
-                                        fontWeight: FontWeight.bold),
-                                  )
-                                : Text(
-                                    "$dayLeft DAYS LEFT",
-                                    style: Styles.dayLeftActive,
-                                  )))
-                    : Text("No Review Needed")),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(
-                          widget.foundNonRecurring[index]["due"]))
-                      .toString(),
-                )),
-                DataCell(Text(
-                  widget.foundNonRecurring[index]["remark"],
-                )),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(
-                          widget.foundNonRecurring[index]["modify"]))
-                      .toString(),
-                )),
-                DataCell(IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return editNonRecurring(
-                            id: widget.foundNonRecurring[index]
-                                    ["nonRecurringId"]
-                                .toString(),
-                          );
-                        });
-                  },
-                )),
-                DataCell(IconButton(
-                    icon: const Icon(Icons.delete),
+                      widget.foundNonRecurring[index]["remark"],
+                    ),
+                  )),
+                  DataCell(Text(
+                    widget.foundNonRecurring[index]["modify"].isEmpty
+                        ? ""
+                        : DateFormat('dd/MM/yyyy')
+                            .format(DateTime.parse(
+                                widget.foundNonRecurring[index]["modify"]))
+                            .toString(),
+                  )),
+                  DataCell(IconButton(
+                    icon: const Icon(Icons.edit),
                     onPressed: () {
-                      removeNonRecurring(
-                          widget.foundNonRecurring[index]["nonRecurringId"]);
-                    })),
-              ],
-              // onSelectChanged: (e) {
-              //   showDialog(
-              //       context: context,
-              //       builder: (BuildContext context) {
-              //         return DialogBox(
-              //             id: widget.foundNonRecurring[index]["user_id"].toString(),
-              //             name: widget.foundNonRecurring[index]['user_name'],
-              //             password: widget.foundNonRecurring[index]['password'],
-              //             isEditing: false);
-              //       });
-              // }
-            );
-          })),
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return editNonRecurring(
+                              id: widget.foundNonRecurring[index]
+                                      ["nonRecurringId"]
+                                  .toString(),
+                            );
+                          });
+                    },
+                  )),
+                  DataCell(IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        removeNonRecurring(
+                            widget.foundNonRecurring[index]["nonRecurringId"]);
+                      })),
+                ],
+                // onSelectChanged: (e) {
+                //   showDialog(
+                //       context: context,
+                //       builder: (BuildContext context) {
+                //         return DialogBox(
+                //             id: widget.foundNonRecurring[index]["user_id"].toString(),
+                //             name: widget.foundNonRecurring[index]['user_name'],
+                //             password: widget.foundNonRecurring[index]['password'],
+                //             isEditing: false);
+                //       });
+                // }
+              );
+            })),
+      ),
     );
   }
 }
