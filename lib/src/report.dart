@@ -85,33 +85,33 @@ class _ReportState extends State<Report> {
         backgroundColor: Styles.bgColor,
         key: scaffoldKey,
         drawer: const Navbar(), //set gobal key defined above
-        body: Container(
-            margin: EdgeInsets.only(
-                top: height * 0.08,
-                bottom: height * 0.02,
-                left: width * 0.02,
-                right: width * 0.02),
-            child: Column(children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.menu, color: Colors.black),
-                    onPressed: () => scaffoldKey.currentState!.openDrawer(),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 90),
-                    child: Text("Report", style: Styles.title),
-                  ),
-                  IconButton(
-                      icon: const Icon(Icons.notifications_outlined,
-                          color: Colors.black),
-                      onPressed: () => {}),
-                ],
-              ),
-              const Gap(20),
-              Expanded(
-                child: Container(
+        body: SingleChildScrollView(
+          child: Container(
+              margin: EdgeInsets.only(
+                  top: height * 0.08,
+                  bottom: height * 0.02,
+                  left: width * 0.02,
+                  right: width * 0.02),
+              child: Column(children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.menu, color: Colors.black),
+                      onPressed: () => scaffoldKey.currentState!.openDrawer(),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 90),
+                      child: Text("Report", style: Styles.title),
+                    ),
+                    IconButton(
+                        icon: const Icon(Icons.notifications_outlined,
+                            color: Colors.black),
+                        onPressed: () => {}),
+                  ],
+                ),
+                const Gap(20),
+                Container(
                   margin: const EdgeInsets.symmetric(horizontal: 10),
                   padding: const EdgeInsets.only(
                       top: 20, left: 20, right: 20, bottom: 20),
@@ -200,8 +200,8 @@ class _ReportState extends State<Report> {
                       ],
                     ),
                   ),
-                ),
-              )
-            ])));
+                )
+              ])),
+        ));
   }
 }

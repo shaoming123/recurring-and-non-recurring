@@ -81,156 +81,159 @@ class _RecurringState extends State<Recurring> {
       backgroundColor: Styles.bgColor,
       key: scaffoldKey,
       drawer: const Navbar(), //set gobal key defined above
-      body: Container(
-          margin: EdgeInsets.only(
-              top: height * 0.08, left: width * 0.02, right: width * 0.02),
-          child: Column(children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.black),
-                  onPressed: () => scaffoldKey.currentState!.openDrawer(),
-                ),
-                Text("Recurring", style: Styles.title),
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined,
-                      color: Colors.black),
-                  onPressed: () => {},
-                ),
-              ],
-            ),
-            const Gap(20),
-            // Expanded(
-            //     child: FutureBuilder<List>(
-            //         future: dbHelper.fetchAllEvent(),
-            //         builder: (context, snapshot) {
-            //           List<Event> collection = <Event>[];
-
-            //           if (snapshot.data != null) {
-            //             return ListView.builder(
-            //                 itemCount: 1,
-            //                 itemBuilder: (context, int position) {
-            //                   var item = snapshot.data![position];
-
-            //                   for (int i = 0; i < snapshot.data!.length; i++) {
-            //                     collection.add(
-            //                       Event(
-            //                           category: item.category,
-            //                           subCategory: item.subCategory,
-            //                           task: item.task,
-            //                           duration: item.duration,
-            //                           from: item.from,
-            //                           to: item.to,
-            //                           priority: item.priority,
-            //                           site: item.site,
-            //                           type: item.type,
-            //                           recurringId: item.recurringId,
-            //                           backgroundColor: item.backgroundColor),
-            //                     );
-            //                   }
-
-            //                   return SfCalendar(
-            //                     dataSource: EventDataSource(collection),
-            //                     backgroundColor: Colors.white,
-            //                     view: CalendarView.month,
-            //                     allowedViews: const <CalendarView>[
-            //                       CalendarView.month,
-            //                       CalendarView.week,
-            //                       CalendarView.day,
-            //                     ],
-            //                     initialSelectedDate: DateTime.now(),
-            //                     // controller: _calendarController,
-            //                     monthViewSettings: const MonthViewSettings(
-            //                       showAgenda: true,
-            //                       agendaViewHeight: 200,
-            //                       // appointmentDisplayMode:
-            //                       //     MonthAppointmentDisplayMode.appointment
-            //                     ),
-
-            //                     onTap: calendarTapped,
-            //                     todayHighlightColor: Styles.buttonColor,
-            //                     todayTextStyle: const TextStyle(
-            //                         color: Colors.black,
-            //                         fontWeight: FontWeight.w700),
-            //                     cellBorderColor: Colors.black26,
-
-            //                     selectionDecoration: BoxDecoration(
-            //                       border: Border.all(
-            //                           color: Styles.buttonColor, width: 2),
-            //                       borderRadius: const BorderRadius.all(
-            //                           Radius.circular(4)),
-            //                       shape: BoxShape.rectangle,
-            //                     ),
-            //                     appointmentBuilder: appointBuilder,
-            //                     onLongPress: (details) {
-            //                       final provider = Provider.of<EventProvider>(
-            //                           context,
-            //                           listen: false);
-
-            //                       provider.setDate(details.date!);
-
-            //                       // showModalBottomSheet(
-            //                       //     context: context, builder: (context) => RecurringEvent());
-            //                     },
-            //                   );
-            //                 });
-            //           } else {
-            //             return const CircularProgressIndicator();
-            //           }
-            //         }))
-            Expanded(
-              child: SfCalendar(
-                dataSource: EventDataSource(allEvents),
-                backgroundColor: Colors.white,
-                view: CalendarView.month,
-                allowViewNavigation: true,
-                showDatePickerButton: true,
-                allowedViews: const <CalendarView>[
-                  CalendarView.month,
-                  CalendarView.timelineWeek,
-                  CalendarView.day,
-                  CalendarView.schedule
+      body: SingleChildScrollView(
+        child: Container(
+            height: height - height * 0.08,
+            margin: EdgeInsets.only(
+                top: height * 0.08, left: width * 0.02, right: width * 0.02),
+            child: Column(children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.black),
+                    onPressed: () => scaffoldKey.currentState!.openDrawer(),
+                  ),
+                  Text("Recurring", style: Styles.title),
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined,
+                        color: Colors.black),
+                    onPressed: () => {},
+                  ),
                 ],
-                initialSelectedDate: DateTime.now(),
-                timeSlotViewSettings:
-                    TimeSlotViewSettings(timelineAppointmentHeight: height / 5),
-                // controller: _calendarController,
-                monthViewSettings: MonthViewSettings(
-                  showAgenda: true,
-                  agendaItemHeight: height / 5,
-
-                  // appointmentDisplayMode:
-                  //     MonthAppointmentDisplayMode.appointment
-                ),
-                scheduleViewSettings: ScheduleViewSettings(
-                    hideEmptyScheduleWeek: true,
-                    appointmentItemHeight: height / 5),
-
-                onTap: calendarTapped,
-                todayHighlightColor: Styles.buttonColor,
-                todayTextStyle: const TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.w700),
-                cellBorderColor: Colors.black26,
-
-                selectionDecoration: BoxDecoration(
-                  border: Border.all(color: Styles.buttonColor, width: 2),
-                  borderRadius: const BorderRadius.all(Radius.circular(4)),
-                  shape: BoxShape.rectangle,
-                ),
-                appointmentBuilder: appointBuilder,
-                onLongPress: (details) {
-                  final provider =
-                      Provider.of<EventProvider>(context, listen: false);
-
-                  provider.setDate(details.date!);
-
-                  // showModalBottomSheet(
-                  //     context: context, builder: (context) => RecurringEvent());
-                },
               ),
-            )
-          ])),
+              const Gap(20),
+              // Expanded(
+              //     child: FutureBuilder<List>(
+              //         future: dbHelper.fetchAllEvent(),
+              //         builder: (context, snapshot) {
+              //           List<Event> collection = <Event>[];
+
+              //           if (snapshot.data != null) {
+              //             return ListView.builder(
+              //                 itemCount: 1,
+              //                 itemBuilder: (context, int position) {
+              //                   var item = snapshot.data![position];
+
+              //                   for (int i = 0; i < snapshot.data!.length; i++) {
+              //                     collection.add(
+              //                       Event(
+              //                           category: item.category,
+              //                           subCategory: item.subCategory,
+              //                           task: item.task,
+              //                           duration: item.duration,
+              //                           from: item.from,
+              //                           to: item.to,
+              //                           priority: item.priority,
+              //                           site: item.site,
+              //                           type: item.type,
+              //                           recurringId: item.recurringId,
+              //                           backgroundColor: item.backgroundColor),
+              //                     );
+              //                   }
+
+              //                   return SfCalendar(
+              //                     dataSource: EventDataSource(collection),
+              //                     backgroundColor: Colors.white,
+              //                     view: CalendarView.month,
+              //                     allowedViews: const <CalendarView>[
+              //                       CalendarView.month,
+              //                       CalendarView.week,
+              //                       CalendarView.day,
+              //                     ],
+              //                     initialSelectedDate: DateTime.now(),
+              //                     // controller: _calendarController,
+              //                     monthViewSettings: const MonthViewSettings(
+              //                       showAgenda: true,
+              //                       agendaViewHeight: 200,
+              //                       // appointmentDisplayMode:
+              //                       //     MonthAppointmentDisplayMode.appointment
+              //                     ),
+
+              //                     onTap: calendarTapped,
+              //                     todayHighlightColor: Styles.buttonColor,
+              //                     todayTextStyle: const TextStyle(
+              //                         color: Colors.black,
+              //                         fontWeight: FontWeight.w700),
+              //                     cellBorderColor: Colors.black26,
+
+              //                     selectionDecoration: BoxDecoration(
+              //                       border: Border.all(
+              //                           color: Styles.buttonColor, width: 2),
+              //                       borderRadius: const BorderRadius.all(
+              //                           Radius.circular(4)),
+              //                       shape: BoxShape.rectangle,
+              //                     ),
+              //                     appointmentBuilder: appointBuilder,
+              //                     onLongPress: (details) {
+              //                       final provider = Provider.of<EventProvider>(
+              //                           context,
+              //                           listen: false);
+
+              //                       provider.setDate(details.date!);
+
+              //                       // showModalBottomSheet(
+              //                       //     context: context, builder: (context) => RecurringEvent());
+              //                     },
+              //                   );
+              //                 });
+              //           } else {
+              //             return const CircularProgressIndicator();
+              //           }
+              //         }))
+              Expanded(
+                child: SfCalendar(
+                  dataSource: EventDataSource(allEvents),
+                  backgroundColor: Colors.white,
+                  view: CalendarView.month,
+                  allowViewNavigation: true,
+                  showDatePickerButton: true,
+                  allowedViews: const <CalendarView>[
+                    CalendarView.month,
+                    CalendarView.timelineWeek,
+                    CalendarView.day,
+                    CalendarView.schedule
+                  ],
+                  initialSelectedDate: DateTime.now(),
+                  timeSlotViewSettings: TimeSlotViewSettings(
+                      timelineAppointmentHeight: height / 5),
+                  // controller: _calendarController,
+                  monthViewSettings: MonthViewSettings(
+                    showAgenda: true,
+                    agendaItemHeight: height / 5,
+
+                    // appointmentDisplayMode:
+                    //     MonthAppointmentDisplayMode.appointment
+                  ),
+                  scheduleViewSettings: ScheduleViewSettings(
+                      hideEmptyScheduleWeek: true,
+                      appointmentItemHeight: height / 5),
+
+                  onTap: calendarTapped,
+                  todayHighlightColor: Styles.buttonColor,
+                  todayTextStyle: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.w700),
+                  cellBorderColor: Colors.black26,
+
+                  selectionDecoration: BoxDecoration(
+                    border: Border.all(color: Styles.buttonColor, width: 2),
+                    borderRadius: const BorderRadius.all(Radius.circular(4)),
+                    shape: BoxShape.rectangle,
+                  ),
+                  appointmentBuilder: appointBuilder,
+                  onLongPress: (details) {
+                    final provider =
+                        Provider.of<EventProvider>(context, listen: false);
+
+                    provider.setDate(details.date!);
+
+                    // showModalBottomSheet(
+                    //     context: context, builder: (context) => RecurringEvent());
+                  },
+                ),
+              )
+            ])),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showDialog(

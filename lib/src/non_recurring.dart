@@ -100,109 +100,112 @@ class _NonRecurringState extends State<NonRecurring> {
         backgroundColor: Styles.bgColor,
         key: scaffoldKey,
         drawer: const Navbar(), //set gobal key defined above
-        body: Container(
-          margin: EdgeInsets.only(
-              top: height * 0.08, left: width * 0.02, right: width * 0.02),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.menu, color: Colors.black),
-                    onPressed: () => scaffoldKey.currentState!.openDrawer(),
-                  ),
-                  Text("Non-Recurring", style: Styles.title),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined,
-                        color: Colors.black),
-                    onPressed: () => {},
-                  ),
-                ],
-              ),
-              const Gap(20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
+        body: SingleChildScrollView(
+          child: Container(
+            height: height - height * 0.08,
+            margin: EdgeInsets.only(
+                top: height * 0.08, left: width * 0.02, right: width * 0.02),
+            child: Column(
+              children: [
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(children: [
-                      Text("Total ",
-                          style:
-                              TextStyle(color: Styles.textColor, fontSize: 14)),
-                      Text("Tasks",
-                          style:
-                              TextStyle(color: Styles.textColor, fontSize: 14)),
-                      const Gap(5),
-                      Text(totalTasks,
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 25,
-                              fontWeight: FontWeight.w700)),
-                    ]),
-                    Column(children: [
-                      Text("Completed",
-                          style:
-                              TextStyle(color: Styles.textColor, fontSize: 14)),
-                      Text("Tasks",
-                          style:
-                              TextStyle(color: Styles.textColor, fontSize: 14)),
-                      const Gap(5),
-                      Text(completedTasksPer + "%",
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 25,
-                              fontWeight: FontWeight.w700)),
-                    ]),
-                    Column(children: [
-                      Text("Overdue",
-                          style:
-                              TextStyle(color: Styles.textColor, fontSize: 14)),
-                      Text("Tasks",
-                          style:
-                              TextStyle(color: Styles.textColor, fontSize: 14)),
-                      const Gap(5),
-                      Text(overdueTasks,
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 25,
-                              fontWeight: FontWeight.w700)),
-                    ]),
-                    Column(children: [
-                      Text("Pending",
-                          style:
-                              TextStyle(color: Styles.textColor, fontSize: 14)),
-                      Text("Review",
-                          style:
-                              TextStyle(color: Styles.textColor, fontSize: 14)),
-                      const Gap(5),
-                      const Text("0",
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 25,
-                              fontWeight: FontWeight.w700)),
-                    ]),
+                    IconButton(
+                      icon: const Icon(Icons.menu, color: Colors.black),
+                      onPressed: () => scaffoldKey.currentState!.openDrawer(),
+                    ),
+                    Text("Non-Recurring", style: Styles.title),
+                    IconButton(
+                      icon: const Icon(Icons.notifications_outlined,
+                          color: Colors.black),
+                      onPressed: () => {},
+                    ),
                   ],
                 ),
-              ),
-              const Gap(20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
+                const Gap(20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Task(
-                          allNonRecurring: allNonRecurring,
-                          foundNonRecurring: foundNonRecurring,
-                          LatenonRecurring: LatenonRecurring,
-                          ActivenonRecurring: ActivenonRecurring,
-                          CompletednonRecurring: CompletednonRecurring),
-                      const Gap(20),
-                      const TeamTask(),
+                      Column(children: [
+                        Text("Total ",
+                            style: TextStyle(
+                                color: Styles.textColor, fontSize: 14)),
+                        Text("Tasks",
+                            style: TextStyle(
+                                color: Styles.textColor, fontSize: 14)),
+                        const Gap(5),
+                        Text(totalTasks,
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 25,
+                                fontWeight: FontWeight.w700)),
+                      ]),
+                      Column(children: [
+                        Text("Completed",
+                            style: TextStyle(
+                                color: Styles.textColor, fontSize: 14)),
+                        Text("Tasks",
+                            style: TextStyle(
+                                color: Styles.textColor, fontSize: 14)),
+                        const Gap(5),
+                        Text(completedTasksPer + "%",
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 25,
+                                fontWeight: FontWeight.w700)),
+                      ]),
+                      Column(children: [
+                        Text("Overdue",
+                            style: TextStyle(
+                                color: Styles.textColor, fontSize: 14)),
+                        Text("Tasks",
+                            style: TextStyle(
+                                color: Styles.textColor, fontSize: 14)),
+                        const Gap(5),
+                        Text(overdueTasks,
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 25,
+                                fontWeight: FontWeight.w700)),
+                      ]),
+                      Column(children: [
+                        Text("Pending",
+                            style: TextStyle(
+                                color: Styles.textColor, fontSize: 14)),
+                        Text("Review",
+                            style: TextStyle(
+                                color: Styles.textColor, fontSize: 14)),
+                        const Gap(5),
+                        const Text("0",
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 25,
+                                fontWeight: FontWeight.w700)),
+                      ]),
                     ],
                   ),
                 ),
-              ),
-            ],
+                const Gap(20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Task(
+                            allNonRecurring: allNonRecurring,
+                            foundNonRecurring: foundNonRecurring,
+                            LatenonRecurring: LatenonRecurring,
+                            ActivenonRecurring: ActivenonRecurring,
+                            CompletednonRecurring: CompletednonRecurring),
+                        const Gap(20),
+                        const TeamTask(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ));
   }
