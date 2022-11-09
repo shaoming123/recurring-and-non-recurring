@@ -1,4 +1,6 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/model/event.dart';
@@ -9,9 +11,12 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
+import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
 import '../provider/event_provider.dart';
 import '../util/app_styles.dart';
+import '../util/checkInternet.dart';
+import '../util/conMysql.dart';
 import 'dialogBox/eventAdd.dart';
 
 class Recurring extends StatefulWidget {
@@ -23,6 +28,37 @@ class Recurring extends StatefulWidget {
 
 List<Event> allEvents = [];
 List<String> personList = [];
+List<String> functionList = [
+  'All',
+  'Manager',
+  'Authority & Developer',
+  'Community Management',
+  'Defect',
+  'Engineering',
+  'Financial Management',
+  'Human Resources Management',
+  'ICT',
+  'Legal',
+  'Training & Development',
+  'Maintenance Management',
+  'Marketing & Creative',
+  'Operations',
+  'Procurement',
+  'Statistic'
+];
+List<String> siteList = <String>[
+  'All',
+  'HQ',
+  'CRZ',
+  'PR8',
+  'PCR',
+  'AD2',
+  'SKE',
+  'SKP',
+  'SPP',
+  'ALL SITE'
+];
+DbHelper dbHelper = DbHelper();
 
 class _RecurringState extends State<Recurring> {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
@@ -33,6 +69,13 @@ class _RecurringState extends State<Recurring> {
   }
 
   Future<void> _refreshEvent() async {
+    // await Internet.isInternet().then((connection) async {
+    //   if (connection) {
+    //     EasyLoading.show(status: 'Fetching Data...');
+    //     await Controller().addRecurringToSqlite();
+    //     EasyLoading.showSuccess('Successfully');
+    //   }
+    // });
     final data = await dbHelper.fetchAllEvent();
 
     final SharedPreferences sp = await _pref;
@@ -86,153 +129,267 @@ class _RecurringState extends State<Recurring> {
             height: height - height * 0.08,
             margin: EdgeInsets.only(
                 top: height * 0.08, left: width * 0.02, right: width * 0.02),
-            child: Column(children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.menu, color: Colors.black),
-                    onPressed: () => scaffoldKey.currentState!.openDrawer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.menu, color: Colors.black),
+                        onPressed: () => scaffoldKey.currentState!.openDrawer(),
+                      ),
+                      Text("Recurring", style: Styles.title),
+                      IconButton(
+                        icon: const Icon(Icons.notifications_outlined,
+                            color: Colors.black),
+                        onPressed: () => {},
+                      ),
+                    ],
                   ),
-                  Text("Recurring", style: Styles.title),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined,
-                        color: Colors.black),
-                    onPressed: () => {},
+                  // const Gap(20),
+                  // Expanded(
+                  //     child: FutureBuilder<List>(
+                  //         future: dbHelper.fetchAllEvent(),
+                  //         builder: (context, snapshot) {
+                  //           List<Event> collection = <Event>[];
+
+                  //           if (snapshot.data != null) {
+                  //             return ListView.builder(
+                  //                 itemCount: 1,
+                  //                 itemBuilder: (context, int position) {
+                  //                   var item = snapshot.data![position];
+
+                  //                   for (int i = 0; i < snapshot.data!.length; i++) {
+                  //                     collection.add(
+                  //                       Event(
+                  //                           category: item.category,
+                  //                           subCategory: item.subCategory,
+                  //                           task: item.task,
+                  //                           duration: item.duration,
+                  //                           from: item.from,
+                  //                           to: item.to,
+                  //                           priority: item.priority,
+                  //                           site: item.site,
+                  //                           type: item.type,
+                  //                           recurringId: item.recurringId,
+                  //                           backgroundColor: item.backgroundColor),
+                  //                     );
+                  //                   }
+
+                  //                   return SfCalendar(
+                  //                     dataSource: EventDataSource(collection),
+                  //                     backgroundColor: Colors.white,
+                  //                     view: CalendarView.month,
+                  //                     allowedViews: const <CalendarView>[
+                  //                       CalendarView.month,
+                  //                       CalendarView.week,
+                  //                       CalendarView.day,
+                  //                     ],
+                  //                     initialSelectedDate: DateTime.now(),
+                  //                     // controller: _calendarController,
+                  //                     monthViewSettings: const MonthViewSettings(
+                  //                       showAgenda: true,
+                  //                       agendaViewHeight: 200,
+                  //                       // appointmentDisplayMode:
+                  //                       //     MonthAppointmentDisplayMode.appointment
+                  //                     ),
+
+                  //                     onTap: calendarTapped,
+                  //                     todayHighlightColor: Styles.buttonColor,
+                  //                     todayTextStyle: const TextStyle(
+                  //                         color: Colors.black,
+                  //                         fontWeight: FontWeight.w700),
+                  //                     cellBorderColor: Colors.black26,
+
+                  //                     selectionDecoration: BoxDecoration(
+                  //                       border: Border.all(
+                  //                           color: Styles.buttonColor, width: 2),
+                  //                       borderRadius: const BorderRadius.all(
+                  //                           Radius.circular(4)),
+                  //                       shape: BoxShape.rectangle,
+                  //                     ),
+                  //                     appointmentBuilder: appointBuilder,
+                  //                     onLongPress: (details) {
+                  //                       final provider = Provider.of<EventProvider>(
+                  //                           context,
+                  //                           listen: false);
+
+                  //                       provider.setDate(details.date!);
+
+                  //                       // showModalBottomSheet(
+                  //                       //     context: context, builder: (context) => RecurringEvent());
+                  //                     },
+                  //                   );
+                  //                 });
+                  //           } else {
+                  //             return const CircularProgressIndicator();
+                  //           }
+                  //         }))
+
+                  Container(
+                    height: 30,
+                    margin: const EdgeInsets.only(bottom: 10, top: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white, width: 1),
+                        borderRadius: BorderRadius.circular(5),
+                        color: Colors.white),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton2(
+                        iconSize: 25,
+                        isExpanded: true,
+                        hint: Text('User'),
+                        // value: ,
+                        items: ["asd"]
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          setState(() {});
+                        },
+                        icon: const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
                   ),
-                ],
-              ),
-              const Gap(20),
-              // Expanded(
-              //     child: FutureBuilder<List>(
-              //         future: dbHelper.fetchAllEvent(),
-              //         builder: (context, snapshot) {
-              //           List<Event> collection = <Event>[];
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 30,
+                            margin: const EdgeInsets.only(bottom: 10, right: 5),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.white, width: 1),
+                                borderRadius: BorderRadius.circular(5),
+                                color: Colors.white),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton2(
+                                dropdownMaxHeight: 300,
+                                iconSize: 25,
+                                isExpanded: true,
+                                hint: Text('Function'),
+                                // value: ,
+                                items: functionList
+                                    .map(
+                                      (e) => DropdownMenuItem(
+                                        value: e,
+                                        child: Text(e),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (val) {
+                                  setState(() {});
+                                },
+                                icon: const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            height: 30,
+                            margin: const EdgeInsets.only(bottom: 10, left: 5),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.white, width: 1),
+                                borderRadius: BorderRadius.circular(5),
+                                color: Colors.white),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton2(
+                                dropdownMaxHeight: 300,
+                                iconSize: 25,
+                                isExpanded: true,
+                                hint: Text('Site'),
+                                // value: ,
+                                items: siteList
+                                    .map(
+                                      (e) => DropdownMenuItem(
+                                        value: e,
+                                        child: Text(e),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (val) {
+                                  setState(() {});
+                                },
+                                icon: const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ]),
 
-              //           if (snapshot.data != null) {
-              //             return ListView.builder(
-              //                 itemCount: 1,
-              //                 itemBuilder: (context, int position) {
-              //                   var item = snapshot.data![position];
+                  Expanded(
+                    child: SfCalendar(
+                      dataSource: EventDataSource(allEvents),
+                      backgroundColor: Colors.white,
+                      view: CalendarView.month,
+                      allowViewNavigation: true,
+                      showDatePickerButton: true,
+                      allowedViews: const <CalendarView>[
+                        CalendarView.month,
+                        CalendarView.timelineWeek,
+                        CalendarView.day,
+                        CalendarView.schedule
+                      ],
+                      initialSelectedDate: DateTime.now(),
+                      timeSlotViewSettings: TimeSlotViewSettings(
+                          timelineAppointmentHeight: height / 5),
+                      // controller: _calendarController,
+                      monthViewSettings: MonthViewSettings(
+                        showAgenda: true,
+                        agendaItemHeight: height / 5,
 
-              //                   for (int i = 0; i < snapshot.data!.length; i++) {
-              //                     collection.add(
-              //                       Event(
-              //                           category: item.category,
-              //                           subCategory: item.subCategory,
-              //                           task: item.task,
-              //                           duration: item.duration,
-              //                           from: item.from,
-              //                           to: item.to,
-              //                           priority: item.priority,
-              //                           site: item.site,
-              //                           type: item.type,
-              //                           recurringId: item.recurringId,
-              //                           backgroundColor: item.backgroundColor),
-              //                     );
-              //                   }
+                        // appointmentDisplayMode:
+                        //     MonthAppointmentDisplayMode.appointment
+                      ),
+                      scheduleViewSettings: ScheduleViewSettings(
+                          hideEmptyScheduleWeek: true,
+                          appointmentItemHeight: height / 5),
 
-              //                   return SfCalendar(
-              //                     dataSource: EventDataSource(collection),
-              //                     backgroundColor: Colors.white,
-              //                     view: CalendarView.month,
-              //                     allowedViews: const <CalendarView>[
-              //                       CalendarView.month,
-              //                       CalendarView.week,
-              //                       CalendarView.day,
-              //                     ],
-              //                     initialSelectedDate: DateTime.now(),
-              //                     // controller: _calendarController,
-              //                     monthViewSettings: const MonthViewSettings(
-              //                       showAgenda: true,
-              //                       agendaViewHeight: 200,
-              //                       // appointmentDisplayMode:
-              //                       //     MonthAppointmentDisplayMode.appointment
-              //                     ),
+                      onTap: calendarTapped,
+                      todayHighlightColor: Styles.buttonColor,
+                      todayTextStyle: const TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.w700),
+                      cellBorderColor: Colors.black26,
 
-              //                     onTap: calendarTapped,
-              //                     todayHighlightColor: Styles.buttonColor,
-              //                     todayTextStyle: const TextStyle(
-              //                         color: Colors.black,
-              //                         fontWeight: FontWeight.w700),
-              //                     cellBorderColor: Colors.black26,
+                      selectionDecoration: BoxDecoration(
+                        border: Border.all(color: Styles.buttonColor, width: 2),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4)),
+                        shape: BoxShape.rectangle,
+                      ),
+                      appointmentBuilder: appointBuilder,
+                      onLongPress: (details) {
+                        final provider =
+                            Provider.of<EventProvider>(context, listen: false);
 
-              //                     selectionDecoration: BoxDecoration(
-              //                       border: Border.all(
-              //                           color: Styles.buttonColor, width: 2),
-              //                       borderRadius: const BorderRadius.all(
-              //                           Radius.circular(4)),
-              //                       shape: BoxShape.rectangle,
-              //                     ),
-              //                     appointmentBuilder: appointBuilder,
-              //                     onLongPress: (details) {
-              //                       final provider = Provider.of<EventProvider>(
-              //                           context,
-              //                           listen: false);
+                        provider.setDate(details.date!);
 
-              //                       provider.setDate(details.date!);
-
-              //                       // showModalBottomSheet(
-              //                       //     context: context, builder: (context) => RecurringEvent());
-              //                     },
-              //                   );
-              //                 });
-              //           } else {
-              //             return const CircularProgressIndicator();
-              //           }
-              //         }))
-              Expanded(
-                child: SfCalendar(
-                  dataSource: EventDataSource(allEvents),
-                  backgroundColor: Colors.white,
-                  view: CalendarView.month,
-                  allowViewNavigation: true,
-                  showDatePickerButton: true,
-                  allowedViews: const <CalendarView>[
-                    CalendarView.month,
-                    CalendarView.timelineWeek,
-                    CalendarView.day,
-                    CalendarView.schedule
-                  ],
-                  initialSelectedDate: DateTime.now(),
-                  timeSlotViewSettings: TimeSlotViewSettings(
-                      timelineAppointmentHeight: height / 5),
-                  // controller: _calendarController,
-                  monthViewSettings: MonthViewSettings(
-                    showAgenda: true,
-                    agendaItemHeight: height / 5,
-
-                    // appointmentDisplayMode:
-                    //     MonthAppointmentDisplayMode.appointment
-                  ),
-                  scheduleViewSettings: ScheduleViewSettings(
-                      hideEmptyScheduleWeek: true,
-                      appointmentItemHeight: height / 5),
-
-                  onTap: calendarTapped,
-                  todayHighlightColor: Styles.buttonColor,
-                  todayTextStyle: const TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.w700),
-                  cellBorderColor: Colors.black26,
-
-                  selectionDecoration: BoxDecoration(
-                    border: Border.all(color: Styles.buttonColor, width: 2),
-                    borderRadius: const BorderRadius.all(Radius.circular(4)),
-                    shape: BoxShape.rectangle,
-                  ),
-                  appointmentBuilder: appointBuilder,
-                  onLongPress: (details) {
-                    final provider =
-                        Provider.of<EventProvider>(context, listen: false);
-
-                    provider.setDate(details.date!);
-
-                    // showModalBottomSheet(
-                    //     context: context, builder: (context) => RecurringEvent());
-                  },
-                ),
-              )
-            ])),
+                        // showModalBottomSheet(
+                        //     context: context, builder: (context) => RecurringEvent());
+                      },
+                    ),
+                  )
+                ])),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

@@ -35,33 +35,32 @@ class Controller {
   }
 
   Future addRecurringToSqlite() async {
-    await dbHelper.deleteAllEvent();
-    var url = 'http://192.168.1.111/testdb/read.php';
-    var response =
-        await http.post(Uri.parse(url), body: {"tableName": "tasks"});
-    List recurringData = json.decode(response.body);
+    // await dbHelper.deleteAllEvent();
+    // var url = 'http://192.168.1.111/testdb/read.php';
+    // var response =
+    //     await http.post(Uri.parse(url), body: {"tableName": "tasks"});
+    // List recurringData = json.decode(response.body);
 
     // for (int i = 0; i < recurringData.length; i++) {
     //   final data = Event(
-
-    //     recurringId: int.parse(recurringData[i]["id"]),
-    //     category: recurringData[i]["category"],
-    //     subCategory: recurringData[i]["subCategory"],
-    //     type: recurringData[i]["type"],
-    //     site: recurringData[i]["site"],
-    //     task: recurringData[i]["task"],
-    //     duration: recurringData[i]["duration"],
-    //     priority: recurringData[i]["priority"],
-    //     from: recurringData[i]["start"],
-    //     to: recurringData[i]["end"],
+    //       recurringId: int.parse(recurringData[i]["id"]),
+    //       category: recurringData[i]["category"],
+    //       subCategory: recurringData[i]["subCategory"],
+    //       type: recurringData[i]["type"],
+    //       site: recurringData[i]["site"],
+    //       task: recurringData[i]["task"],
+    //       duration: recurringData[i]["duration"],
+    //       priority: recurringData[i]["priority"],
+    //       from: recurringData[i]["start"],
+    //       to: recurringData[i]["end"],
     //       person: recurringData[i]["person"],
-    //         remark: recurringData[i]["remarks"],
-    //          recurringOpt: recurringData[i]["recurring"],
-    //            recurringEvery: recurringData[i]["recurringGap"],
-    //            recurringUntil: recurringData[i]["recurringGap"],
-    //   );
+    //       remark: recurringData[i]["remarks"],
+    //       recurringOpt: recurringData[i]["recurring"],
+    //       recurringEvery: recurringData[i]["recurringGap"],
+    //       recurringUntil: recurringData[i]["recurringGap"],
+    //       status: recurringData[i]["status"]);
 
-    //   await dbHelper.saveData(data);
+    //   await dbHelper.addEvent(data);
     // }
   }
 
@@ -74,20 +73,21 @@ class Controller {
 
     for (int i = 0; i < nonrecurringData.length; i++) {
       final datanonRecurring = nonRecurring(
-        nonRecurringId: int.parse(nonrecurringData[i]["id"]),
-        category: nonrecurringData[i]["category"],
-        subCategory: nonrecurringData[i]["subcategory"],
-        type: nonrecurringData[i]["type"],
-        site: nonrecurringData[i]["site"],
-        task: nonrecurringData[i]["task"],
-        owner: nonrecurringData[i]["owner"],
-        startDate: nonrecurringData[i]["createdDate"].toString(),
-        due: nonrecurringData[i]["deadline"].toString(),
-        status: nonrecurringData[i]["status"],
-        remark: nonrecurringData[i]["remarks"],
-        modify: nonrecurringData[i]["lastMod"].toString(),
-        completeDate: nonrecurringData[i]["completedDate"].toString(),
-      );
+          nonRecurringId: int.parse(nonrecurringData[i]["id"]),
+          category: nonrecurringData[i]["category"],
+          subCategory: nonrecurringData[i]["subcategory"],
+          type: nonrecurringData[i]["type"],
+          site: nonrecurringData[i]["site"],
+          task: nonrecurringData[i]["task"],
+          owner: nonrecurringData[i]["owner"],
+          startDate: nonrecurringData[i]["createdDate"].toString(),
+          due: nonrecurringData[i]["deadline"].toString(),
+          status: nonrecurringData[i]["status"],
+          remark: nonrecurringData[i]["remarks"],
+          modify: nonrecurringData[i]["lastMod"].toString(),
+          completeDate: nonrecurringData[i]["completedDate"].toString(),
+          checked: nonrecurringData[i]["checked"],
+          personCheck: nonrecurringData[i]["personCheck"]);
 
       await dbHelper.addNonRecurring(datanonRecurring);
     }

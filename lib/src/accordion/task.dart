@@ -35,8 +35,9 @@ final textcontroller = TextEditingController();
 List<String> type = <String>['Late', 'Active', 'Completed', 'All'];
 String _selectedVal = "Late";
 String _selectedUser = "";
-bool _showContent = false;
+
 Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+bool _showContent = false;
 
 class _TaskState extends State<Task> {
   @override
@@ -49,7 +50,7 @@ class _TaskState extends State<Task> {
     final SharedPreferences sp = await _pref;
 
     setState(() {
-      _selectedUser = sp.getInt("user_id")!.toString();
+      _selectedUser = sp.getString("user_name")!;
     });
   }
 
@@ -87,6 +88,52 @@ class _TaskState extends State<Task> {
   //     }
   //   });
   // }
+
+  void searchResult(String enteredKeyword) {
+    List<Map<String, dynamic>> results_one = [];
+    List<Map<String, dynamic>> results_two = [];
+    List<Map<String, dynamic>> results_three = [];
+    List<Map<String, dynamic>> results_four = [];
+
+    if (enteredKeyword.isEmpty) {
+      // if the search field is empty or only contains white-space, we'll display all users
+      results_one = widget.LatenonRecurring;
+      results_two = widget.ActivenonRecurring;
+      results_three = widget.CompletednonRecurring;
+      results_four = widget.foundNonRecurring;
+    } else {
+      results_one = widget.LatenonRecurring.where((data) =>
+          data["category"]
+              .toLowerCase()
+              .contains(enteredKeyword.toLowerCase()) ||
+          data["subCategory"]
+              .toLowerCase()
+              .contains(enteredKeyword.toLowerCase()) ||
+          data["type"].toLowerCase().contains(enteredKeyword.toLowerCase()) ||
+          data["site"].toLowerCase().contains(enteredKeyword.toLowerCase()) ||
+          data["task"].toLowerCase().contains(enteredKeyword.toLowerCase()) ||
+          data["owner"].toLowerCase().contains(enteredKeyword.toLowerCase()) ||
+          data["due"].toLowerCase().contains(enteredKeyword.toLowerCase()) ||
+          data["startDate"]
+              .toLowerCase()
+              .contains(enteredKeyword.toLowerCase()) ||
+          data["modify"].toLowerCase().contains(enteredKeyword.toLowerCase()) ||
+          data["remark"].toLowerCase().contains(enteredKeyword.toLowerCase()) ||
+          data["checked"]
+              .toLowerCase()
+              .contains(enteredKeyword.toLowerCase()) ||
+          data["personCheck"]
+              .toLowerCase()
+              .contains(enteredKeyword.toLowerCase()) ||
+          data["personCheck"]
+              .toLowerCase()
+              .contains(enteredKeyword.toLowerCase()) ||
+          data["status"]
+              .toLowerCase()
+              .contains(enteredKeyword.toLowerCase())).toList();
+      // we use the toLowerCase() method to make it case-insensitive
+    }
+  }
 
   int daysBetween(DateTime from, DateTime to) {
     from = DateTime(from.year, from.month, from.day);
@@ -152,9 +199,7 @@ class _TaskState extends State<Task> {
                             style: const TextStyle(color: Colors.black),
                             cursorColor: Colors.black,
                             onChanged: (value) {
-                              setState(() {
-                                // _searchResult = value;
-                              });
+                              searchResult(value);
                             },
                             decoration: InputDecoration(
                               hintText: "Search",
@@ -193,7 +238,7 @@ class _TaskState extends State<Task> {
                                   context: context,
                                   builder: (BuildContext context) {
                                     return addNonRecurring(
-                                        userId: _selectedUser);
+                                        userName: _selectedUser, task: true);
                                   });
                             }),
                             child: Padding(
@@ -467,17 +512,25 @@ class _TaskState extends State<Task> {
                       softWrap: true,
                     ),
                   )),
-                  DataCell(Text(
-                    widget.LatenonRecurring[index]["category"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.LatenonRecurring[index]["category"].split("|")[0],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.LatenonRecurring[index]["subCategory"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.LatenonRecurring[index]["subCategory"],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.LatenonRecurring[index]["type"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.LatenonRecurring[index]["type"],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.LatenonRecurring[index]["site"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.LatenonRecurring[index]["site"],
+                    ),
                   )),
                   DataCell(LinearPercentIndicator(
                       barRadius: const Radius.circular(5),
@@ -513,18 +566,22 @@ class _TaskState extends State<Task> {
                             widget.LatenonRecurring[index]["due"]))
                         .toString(),
                   )),
-                  DataCell(Container(
-                    margin: EdgeInsets.symmetric(vertical: 15),
-                    child: Text(
-                      widget.LatenonRecurring[index]["remark"],
+                  DataCell(Center(
+                    child: Container(
+                      margin: EdgeInsets.symmetric(vertical: 15),
+                      child: Text(
+                        widget.LatenonRecurring[index]["remark"],
+                      ),
                     ),
                   )),
-                  DataCell(Text(
-                    DateFormat('dd/MM/yyyy')
-                        .format(DateTime.parse(
-                            widget.LatenonRecurring[index]["modify"]))
-                        .toString(),
-                  )),
+                  DataCell(Text(widget.LatenonRecurring[index]["modify"] !=
+                              null &&
+                          widget.LatenonRecurring[index]["modify"].isNotEmpty
+                      ? DateFormat('dd/MM/yyyy')
+                          .format(DateTime.parse(
+                              widget.LatenonRecurring[index]["modify"]))
+                          .toString()
+                      : '')),
                   DataCell(IconButton(
                     icon: const Icon(Icons.edit),
                     onPressed: () {
@@ -652,17 +709,26 @@ class _TaskState extends State<Task> {
                   DataCell(Container(
                       margin: EdgeInsets.symmetric(vertical: 15),
                       child: Text(widget.ActivenonRecurring[index]["task"]))),
-                  DataCell(Text(
-                    widget.ActivenonRecurring[index]["category"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.ActivenonRecurring[index]["category"]
+                          .split("|")[0],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.ActivenonRecurring[index]["subCategory"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.ActivenonRecurring[index]["subCategory"],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.ActivenonRecurring[index]["type"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.ActivenonRecurring[index]["type"],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.ActivenonRecurring[index]["site"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.ActivenonRecurring[index]["site"],
+                    ),
                   )),
                   DataCell(LinearPercentIndicator(
                       barRadius: const Radius.circular(5),
@@ -705,16 +771,20 @@ class _TaskState extends State<Task> {
                   )),
                   DataCell(Container(
                     margin: EdgeInsets.symmetric(vertical: 15),
-                    child: Text(
-                      widget.ActivenonRecurring[index]["remark"],
+                    child: Center(
+                      child: Text(
+                        widget.ActivenonRecurring[index]["remark"],
+                      ),
                     ),
                   )),
-                  DataCell(Text(
-                    DateFormat('dd/MM/yyyy')
-                        .format(DateTime.parse(
-                            widget.ActivenonRecurring[index]["modify"]))
-                        .toString(),
-                  )),
+                  DataCell(Text(widget.ActivenonRecurring[index]["modify"] !=
+                              null &&
+                          widget.ActivenonRecurring[index]["modify"].isNotEmpty
+                      ? DateFormat('dd/MM/yyyy')
+                          .format(DateTime.parse(
+                              widget.ActivenonRecurring[index]["modify"]))
+                          .toString()
+                      : '')),
                   DataCell(IconButton(
                     icon: const Icon(Icons.edit),
                     onPressed: () {
@@ -796,13 +866,13 @@ class _TaskState extends State<Task> {
               DataColumn(
                   label: Expanded(
                       child: Text(
-                'Stage',
+                'Checked?',
                 textAlign: TextAlign.center,
               ))),
               DataColumn(
                   label: Expanded(
                       child: Text(
-                'Day Left/Checked?',
+                'Check By',
                 textAlign: TextAlign.center,
               ))),
               DataColumn(
@@ -843,33 +913,55 @@ class _TaskState extends State<Task> {
                       margin: EdgeInsets.symmetric(vertical: 15),
                       child:
                           Text(widget.CompletednonRecurring[index]["task"]))),
-                  DataCell(Text(
-                    widget.CompletednonRecurring[index]["category"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.CompletednonRecurring[index]["category"]
+                          .split("|")[0],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.CompletednonRecurring[index]["subCategory"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.CompletednonRecurring[index]["subCategory"],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.CompletednonRecurring[index]["type"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.CompletednonRecurring[index]["type"],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.CompletednonRecurring[index]["site"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.CompletednonRecurring[index]["site"],
+                    ),
                   )),
-                  DataCell(LinearPercentIndicator(
-                      barRadius: const Radius.circular(5),
-                      width: 100.0,
-                      lineHeight: 20.0,
-                      percent: double.parse(
-                              widget.CompletednonRecurring[index]["status"]) /
-                          100,
-                      backgroundColor: Colors.grey,
-                      progressColor: Colors.blue,
-                      center: Text(
-                        widget.CompletednonRecurring[index]["status"],
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ))),
-                  DataCell(Center(child: Text("No Review Needed"))),
+                  DataCell(
+                    widget.CompletednonRecurring[index]["checked"] == "-"
+                        ? Text("No Review Needed")
+                        : Row(
+                            children: [
+                              Text(widget.CompletednonRecurring[index]
+                                  ["checked"]),
+                              Checkbox(
+                                checkColor: Colors.white,
+                                activeColor: Colors.blue,
+                                value: widget.CompletednonRecurring[index]
+                                            ["checked"] ==
+                                        "Checked"
+                                    ? true
+                                    : false,
+                                shape: CircleBorder(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    // isChecked = value!;
+                                  });
+                                },
+                              )
+                            ],
+                          ),
+                  ),
+                  DataCell(Center(
+                      child: Text(
+                          widget.CompletednonRecurring[index]["personCheck"]))),
                   DataCell(Text(
                     DateFormat('dd/MM/yyyy')
                         .format(DateTime.parse(
@@ -883,12 +975,14 @@ class _TaskState extends State<Task> {
                     ),
                   )),
                   DataCell(Text(
-                    widget.CompletednonRecurring[index]["modify"].isEmpty
-                        ? ""
-                        : DateFormat('dd/MM/yyyy')
+                    widget.CompletednonRecurring[index]["modify"].isNotEmpty &&
+                            widget.CompletednonRecurring[index]["modify"] !=
+                                null
+                        ? DateFormat('dd/MM/yyyy')
                             .format(DateTime.parse(
                                 widget.CompletednonRecurring[index]["modify"]))
-                            .toString(),
+                            .toString()
+                        : '',
                   )),
                   DataCell(IconButton(
                     icon: const Icon(Icons.edit),
@@ -971,13 +1065,13 @@ class _TaskState extends State<Task> {
               DataColumn(
                   label: Expanded(
                       child: Text(
-                'Stage',
+                'Stage / Checked',
                 textAlign: TextAlign.center,
               ))),
               DataColumn(
                   label: Expanded(
                       child: Text(
-                'Day Left/Check by',
+                'Day Left / Check by',
                 textAlign: TextAlign.center,
               ))),
               DataColumn(
@@ -1017,32 +1111,65 @@ class _TaskState extends State<Task> {
                   DataCell(Container(
                       margin: EdgeInsets.symmetric(vertical: 15),
                       child: Text(widget.foundNonRecurring[index]["task"]))),
-                  DataCell(Text(
-                    widget.foundNonRecurring[index]["category"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.foundNonRecurring[index]["category"].split("|")[0],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.foundNonRecurring[index]["subCategory"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.foundNonRecurring[index]["subCategory"],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.foundNonRecurring[index]["type"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.foundNonRecurring[index]["type"],
+                    ),
                   )),
-                  DataCell(Text(
-                    widget.foundNonRecurring[index]["site"],
+                  DataCell(Center(
+                    child: Text(
+                      widget.foundNonRecurring[index]["site"],
+                    ),
                   )),
-                  DataCell(LinearPercentIndicator(
-                      barRadius: const Radius.circular(5),
-                      width: 100.0,
-                      lineHeight: 20.0,
-                      percent: double.parse(
-                              widget.foundNonRecurring[index]["status"]) /
-                          100,
-                      backgroundColor: Colors.grey,
-                      progressColor: Colors.blue,
-                      center: Text(
-                        widget.foundNonRecurring[index]["status"],
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ))),
+                  DataCell(widget.foundNonRecurring[index]["status"] == '100'
+                      ? widget.foundNonRecurring[index]["checked"] == "-"
+                          ? Text("No Review Needed")
+                          : Row(
+                              children: [
+                                Text(
+                                    widget.foundNonRecurring[index]["checked"]),
+                                Checkbox(
+                                  checkColor: Colors.white,
+                                  activeColor: Colors.blue,
+                                  value: widget.foundNonRecurring[index]
+                                              ["checked"] ==
+                                          "Checked"
+                                      ? true
+                                      : false,
+                                  shape: CircleBorder(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      // isChecked = value!;
+                                    });
+                                  },
+                                )
+                              ],
+                            )
+                      : LinearPercentIndicator(
+                          barRadius: const Radius.circular(5),
+                          width: 100.0,
+                          lineHeight: 20.0,
+                          percent: double.parse(
+                                  widget.foundNonRecurring[index]["status"]) /
+                              100,
+                          backgroundColor: Colors.grey,
+                          progressColor: Colors.blue,
+                          center: Text(
+                            widget.foundNonRecurring[index]["status"],
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ))),
                   DataCell(widget.foundNonRecurring[index]["status"] != '100'
                       ? Container(
                           width: 100,
@@ -1065,7 +1192,12 @@ class _TaskState extends State<Task> {
                                       "$dayLeft DAYS LEFT",
                                       style: Styles.dayLeftActive,
                                     )))
-                      : Text("No Review Needed")),
+                      : Center(
+                          child: Text(
+                            widget.foundNonRecurring[index]["personCheck"],
+                            textAlign: TextAlign.center,
+                          ),
+                        )),
                   DataCell(Text(
                     DateFormat('dd/MM/yyyy')
                         .format(DateTime.parse(
@@ -1079,12 +1211,13 @@ class _TaskState extends State<Task> {
                     ),
                   )),
                   DataCell(Text(
-                    widget.foundNonRecurring[index]["modify"].isEmpty
-                        ? ""
-                        : DateFormat('dd/MM/yyyy')
+                    widget.foundNonRecurring[index]["modify"].isNotEmpty &&
+                            widget.foundNonRecurring[index]["modify"] != null
+                        ? DateFormat('dd/MM/yyyy')
                             .format(DateTime.parse(
                                 widget.foundNonRecurring[index]["modify"]))
-                            .toString(),
+                            .toString()
+                        : '',
                   )),
                   DataCell(IconButton(
                     icon: const Icon(Icons.edit),

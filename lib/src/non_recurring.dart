@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/src/accordion/task.dart';
@@ -26,12 +27,17 @@ class _NonRecurringState extends State<NonRecurring> {
   String totalTasks = '0';
   String overdueTasks = '0';
   String completedTasksPer = '0';
+  String requestReviewNumber = '0';
+  String pendingReviewNumber = '0';
+  int requestReview = 0;
+  int pendingReview = 0;
   DbHelper dbHelper = DbHelper();
   List<Map<String, dynamic>> allNonRecurring = [];
   List<Map<String, dynamic>> foundNonRecurring = [];
   List<Map<String, dynamic>> LatenonRecurring = [];
   List<Map<String, dynamic>> ActivenonRecurring = [];
   List<Map<String, dynamic>> CompletednonRecurring = [];
+  String userRole = '';
   @override
   void initState() {
     super.initState();
@@ -41,14 +47,19 @@ class _NonRecurringState extends State<NonRecurring> {
   Future<void> _refresh() async {
     await Internet.isInternet().then((connection) async {
       if (connection) {
+        EasyLoading.show(status: 'Fetching Data...');
         await Controller().addNonRecurringToSqlite();
+        EasyLoading.showSuccess('Successfully');
       }
     });
     final data = await dbHelper.fetchAllNonRecurring();
 
     final SharedPreferences sp = await _pref;
     String userName = sp.getString("user_name")!;
+
     setState(() {
+      userRole = sp.getString("role")!;
+
       for (int x = 0; x < data.length; x++) {
         if (data[x]["owner"] == userName) {
           final dayLeft = daysBetween(
@@ -57,7 +68,6 @@ class _NonRecurringState extends State<NonRecurring> {
           allNonRecurring.add(data[x]);
           foundNonRecurring.add(data[x]);
           if (data[x]["status"] == '100') {
-            print(data[x]);
             CompletednonRecurring.add(data[x]);
           } else if (dayLeft.isNegative) {
             LatenonRecurring.add(data[x]);
@@ -65,12 +75,27 @@ class _NonRecurringState extends State<NonRecurring> {
             ActivenonRecurring.add(data[x]);
           }
         }
+
+        if (data[x]["checked"] == "Pending Review" &&
+            data[x]["status"] == '100') {
+          List personList = data[x]['personCheck'].split(",");
+
+          for (int i = 0; i < personList.length; i++) {
+            if (personList[i] == userName) {
+              requestReview = requestReview + 1;
+            }
+          }
+          if (data[x]["owner"] == userName) {
+            pendingReview = pendingReview + 1;
+          }
+        }
       }
 
       completedTask = CompletednonRecurring.length.toString();
       overdueTasks = LatenonRecurring.length.toString();
       totalTasks = allNonRecurring.length.toString();
-
+      requestReviewNumber = requestReview.toString();
+      pendingReviewNumber = pendingReview.toString();
       if (completedTask != '0') {
         completedTasksPer =
             ((int.parse(completedTask) / int.parse(totalTasks)) * 100)
@@ -102,9 +127,12 @@ class _NonRecurringState extends State<NonRecurring> {
         drawer: const Navbar(), //set gobal key defined above
         body: SingleChildScrollView(
           child: Container(
-            height: height - height * 0.08,
+            height: height - height * 0.10,
             margin: EdgeInsets.only(
-                top: height * 0.08, left: width * 0.02, right: width * 0.02),
+                top: height * 0.08,
+                bottom: height * 0.02,
+                left: width * 0.02,
+                right: width * 0.02),
             child: Column(
               children: [
                 Row(
@@ -178,12 +206,28 @@ class _NonRecurringState extends State<NonRecurring> {
                             style: TextStyle(
                                 color: Styles.textColor, fontSize: 14)),
                         const Gap(5),
-                        const Text("0",
+                        Text(pendingReviewNumber,
                             style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 25,
                                 fontWeight: FontWeight.w700)),
                       ]),
+                      userRole != 'Staff'
+                          ? Column(children: [
+                              Text("Request",
+                                  style: TextStyle(
+                                      color: Styles.textColor, fontSize: 14)),
+                              Text("Review",
+                                  style: TextStyle(
+                                      color: Styles.textColor, fontSize: 14)),
+                              const Gap(5),
+                              Text(requestReviewNumber,
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.w700)),
+                            ])
+                          : Container()
                     ],
                   ),
                 ),
@@ -199,7 +243,7 @@ class _NonRecurringState extends State<NonRecurring> {
                             ActivenonRecurring: ActivenonRecurring,
                             CompletednonRecurring: CompletednonRecurring),
                         const Gap(20),
-                        const TeamTask(),
+                        userRole != 'Staff' ? TeamTask() : Container(),
                       ],
                     ),
                   ),

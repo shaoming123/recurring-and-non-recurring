@@ -8,6 +8,7 @@ import 'package:ipsolution/src/dashboard.dart';
 import 'package:ipsolution/src/dialogBox/addMember.dart';
 import 'package:ipsolution/src/signup.dart';
 import 'package:ipsolution/util/app_styles.dart';
+import 'package:ipsolution/util/conMysql.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../util/fade_animation.dart';
@@ -64,7 +65,10 @@ class _LoginState extends State<Login> {
         if (dataModel.active == "Active") {
           // final dataModel = UserModel.fromMap(data);
 
-          setSP(dataModel).whenComplete(() {
+          setSP(dataModel).whenComplete(() async {
+            await Controller().addDataToSqlite();
+            // await Controller().addRecurringToSqlite();
+            // await Controller().addNonRecurringToSqlite();
             Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => Dashboard()),
@@ -133,6 +137,7 @@ class _LoginState extends State<Login> {
     sp.setString("role", user.role);
     sp.setString("position", user.position);
     sp.setString("site", user.site!);
+    sp.setString("leadFunc", user.leadFunc!);
     sp.setString("siteLead", user.siteLead!);
     sp.setString("phone", user.phone!);
     sp.setString("active", user.active);

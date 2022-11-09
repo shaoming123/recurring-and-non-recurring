@@ -12,6 +12,8 @@ class nonRecurring {
   late String due;
   late String status;
   late String modify;
+  late String checked;
+  late String personCheck;
   String? remark;
   String? completeDate;
 
@@ -30,6 +32,8 @@ class nonRecurring {
     required this.status,
     required this.startDate,
     required this.modify,
+    required this.checked,
+    required this.personCheck,
     this.remark,
     this.completeDate,
 
@@ -50,7 +54,9 @@ class nonRecurring {
       'startDate': startDate,
       'modify': modify,
       'remark': remark,
-      'completeDate': completeDate,
+      'checked': checked,
+      'personCheck': personCheck,
+
       'status': status,
       // 'backgroundColor': backgroundColor,
     };
@@ -70,6 +76,9 @@ class nonRecurring {
     modify = map['modify'];
     remark = map['remark'];
     completeDate = map['completeDate'];
+
+    checked = map['checked'];
+    personCheck = map['personCheck'];
     status = map['status'];
     // backgroundColor = map['backgroundColor'];
     // photoName = map['photoName'];

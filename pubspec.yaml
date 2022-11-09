@@ -67,6 +67,8 @@ dependencies:
   data_connection_checker: ^0.3.4
   http:
 
+  flutter_easyloading: ^3.0.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

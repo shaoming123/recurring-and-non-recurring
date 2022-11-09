@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:badges/badges.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/src/dialogBox/eventAdd.dart';
+import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,7 +30,12 @@ class _TeamTaskState extends State<TeamTask> {
   String _selectedUser = "";
   bool _showContent = false;
   String currentUserPosition = '';
-  List<String> positionType = <String>[];
+  String currentUserSite = '';
+  List<String> combineType = <String>[];
+  String userRole = '';
+  String currentUserSiteLead = '';
+  String currentUserLeadFunc = '';
+  List<String> siteType = <String>[];
   List<Map<String, dynamic>> allTeamNonRecurring = [];
   List<Map<String, dynamic>> foundTeamNonRecurring = [];
   List<Map<String, dynamic>> LateTeamnonRecurring = [];
@@ -36,6 +44,7 @@ class _TeamTaskState extends State<TeamTask> {
   List<dynamic> userList = [];
   double _animatedHeight = 0.0;
   bool showTable = false;
+  bool check = false;
   @override
   void initState() {
     super.initState();
@@ -46,11 +55,31 @@ class _TeamTaskState extends State<TeamTask> {
 
   Future<void> getUserPosition() async {
     final SharedPreferences sp = await _pref;
-
+    List<String> positionType = <String>[];
+    siteType = <String>[];
+    userRole = sp.getString("role").toString();
     currentUserPosition = sp.getString("position")!;
-
+    currentUserSite = sp.getString("site")!;
+    currentUserSiteLead = sp.getString("siteLead")!;
+    currentUserLeadFunc = sp.getString("leadFunc")!;
     setState(() {
       positionType = currentUserPosition.split(",");
+      siteType = currentUserSite.split(",");
+      if (userRole == "Manager" || userRole == "Super Admin") {
+        combineType = [...positionType, ...siteType];
+      } else if (userRole == "Leader" && currentUserSiteLead != "-") {
+        combineType = [
+          "Community Management",
+          "Maintenance Management",
+          "Defect",
+          "Operations",
+          "Financial Management",
+          "Procurement",
+          "Statistic"
+        ];
+      } else {
+        combineType = currentUserPosition.split(",");
+      }
     });
   }
 
@@ -59,28 +88,85 @@ class _TeamTaskState extends State<TeamTask> {
     CompletedTeamnonRecurring = [];
     LateTeamnonRecurring = [];
     ActiveTeamnonRecurring = [];
-    final data = await dbHelper.getItems();
     final SharedPreferences sp = await _pref;
-    String userID = sp.getInt("user_id").toString();
+    final data = await dbHelper.getItems();
+    List userSite = currentUserSite.split(',');
+    // String userID = sp.getInt("user_id").toString();
+
     userList = [];
     setState(() {
       for (int x = 0; x < data.length; x++) {
-        List<String> positionList = [];
+        List positionList = data[x]["position"].split(",");
+        List siteList = data[x]["site"].split(",");
 
-        positionList = data[x]["position"].split(",");
+        if (userRole == "Manager" || userRole == "Super Admin") {
+          for (int i = 0; i < positionList.length; i++) {
+            if (positionList[i] == _selectedPosition &&
+                data[x]["user_id"] != sp.getInt("user_id")) {
+              userList.add({
+                'userId': data[x]["user_id"],
+                'username': data[x]["user_name"],
+                'position': data[x]["position"]
+              });
+            }
+          }
 
-        for (int i = 0; i < positionList.length; i++) {
-          if (positionList[i] == _selectedPosition &&
-              data[x]["user_id"] != sp.getInt("user_id")) {
-            userList.add({
-              'userId': data[x]["user_id"],
-              'username': data[x]["user_name"],
-              'position': data[x]["position"]
-            });
+          for (int y = 0; y < siteList.length; y++) {
+            if (siteList[y] == _selectedPosition &&
+                data[x]["user_id"] != sp.getInt("user_id")) {
+              userList.add({
+                'userId': data[x]["user_id"],
+                'username': data[x]["user_name"],
+                'position': data[x]["position"]
+              });
+            }
+          }
+          // }
+          // else if (userRole == "Leader" && currentUserLeadFunc != '-') {
+          //   for (int i = 0; i < positionList.length; i++) {
+          //     if (positionList[i] == _selectedPosition &&
+          //         data[x]["user_id"] != sp.getInt("user_id") &&
+          //         (data[x]["role"] == "Leader" || data[x]["role"] == "Staff")) {
+          //       userList.add({
+          //         'userId': data[x]["user_id"],
+          //         'username': data[x]["user_name"],
+          //         'position': data[x]["position"]
+          //       });
+          //     }
+          //   }
+        } else if (userRole == "Leader" && currentUserSiteLead != '-') {
+          for (int y = 0; y < siteList.length; y++) {
+            for (int i = 0; i < positionList.length; i++) {
+              if (positionList[i] == _selectedPosition &&
+                  data[x]["user_id"] != sp.getInt("user_id") &&
+                  (data[x]["role"] == "Leader" || data[x]["role"] == "Staff") &&
+                  siteList[y] == currentUserSiteLead) {
+                userList.add({
+                  'userId': data[x]["user_id"],
+                  'username': data[x]["user_name"],
+                  'position': data[x]["position"],
+                });
+              }
+            }
+          }
+        } else {
+          for (int y = 0; y < siteList.length; y++) {
+            for (int i = 0; i < positionList.length; i++) {
+              if (positionList[i] == _selectedPosition &&
+                  data[x]["user_id"] != sp.getInt("user_id") &&
+                  (data[x]["role"] == "Leader" || data[x]["role"] == "Staff")) {
+                userList.add({
+                  'userId': data[x]["user_id"],
+                  'username': data[x]["user_name"],
+                  'position': data[x]["position"],
+                });
+              }
+            }
           }
         }
       }
     });
+    print(userList);
   }
 
   void getTeamData() async {
@@ -91,17 +177,35 @@ class _TeamTaskState extends State<TeamTask> {
     ActiveTeamnonRecurring = [];
     setState(() {
       for (int x = 0; x < data.length; x++) {
-        if (data[x]["owner"] == _selectedUser) {
-          final dayLeft = daysBetween(DateTime.parse(data[x]["startDate"]),
-              DateTime.parse(data[x]["due"]));
+        if (userRole == "Leader" && currentUserSiteLead != '-') {
+          if (data[x]["site"] == currentUserSiteLead) {
+            if (data[x]["owner"] == _selectedUser) {
+              final dayLeft =
+                  daysBetween(DateTime.now(), DateTime.parse(data[x]["due"]));
 
-          foundTeamNonRecurring.add(data[x]);
-          if (data[x]["status"] == '100') {
-            CompletedTeamnonRecurring.add(data[x]);
-          } else if (dayLeft.isNegative) {
-            LateTeamnonRecurring.add(data[x]);
-          } else if (dayLeft > 0) {
-            ActiveTeamnonRecurring.add(data[x]);
+              foundTeamNonRecurring.add(data[x]);
+              if (data[x]["status"] == '100') {
+                CompletedTeamnonRecurring.add(data[x]);
+              } else if (dayLeft.isNegative) {
+                LateTeamnonRecurring.add(data[x]);
+              } else if (dayLeft > 0) {
+                ActiveTeamnonRecurring.add(data[x]);
+              }
+            }
+          }
+        } else {
+          if (data[x]["owner"] == _selectedUser) {
+            final dayLeft =
+                daysBetween(DateTime.now(), DateTime.parse(data[x]["due"]));
+
+            foundTeamNonRecurring.add(data[x]);
+            if (data[x]["status"] == '100') {
+              CompletedTeamnonRecurring.add(data[x]);
+            } else if (dayLeft.isNegative) {
+              LateTeamnonRecurring.add(data[x]);
+            } else if (dayLeft > 0) {
+              ActiveTeamnonRecurring.add(data[x]);
+            }
           }
         }
       }
@@ -209,7 +313,7 @@ class _TeamTaskState extends State<TeamTask> {
                                   context: context,
                                   builder: (BuildContext context) {
                                     return addNonRecurring(
-                                        userId: _selectedUser);
+                                        userName: _selectedUser, task: false);
                                   });
                             }),
                             child: Padding(
@@ -252,7 +356,7 @@ class _TeamTaskState extends State<TeamTask> {
                           value: _selectedPosition == ''
                               ? null
                               : _selectedPosition,
-                          items: positionType
+                          items: combineType
                               .map(
                                 (e) => DropdownMenuItem(
                                   value: e,
@@ -264,9 +368,10 @@ class _TeamTaskState extends State<TeamTask> {
                             setState(() {
                               _selectedPosition = val!;
                               _selectedUser = '';
-                              fetchUsers();
+
                               _animatedHeight = 85;
                             });
+                            fetchUsers();
                           },
                           icon: const Icon(
                             Icons.arrow_drop_down,
@@ -299,7 +404,7 @@ class _TeamTaskState extends State<TeamTask> {
                               items: List.generate(
                                 userList.length,
                                 (index) => DropdownMenuItem(
-                                  value: userList[index]["userId"].toString(),
+                                  value: userList[index]["username"].toString(),
                                   child: Text(
                                     userList[index]["username"].toString(),
                                     style: const TextStyle(fontSize: 14),
@@ -463,704 +568,811 @@ class _TeamTaskState extends State<TeamTask> {
 
   Widget lateView() {
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-          headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
-          showCheckboxColumn: false,
-          columns: const [
-            DataColumn(label: Text('No.')),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Task',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Catehory',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Sub-Category',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Type',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Site',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Stage',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Day Left',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Due',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Remark',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Last Mod.',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Action',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(label: Text('')),
-          ],
-          rows: List.generate(LateTeamnonRecurring.length, (index) {
-            final dayLeft = daysBetween(
-                DateTime.parse(LateTeamnonRecurring[index]["startDate"]),
-                DateTime.parse(LateTeamnonRecurring[index]["due"]));
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+            headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
+            showCheckboxColumn: false,
+            columns: const [
+              DataColumn(label: Text('No.')),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Task',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Category',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Sub-Category',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Type',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Site',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Stage',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Day Left',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Due',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Remark',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Last Mod.',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Action',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(label: Text('')),
+            ],
+            rows: List.generate(LateTeamnonRecurring.length, (index) {
+              final dayLeft = daysBetween(DateTime.now(),
+                  DateTime.parse(LateTeamnonRecurring[index]["due"]));
 
-            return DataRow(
-              cells: [
-                DataCell(Text((index + 1).toString())),
-                DataCell(Text(LateTeamnonRecurring[index]["task"])),
-                DataCell(Text(
-                  LateTeamnonRecurring[index]["category"],
-                )),
-                DataCell(Text(
-                  LateTeamnonRecurring[index]["subCategory"],
-                )),
-                DataCell(Text(
-                  LateTeamnonRecurring[index]["type"],
-                )),
-                DataCell(Text(
-                  LateTeamnonRecurring[index]["site"],
-                )),
-                DataCell(LinearPercentIndicator(
-                    barRadius: const Radius.circular(5),
-                    width: 100.0,
-                    lineHeight: 20.0,
-                    percent:
-                        double.parse(LateTeamnonRecurring[index]["status"]) /
-                            100,
-                    backgroundColor: Colors.grey,
-                    progressColor: Colors.blue,
-                    center: Text(
-                      LateTeamnonRecurring[index]["status"],
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ))),
-                DataCell(Container(
-                    width: 100,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: Styles.lateColor,
+              return DataRow(
+                cells: [
+                  DataCell(Text((index + 1).toString())),
+                  DataCell(Container(
+                    margin: EdgeInsets.symmetric(vertical: 15),
+                    child: Text(
+                      LateTeamnonRecurring[index]["task"],
                     ),
-                    child: Center(
-                        child: Text(
-                      "${dayLeft.abs()} DAYS LATE",
-                      style: TextStyle(
-                          color: Color(0xFFf43a2c),
-                          fontWeight: FontWeight.bold),
-                    )))),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(
-                          DateTime.parse(LateTeamnonRecurring[index]["due"]))
-                      .toString(),
-                )),
-                DataCell(Text(
-                  LateTeamnonRecurring[index]["remark"],
-                )),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(
-                          DateTime.parse(LateTeamnonRecurring[index]["modify"]))
-                      .toString(),
-                )),
-                DataCell(IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return editNonRecurring(
-                            id: LateTeamnonRecurring[index]["nonRecurringId"]
-                                .toString(),
-                          );
-                        });
-                  },
-                )),
-                DataCell(IconButton(
-                    icon: const Icon(Icons.delete),
+                  )),
+                  DataCell(Center(
+                    child: Text(
+                      LateTeamnonRecurring[index]["category"].split("|")[0],
+                    ),
+                  )),
+                  DataCell(Center(
+                    child: Text(
+                      LateTeamnonRecurring[index]["subCategory"],
+                    ),
+                  )),
+                  DataCell(Center(
+                    child: Text(
+                      LateTeamnonRecurring[index]["type"],
+                    ),
+                  )),
+                  DataCell(Center(
+                    child: Text(
+                      LateTeamnonRecurring[index]["site"],
+                    ),
+                  )),
+                  DataCell(LinearPercentIndicator(
+                      barRadius: const Radius.circular(5),
+                      width: 100.0,
+                      lineHeight: 20.0,
+                      percent:
+                          double.parse(LateTeamnonRecurring[index]["status"]) /
+                              100,
+                      backgroundColor: Colors.grey,
+                      progressColor: Colors.blue,
+                      center: Text(
+                        LateTeamnonRecurring[index]["status"],
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ))),
+                  DataCell(Container(
+                      width: 100,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: Styles.lateColor,
+                      ),
+                      child: Center(
+                          child: Text(
+                        "${dayLeft.abs()} DAYS LATE",
+                        style: TextStyle(
+                            color: Color(0xFFf43a2c),
+                            fontWeight: FontWeight.bold),
+                      )))),
+                  DataCell(Text(
+                    DateFormat('dd/MM/yyyy')
+                        .format(
+                            DateTime.parse(LateTeamnonRecurring[index]["due"]))
+                        .toString(),
+                  )),
+                  DataCell(Center(
+                    child: Text(
+                      LateTeamnonRecurring[index]["remark"],
+                    ),
+                  )),
+                  DataCell(Text(LateTeamnonRecurring[index]["modify"] != null &&
+                          LateTeamnonRecurring[index]["modify"].isNotEmpty
+                      ? DateFormat('dd/MM/yyyy')
+                          .format(DateTime.parse(
+                              LateTeamnonRecurring[index]["modify"]))
+                          .toString()
+                      : "")),
+                  DataCell(IconButton(
+                    icon: const Icon(Icons.edit),
                     onPressed: () {
-                      removeTeamNonRecurring(
-                          LateTeamnonRecurring[index]["nonRecurringId"]);
-                    })),
-              ],
-              // onSelectChanged: (e) {
-              //   showDialog(
-              //       context: context,
-              //       builder: (BuildContext context) {
-              //         return DialogBox(
-              //             id: foundTeamNonRecurring[index]["user_id"].toString(),
-              //             name: foundTeamNonRecurring[index]['user_name'],
-              //             password: foundTeamNonRecurring[index]['password'],
-              //             isEditing: false);
-              //       });
-              // }
-            );
-          })),
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return editNonRecurring(
+                              id: LateTeamnonRecurring[index]["nonRecurringId"]
+                                  .toString(),
+                            );
+                          });
+                    },
+                  )),
+                  DataCell(IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        removeTeamNonRecurring(
+                            LateTeamnonRecurring[index]["nonRecurringId"]);
+                      })),
+                ],
+                // onSelectChanged: (e) {
+                //   showDialog(
+                //       context: context,
+                //       builder: (BuildContext context) {
+                //         return DialogBox(
+                //             id: foundTeamNonRecurring[index]["user_id"].toString(),
+                //             name: foundTeamNonRecurring[index]['user_name'],
+                //             password: foundTeamNonRecurring[index]['password'],
+                //             isEditing: false);
+                //       });
+                // }
+              );
+            })),
+      ),
     );
   }
 
   Widget activeView() {
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-          headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
-          showCheckboxColumn: false,
-          columns: const [
-            DataColumn(label: Text('No.')),
-            DataColumn(
-                label: Expanded(
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+            headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
+            showCheckboxColumn: false,
+            columns: const [
+              DataColumn(label: Text('No.')),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Task',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Catehory',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Sub-Category',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Type',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Site',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Stage',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Day Left',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Due',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Remark',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Last Mod.',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Action',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(label: Text('')),
+            ],
+            rows: List.generate(ActiveTeamnonRecurring.length, (index) {
+              final dayLeft = daysBetween(DateTime.now(),
+                  DateTime.parse(ActiveTeamnonRecurring[index]["due"]));
+              return DataRow(
+                cells: [
+                  DataCell(Text((index + 1).toString())),
+                  DataCell(Container(
+                      margin: EdgeInsets.symmetric(vertical: 15),
+                      child: Text(ActiveTeamnonRecurring[index]["task"]))),
+                  DataCell(Center(
                     child: Text(
-              'Task',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Catehory',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Sub-Category',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Type',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Site',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Stage',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Day Left',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Due',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Remark',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Last Mod.',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Action',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(label: Text('')),
-          ],
-          rows: List.generate(ActiveTeamnonRecurring.length, (index) {
-            final dayLeft = daysBetween(
-                DateTime.parse(ActiveTeamnonRecurring[index]["startDate"]),
-                DateTime.parse(ActiveTeamnonRecurring[index]["due"]));
-            return DataRow(
-              cells: [
-                DataCell(Text((index + 1).toString())),
-                DataCell(Text(ActiveTeamnonRecurring[index]["task"])),
-                DataCell(Text(
-                  ActiveTeamnonRecurring[index]["category"],
-                )),
-                DataCell(Text(
-                  ActiveTeamnonRecurring[index]["subCategory"],
-                )),
-                DataCell(Text(
-                  ActiveTeamnonRecurring[index]["type"],
-                )),
-                DataCell(Text(
-                  ActiveTeamnonRecurring[index]["site"],
-                )),
-                DataCell(LinearPercentIndicator(
-                    barRadius: const Radius.circular(5),
-                    width: 100.0,
-                    lineHeight: 20.0,
-                    percent:
-                        double.parse(ActiveTeamnonRecurring[index]["status"]) /
-                            100,
-                    backgroundColor: Colors.grey,
-                    progressColor: Colors.blue,
-                    center: Text(
-                      ActiveTeamnonRecurring[index]["status"],
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ))),
-                DataCell(Container(
-                    width: 100,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: dayLeft.isNegative
-                          ? Styles.lateColor
-                          : Styles.activeColor,
+                      ActiveTeamnonRecurring[index]["category"].split("|")[0],
                     ),
-                    child: Center(
-                        child: dayLeft.isNegative
-                            ? Text(
-                                dayLeft.abs().toString() + " DAYS LATE",
-                                style: Styles.dayLeftLate,
-                              )
-                            : Text(
-                                "$dayLeft DAYS LEFT",
-                                style: Styles.dayLeftActive,
-                              )))),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(
-                          DateTime.parse(ActiveTeamnonRecurring[index]["due"]))
-                      .toString(),
-                )),
-                DataCell(Text(
-                  ActiveTeamnonRecurring[index]["remark"],
-                )),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(
-                          ActiveTeamnonRecurring[index]["modify"]))
-                      .toString(),
-                )),
-                DataCell(IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return editNonRecurring(
-                            id: ActiveTeamnonRecurring[index]["nonRecurringId"]
-                                .toString(),
-                          );
-                        });
-                  },
-                )),
-                DataCell(IconButton(
-                    icon: const Icon(Icons.delete),
+                  )),
+                  DataCell(Center(
+                    child: Text(
+                      ActiveTeamnonRecurring[index]["subCategory"],
+                    ),
+                  )),
+                  DataCell(Center(
+                    child: Text(
+                      ActiveTeamnonRecurring[index]["type"],
+                    ),
+                  )),
+                  DataCell(Center(
+                    child: Text(
+                      ActiveTeamnonRecurring[index]["site"],
+                    ),
+                  )),
+                  DataCell(LinearPercentIndicator(
+                      barRadius: const Radius.circular(5),
+                      width: 100.0,
+                      lineHeight: 20.0,
+                      percent: double.parse(
+                              ActiveTeamnonRecurring[index]["status"]) /
+                          100,
+                      backgroundColor: Colors.grey,
+                      progressColor: Colors.blue,
+                      center: Text(
+                        ActiveTeamnonRecurring[index]["status"],
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ))),
+                  DataCell(Container(
+                      width: 100,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: dayLeft.isNegative
+                            ? Styles.lateColor
+                            : Styles.activeColor,
+                      ),
+                      child: Center(
+                          child: dayLeft.isNegative
+                              ? Text(
+                                  dayLeft.abs().toString() + " DAYS LATE",
+                                  style: Styles.dayLeftLate,
+                                )
+                              : Text(
+                                  "$dayLeft DAYS LEFT",
+                                  style: Styles.dayLeftActive,
+                                )))),
+                  DataCell(Text(
+                    DateFormat('dd/MM/yyyy')
+                        .format(DateTime.parse(
+                            ActiveTeamnonRecurring[index]["due"]))
+                        .toString(),
+                  )),
+                  DataCell(Center(
+                    child: Text(
+                      ActiveTeamnonRecurring[index]["remark"],
+                    ),
+                  )),
+                  DataCell(Text(
+                      ActiveTeamnonRecurring[index]["modify"] != null &&
+                              ActiveTeamnonRecurring[index]["modify"].isNotEmpty
+                          ? DateFormat('dd/MM/yyyy')
+                              .format(DateTime.parse(
+                                  ActiveTeamnonRecurring[index]["modify"]))
+                              .toString()
+                          : "")),
+                  DataCell(IconButton(
+                    icon: const Icon(Icons.edit),
                     onPressed: () {
-                      removeTeamNonRecurring(
-                          ActiveTeamnonRecurring[index]["nonRecurringId"]);
-                    })),
-              ],
-              // onSelectChanged: (e) {
-              //   showDialog(
-              //       context: context,
-              //       builder: (BuildContext context) {
-              //         return DialogBox(
-              //             id: foundTeamNonRecurring[index]["user_id"].toString(),
-              //             name: foundTeamNonRecurring[index]['user_name'],
-              //             password: foundTeamNonRecurring[index]['password'],
-              //             isEditing: false);
-              //       });
-              // }
-            );
-          })),
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return editNonRecurring(
+                              id: ActiveTeamnonRecurring[index]
+                                      ["nonRecurringId"]
+                                  .toString(),
+                            );
+                          });
+                    },
+                  )),
+                  DataCell(IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        removeTeamNonRecurring(
+                            ActiveTeamnonRecurring[index]["nonRecurringId"]);
+                      })),
+                ],
+                // onSelectChanged: (e) {
+                //   showDialog(
+                //       context: context,
+                //       builder: (BuildContext context) {
+                //         return DialogBox(
+                //             id: foundTeamNonRecurring[index]["user_id"].toString(),
+                //             name: foundTeamNonRecurring[index]['user_name'],
+                //             password: foundTeamNonRecurring[index]['password'],
+                //             isEditing: false);
+                //       });
+                // }
+              );
+            })),
+      ),
     );
   }
 
   Widget completeView() {
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-          headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
-          showCheckboxColumn: false,
-          columns: const [
-            DataColumn(label: Text('No.')),
-            DataColumn(
-                label: Expanded(
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+            headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
+            showCheckboxColumn: false,
+            columns: const [
+              DataColumn(label: Text('No.')),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Task',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Category',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Sub-Category',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Type',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Site',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Checked?',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Check By',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Due',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Remark',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Last Mod.',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Action',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(label: Text('')),
+            ],
+            rows: List.generate(CompletedTeamnonRecurring.length, (index) {
+              final dayLeft = daysBetween(DateTime.now(),
+                  DateTime.parse(CompletedTeamnonRecurring[index]["due"]));
+              return DataRow(
+                cells: [
+                  DataCell(Text((index + 1).toString())),
+                  DataCell(Container(
+                      margin: EdgeInsets.symmetric(vertical: 15),
+                      child: Text(CompletedTeamnonRecurring[index]["task"]))),
+                  DataCell(Center(
                     child: Text(
-              'Task',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
+                      CompletedTeamnonRecurring[index]["category"]
+                          .split("|")[0],
+                    ),
+                  )),
+                  DataCell(Center(
                     child: Text(
-              'Catehory',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
+                      CompletedTeamnonRecurring[index]["subCategory"],
+                    ),
+                  )),
+                  DataCell(Center(
                     child: Text(
-              'Sub-Category',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
+                      CompletedTeamnonRecurring[index]["type"],
+                    ),
+                  )),
+                  DataCell(Center(
                     child: Text(
-              'Type',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
+                      CompletedTeamnonRecurring[index]["site"],
+                    ),
+                  )),
+                  DataCell(CompletedTeamnonRecurring[index]["checked"] != '-'
+                      ? Row(
+                          children: [
+                            Text(CompletedTeamnonRecurring[index]["checked"]),
+                            Checkbox(
+                              checkColor: Colors.white,
+                              activeColor: Colors.blue,
+                              value: CompletedTeamnonRecurring[index]
+                                          ["checked"] ==
+                                      'Checked'
+                                  ? true
+                                  : false,
+                              shape: CircleBorder(),
+                              onChanged: (value) {
+                                // setState(() {
+                                //   check = value!;
+                                // });
+                              },
+                            )
+                          ],
+                        )
+                      : Text("No Review Needed")),
+                  DataCell(Center(
+                      child: Text(
+                          CompletedTeamnonRecurring[index]["personCheck"]))),
+                  DataCell(Text(
+                    DateFormat('dd/MM/yyyy')
+                        .format(DateTime.parse(
+                            CompletedTeamnonRecurring[index]["due"]))
+                        .toString(),
+                  )),
+                  DataCell(Center(
                     child: Text(
-              'Site',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Stage',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Day Left/Checked?',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Due',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Remark',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Last Mod.',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Action',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(label: Text('')),
-          ],
-          rows: List.generate(CompletedTeamnonRecurring.length, (index) {
-            final dayLeft = daysBetween(
-                DateTime.parse(CompletedTeamnonRecurring[index]["startDate"]),
-                DateTime.parse(CompletedTeamnonRecurring[index]["due"]));
-            return DataRow(
-              cells: [
-                DataCell(Text((index + 1).toString())),
-                DataCell(Text(CompletedTeamnonRecurring[index]["task"])),
-                DataCell(Text(
-                  CompletedTeamnonRecurring[index]["category"],
-                )),
-                DataCell(Text(
-                  CompletedTeamnonRecurring[index]["subCategory"],
-                )),
-                DataCell(Text(
-                  CompletedTeamnonRecurring[index]["type"],
-                )),
-                DataCell(Text(
-                  CompletedTeamnonRecurring[index]["site"],
-                )),
-                DataCell(LinearPercentIndicator(
-                    barRadius: const Radius.circular(5),
-                    width: 100.0,
-                    lineHeight: 20.0,
-                    percent: double.parse(
-                            CompletedTeamnonRecurring[index]["status"]) /
-                        100,
-                    backgroundColor: Colors.grey,
-                    progressColor: Colors.blue,
-                    center: Text(
-                      CompletedTeamnonRecurring[index]["status"],
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ))),
-                DataCell(Center(child: Text("No Review Needed"))),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(
-                          CompletedTeamnonRecurring[index]["due"]))
-                      .toString(),
-                )),
-                DataCell(Text(
-                  CompletedTeamnonRecurring[index]["remark"],
-                )),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(
-                          CompletedTeamnonRecurring[index]["modify"]))
-                      .toString(),
-                )),
-                DataCell(IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return editNonRecurring(
-                            id: CompletedTeamnonRecurring[index]
-                                    ["nonRecurringId"]
-                                .toString(),
-                          );
-                        });
-                  },
-                )),
-                DataCell(IconButton(
-                    icon: const Icon(Icons.delete),
+                      CompletedTeamnonRecurring[index]["remark"],
+                    ),
+                  )),
+                  DataCell(Text(CompletedTeamnonRecurring[index]["modify"] !=
+                              null &&
+                          CompletedTeamnonRecurring[index]["modify"].isNotEmpty
+                      ? DateFormat('dd/MM/yyyy')
+                          .format(DateTime.parse(
+                              CompletedTeamnonRecurring[index]["modify"]))
+                          .toString()
+                      : "")),
+                  DataCell(IconButton(
+                    icon: const Icon(Icons.edit),
                     onPressed: () {
-                      removeTeamNonRecurring(
-                          CompletedTeamnonRecurring[index]["nonRecurringId"]);
-                    })),
-              ],
-              // onSelectChanged: (e) {
-              //   showDialog(
-              //       context: context,
-              //       builder: (BuildContext context) {
-              //         return DialogBox(
-              //             id: foundTeamNonRecurring[index]["user_id"].toString(),
-              //             name: foundTeamNonRecurring[index]['user_name'],
-              //             password: foundTeamNonRecurring[index]['password'],
-              //             isEditing: false);
-              //       });
-              // }
-            );
-          })),
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return editNonRecurring(
+                              id: CompletedTeamnonRecurring[index]
+                                      ["nonRecurringId"]
+                                  .toString(),
+                            );
+                          });
+                    },
+                  )),
+                  DataCell(IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        removeTeamNonRecurring(
+                            CompletedTeamnonRecurring[index]["nonRecurringId"]);
+                      })),
+                ],
+                // onSelectChanged: (e) {
+                //   showDialog(
+                //       context: context,
+                //       builder: (BuildContext context) {
+                //         return DialogBox(
+                //             id: foundTeamNonRecurring[index]["user_id"].toString(),
+                //             name: foundTeamNonRecurring[index]['user_name'],
+                //             password: foundTeamNonRecurring[index]['password'],
+                //             isEditing: false);
+                //       });
+                // }
+              );
+            })),
+      ),
     );
   }
 
   Widget allView() {
     return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-          headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
-          showCheckboxColumn: false,
-          columns: const [
-            DataColumn(label: Text('No.')),
-            DataColumn(
-                label: Expanded(
+      scrollDirection: Axis.vertical,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+            headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
+            showCheckboxColumn: false,
+            columns: const [
+              DataColumn(label: Text('No.')),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Task',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Catehory',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Sub-Category',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Type',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Site',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Stage / Checked',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Day Left / Check by',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Due',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Remark',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Last Mod.',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(
+                  label: Expanded(
+                      child: Text(
+                'Action',
+                textAlign: TextAlign.center,
+              ))),
+              DataColumn(label: Text('')),
+            ],
+            rows: List.generate(foundTeamNonRecurring.length, (index) {
+              final dayLeft = daysBetween(DateTime.now(),
+                  DateTime.parse(foundTeamNonRecurring[index]["due"]));
+              return DataRow(
+                cells: [
+                  DataCell(Text((index + 1).toString())),
+                  DataCell(Container(
+                      margin: EdgeInsets.symmetric(vertical: 15),
+                      child: Text(foundTeamNonRecurring[index]["task"]))),
+                  DataCell(Center(
                     child: Text(
-              'Task',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
+                      foundTeamNonRecurring[index]["category"].split("|")[0],
+                    ),
+                  )),
+                  DataCell(Center(
                     child: Text(
-              'Catehory',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
+                      foundTeamNonRecurring[index]["subCategory"],
+                    ),
+                  )),
+                  DataCell(Center(
                     child: Text(
-              'Sub-Category',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
+                      foundTeamNonRecurring[index]["type"],
+                    ),
+                  )),
+                  DataCell(Center(
                     child: Text(
-              'Type',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
+                      foundTeamNonRecurring[index]["site"],
+                    ),
+                  )),
+                  DataCell(foundTeamNonRecurring[index]["status"] == '100'
+                      ? foundTeamNonRecurring[index]["checked"] == "-"
+                          ? Text("No Review Needed")
+                          : Row(
+                              children: [
+                                Text(foundTeamNonRecurring[index]["checked"]),
+                                Checkbox(
+                                  checkColor: Colors.white,
+                                  activeColor: Colors.blue,
+                                  value: foundTeamNonRecurring[index]
+                                              ["checked"] ==
+                                          'Checked'
+                                      ? true
+                                      : false,
+                                  shape: CircleBorder(),
+                                  onChanged: (value) {
+                                    // setState(() {
+                                    //   check = value!;
+                                    // });
+                                  },
+                                )
+                              ],
+                            )
+                      : LinearPercentIndicator(
+                          barRadius: const Radius.circular(5),
+                          width: 100.0,
+                          lineHeight: 20.0,
+                          percent: double.parse(
+                                  foundTeamNonRecurring[index]["status"]) /
+                              100,
+                          backgroundColor: Colors.grey,
+                          progressColor: Colors.blue,
+                          center: Text(
+                            foundTeamNonRecurring[index]["status"],
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ))),
+                  DataCell(foundTeamNonRecurring[index]["status"] != '100'
+                      ? Container(
+                          width: 100,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(5),
+                            color: dayLeft.isNegative
+                                ? Styles.lateColor
+                                : Styles.activeColor,
+                          ),
+                          child: Center(
+                              child: dayLeft.isNegative
+                                  ? Text(
+                                      dayLeft.abs().toString() + " DAYS LATE",
+                                      style: TextStyle(
+                                          color: Color(0xFFf43a2c),
+                                          fontWeight: FontWeight.bold),
+                                    )
+                                  : Text(
+                                      "$dayLeft DAYS LEFT",
+                                      style: Styles.dayLeftActive,
+                                    )))
+                      : Center(
+                          child: Text(
+                            foundTeamNonRecurring[index]["personCheck"],
+                            textAlign: TextAlign.center,
+                          ),
+                        )),
+                  DataCell(Text(
+                    DateFormat('dd/MM/yyyy')
+                        .format(
+                            DateTime.parse(foundTeamNonRecurring[index]["due"]))
+                        .toString(),
+                  )),
+                  DataCell(Center(
                     child: Text(
-              'Site',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Stage',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Day Left/Check by',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Due',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Remark',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Last Mod.',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(
-                label: Expanded(
-                    child: Text(
-              'Action',
-              textAlign: TextAlign.center,
-            ))),
-            DataColumn(label: Text('')),
-          ],
-          rows: List.generate(foundTeamNonRecurring.length, (index) {
-            final dayLeft = daysBetween(
-                DateTime.parse(foundTeamNonRecurring[index]["startDate"]),
-                DateTime.parse(foundTeamNonRecurring[index]["due"]));
-            return DataRow(
-              cells: [
-                DataCell(Text((index + 1).toString())),
-                DataCell(Text(foundTeamNonRecurring[index]["task"])),
-                DataCell(Text(
-                  foundTeamNonRecurring[index]["category"],
-                )),
-                DataCell(Text(
-                  foundTeamNonRecurring[index]["subCategory"],
-                )),
-                DataCell(Text(
-                  foundTeamNonRecurring[index]["type"],
-                )),
-                DataCell(Text(
-                  foundTeamNonRecurring[index]["site"],
-                )),
-                DataCell(LinearPercentIndicator(
-                    barRadius: const Radius.circular(5),
-                    width: 100.0,
-                    lineHeight: 20.0,
-                    percent:
-                        double.parse(foundTeamNonRecurring[index]["status"]) /
-                            100,
-                    backgroundColor: Colors.grey,
-                    progressColor: Colors.blue,
-                    center: Text(
-                      foundTeamNonRecurring[index]["status"],
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ))),
-                DataCell(foundTeamNonRecurring[index]["status"] != '100'
-                    ? Container(
-                        width: 100,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          color: dayLeft.isNegative
-                              ? Styles.lateColor
-                              : Styles.activeColor,
-                        ),
-                        child: Center(
-                            child: dayLeft.isNegative
-                                ? Text(
-                                    dayLeft.abs().toString() + " DAYS LATE",
-                                    style: TextStyle(
-                                        color: Color(0xFFf43a2c),
-                                        fontWeight: FontWeight.bold),
-                                  )
-                                : Text(
-                                    "$dayLeft DAYS LEFT",
-                                    style: Styles.dayLeftActive,
-                                  )))
-                    : Text("No Review Needed")),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(
-                          DateTime.parse(foundTeamNonRecurring[index]["due"]))
-                      .toString(),
-                )),
-                DataCell(Text(
-                  foundTeamNonRecurring[index]["remark"],
-                )),
-                DataCell(Text(
-                  DateFormat('dd/MM/yyyy')
-                      .format(DateTime.parse(
-                          foundTeamNonRecurring[index]["modify"]))
-                      .toString(),
-                )),
-                DataCell(IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return editNonRecurring(
-                            id: foundTeamNonRecurring[index]["nonRecurringId"]
-                                .toString(),
-                          );
-                        });
-                  },
-                )),
-                DataCell(IconButton(
-                    icon: const Icon(Icons.delete),
+                      foundTeamNonRecurring[index]["remark"],
+                    ),
+                  )),
+                  DataCell(Text(
+                      foundTeamNonRecurring[index]["modify"] != null &&
+                              foundTeamNonRecurring[index]["modify"].isNotEmpty
+                          ? DateFormat('dd/MM/yyyy')
+                              .format(DateTime.parse(
+                                  foundTeamNonRecurring[index]["modify"]))
+                              .toString()
+                          : "")),
+                  DataCell(IconButton(
+                    icon: const Icon(Icons.edit),
                     onPressed: () {
-                      removeTeamNonRecurring(
-                          foundTeamNonRecurring[index]["nonRecurringId"]);
-                    })),
-              ],
-              // onSelectChanged: (e) {
-              //   showDialog(
-              //       context: context,
-              //       builder: (BuildContext context) {
-              //         return DialogBox(
-              //             id: foundTeamNonRecurring[index]["user_id"].toString(),
-              //             name: foundTeamNonRecurring[index]['user_name'],
-              //             password: foundTeamNonRecurring[index]['password'],
-              //             isEditing: false);
-              //       });
-              // }
-            );
-          })),
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return editNonRecurring(
+                              id: foundTeamNonRecurring[index]["nonRecurringId"]
+                                  .toString(),
+                            );
+                          });
+                    },
+                  )),
+                  DataCell(IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        removeTeamNonRecurring(
+                            foundTeamNonRecurring[index]["nonRecurringId"]);
+                      })),
+                ],
+                // onSelectChanged: (e) {
+                //   showDialog(
+                //       context: context,
+                //       builder: (BuildContext context) {
+                //         return DialogBox(
+                //             id: foundTeamNonRecurring[index]["user_id"].toString(),
+                //             name: foundTeamNonRecurring[index]['user_name'],
+                //             password: foundTeamNonRecurring[index]['password'],
+                //             isEditing: false);
+                //       });
+                // }
+              );
+            })),
+      ),
     );
   }
 }

@@ -425,11 +425,11 @@ class _MemberState extends State<Member> {
                                                                         : false,
                                                                     onChanged:
                                                                         ((value) {
-                                                                      toggleSwitch(
-                                                                          value,
-                                                                          _foundUsers[index]
-                                                                              [
-                                                                              "user_id"]);
+                                                                      // toggleSwitch(
+                                                                      //     value,
+                                                                      //     _foundUsers[index]
+                                                                      //         [
+                                                                      //         "user_id"]);
                                                                     }),
                                                                     activeColor:
                                                                         Colors

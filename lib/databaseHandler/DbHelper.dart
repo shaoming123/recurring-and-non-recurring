@@ -66,6 +66,8 @@ class DbHelper {
   String modify = 'modify';
   String nonremark = 'remark';
   String noncompleteDate = 'completeDate';
+  String checked = 'checked';
+  String personCheck = 'personCheck';
   String nonstatus = 'status';
 
   Future<Database> get db async {
@@ -102,7 +104,7 @@ class DbHelper {
     await db.execute(
         "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT ,$from TEXT,$to TEXT, $duration TEXT,$priority TEXT,$recurringOpt TEXT, $recurringEvery TEXT, $recurringUntil TEXT, $remark TEXT, $completeDate TEXT, $status TEXT, $person TEXT)");
     await db.execute(
-        "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY AUTOINCREMENT, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate TEXT,$due TEXT,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $nonstatus TEXT)");
+        "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY AUTOINCREMENT, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate TEXT,$due TEXT,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $checked TEXT, $personCheck TEXT, $nonstatus TEXT)");
   }
 
   Future<int> getUserQuantity() async {

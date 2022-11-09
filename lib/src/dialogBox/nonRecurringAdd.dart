@@ -1,8 +1,11 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/model/user.dart';
+import 'package:multiselect/multiselect.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/manageUser.dart';
 import '../../model/nonRecurring.dart';
@@ -12,19 +15,23 @@ import '../non_recurring.dart';
 import 'package:http/http.dart' as http;
 
 class addNonRecurring extends StatefulWidget {
-  final String userId;
-  const addNonRecurring({super.key, required this.userId});
+  final String userName;
+  final bool task;
+  const addNonRecurring(
+      {super.key, required this.userName, required this.task});
 
   @override
   State<addNonRecurring> createState() => _addNonRecurringState();
 }
+
+Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
 class _addNonRecurringState extends State<addNonRecurring> {
   final _formkey = GlobalKey<FormState>();
   DateTime? due;
   DateTime startDate = DateTime.now();
   String _selectedVal = '';
-  String _selectedUser = '';
+  String? _selectedUser;
   String _selectedSite = '';
   DateTime? completeDate;
   final taskController = TextEditingController();
@@ -43,11 +50,18 @@ class _addNonRecurringState extends State<addNonRecurring> {
     'ALL SITE'
   ];
   List<dynamic> user = [];
+
+  List<String> checkUserList = [];
+  List<String> _selectedCheckUser = [];
+  var selectedCheckUser = ''.obs;
+
   List<int> userid = [];
+  bool check = false;
   @override
   void initState() {
     super.initState();
-
+    _selectedUser = widget.userName;
+    print(_selectedUser);
     getData();
   }
 
@@ -63,12 +77,20 @@ class _addNonRecurringState extends State<addNonRecurring> {
 
   Future<void> getData() async {
     final data = await dbHelper.getItems();
-    print(widget.userId);
+    final SharedPreferences sp = await _pref;
     setState(() {
-      _selectedUser = widget.userId;
+      if (widget.task == false) {
+        for (int i = 0; i < data.length; i++) {
+          user.add({'username': data[i]["user_name"]});
+        }
+      } else {
+        user.add({'username': _selectedUser});
+      }
+
       for (int i = 0; i < data.length; i++) {
-        user.add(
-            {'userId': data[i]["user_id"], 'username': data[i]["user_name"]});
+        if (data[i]["role"] != "Staff") {
+          checkUserList.add(data[i]["user_name"]);
+        }
       }
     });
   }
@@ -139,6 +161,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
         );
       } else {
         var url = 'http://192.168.1.111/testdb/add.php';
+
+        String selectedCheckUser = _selectedCheckUser.join(",");
+
         // final nonrecurring = nonRecurring(
         //     category: _selectedVal,
         //     subCategory: _selectedVal,
@@ -167,8 +192,11 @@ class _addNonRecurringState extends State<addNonRecurring> {
           "due": DateFormat("yyyy-MM-dd").format(due!).toString(),
           "modify": DateFormat("yyyy-MM-dd").format(DateTime.now()).toString(),
           "remark": remarkController.text,
-          "completeDate":
-              DateFormat("yyyy-MM-dd").format(completeDate!).toString(),
+          "completeDate": completeDate != null
+              ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+              : '',
+          "checked": check == true ? "Pending Review" : '-',
+          "personCheck": selectedCheckUser.isEmpty ? '-' : selectedCheckUser,
           "status": statusController.text
         };
         final response = await http.post(Uri.parse(url), body: data);
@@ -390,15 +418,85 @@ class _addNonRecurringState extends State<addNonRecurring> {
                   ),
                 ),
                 onChanged: (val) {
-                  String test = val as String;
                   setState(() {
-                    _selectedUser = test;
+                    _selectedUser = val!;
                   });
                 },
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
                 ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget checkRequest() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              const Text(
+                "Required Checking?",
+                style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+              ),
+              Gap(10),
+              Container(
+                padding: EdgeInsets.all(0),
+                width: 14,
+                height: 14,
+                color: Colors.white,
+                child: Checkbox(
+                  checkColor: Colors.white,
+                  activeColor: Colors.blue,
+                  value: check,
+                  onChanged: (value) {
+                    setState(() {
+                      check = value!;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: check == true ? Color(0xFFd4dce4) : Colors.grey),
+            child: DropdownButtonHideUnderline(
+              child: DropDownMultiSelect(
+                decoration: InputDecoration(border: InputBorder.none),
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+                options: checkUserList,
+
+                // whenEmpty: 'Select position',
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCheckUser = value;
+                    selectedCheckUser.value = "";
+
+                    _selectedCheckUser.forEach((element) {
+                      selectedCheckUser.value =
+                          selectedCheckUser.value + "  " + element;
+                    });
+
+                    // if (selectedPosition.isNotEmpty) {
+                    //   checkFunctionAccess = true;
+                    // }
+                  });
+                },
+                selectedValues: _selectedCheckUser,
               ),
             ),
           ),
@@ -497,7 +595,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
           ),
           const Gap(10),
           Container(
-            margin: const EdgeInsets.only(bottom: 20),
+            margin: const EdgeInsets.only(bottom: 30),
             padding: const EdgeInsets.symmetric(horizontal: 5),
             decoration: BoxDecoration(
                 border: Border.all(color: Colors.white, width: 1),
@@ -576,6 +674,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                       children: [
                         createdOn(),
                         completedDateSelect(),
+                        checkRequest(),
                       ],
                     )),
               ]),

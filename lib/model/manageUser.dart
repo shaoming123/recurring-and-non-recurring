@@ -20,6 +20,7 @@ Future updateSP(UserModel? user, bool add) async {
     sp.setString("email", user.email);
     sp.setString("role", user.role);
     sp.setString("position", user.position);
+    sp.setString("leadFunc", user.leadFunc!);
     sp.setString("site", user.site!);
     sp.setString("siteLead", user.siteLead!);
     sp.setString("phone", user.phone!);

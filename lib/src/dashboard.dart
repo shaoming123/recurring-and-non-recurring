@@ -41,7 +41,7 @@ class _DashboardState extends State<Dashboard> {
     final nonRecurringData = await dbHelper.fetchAllNonRecurring();
 
     final SharedPreferences sp = await _pref;
-    String userID = sp.getInt("user_id").toString();
+    String userName = sp.getString("user_name")!;
     String username = sp.getString("user_name")!;
     List<String> personList = [];
     setState(() {
@@ -68,7 +68,7 @@ class _DashboardState extends State<Dashboard> {
       }
 
       for (int x = 0; x < nonRecurringData.length; x++) {
-        if (nonRecurringData[x]["owner"] == userID) {
+        if (nonRecurringData[x]["owner"] == userName) {
           DateTime dateStart = DateTime.now(); //YOUR DATE GOES HERE
           DateTime dateEnd = DateTime.parse(nonRecurringData[x]["due"]);
           bool isValidDate = dateStart.isBefore(dateEnd); // YOUR DATE GOES HERE

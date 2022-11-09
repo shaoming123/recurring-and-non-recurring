@@ -43,18 +43,20 @@ class _DialogBoxState extends State<DialogBox> {
   var selectedSiteLeadOption = ''.obs;
   List<String> roleList = ["Super Admin", "Manager", "Leader", "Staff"];
   List<String> positiondropdownList = [
-    "Authority & Developer",
-    "Community Management",
-    "Defect",
-    "Financial Management",
-    "Human Resources Management",
-    "ICT",
-    "Legal",
-    "Maintenance Management",
-    "Marketing & Creative",
-    "Operations",
-    "Procurement",
-    "Statistic",
+    'Authority & Developer',
+    'Community Management',
+    'Defect',
+    'Engineering',
+    'Financial Management',
+    'Human Resources Management',
+    'ICT',
+    'Legal',
+    'Training & Development',
+    'Maintenance Management',
+    'Marketing & Creative',
+    'Operations',
+    'Procurement',
+    'Statistic'
   ];
 
   List<String> sitedropdownList = [

@@ -34,30 +34,40 @@ class _AddMemberState extends State<AddMember> {
   List<String> selectedSite = <String>[];
   List<String> selectedSiteLead = <String>[];
   List<String> positiondropdownList = [
-    "position_one",
-    "position_two",
-    "position_three",
-    "position_four",
-    "position_five",
-    "position_six",
+    'Authority & Developer',
+    'Community Management',
+    'Defect',
+    'Engineering',
+    'Financial Management',
+    'Human Resources Management',
+    'ICT',
+    'Legal',
+    'Training & Development',
+    'Maintenance Management',
+    'Marketing & Creative',
+    'Operations',
+    'Procurement',
+    'Statistic'
   ];
 
   List<String> sitedropdownList = [
-    "site_one",
-    "site_two",
-    "site_three",
-    "site_four",
-    "site_five",
-    "site_six",
+    "CRZ",
+    "SKE",
+    "PR8",
+    "PCR",
+    "SPP",
+    "SKP",
+    "AD2"
   ];
 
   List<String> siteLeaddropdownList = [
-    "siteLead_one",
-    "siteLead_two",
-    "siteLead_three",
-    "siteLead_four",
-    "siteLead_five",
-    "siteLead_six",
+    "CRZ",
+    "SKE",
+    "PR8",
+    "PCR",
+    "SPP",
+    "SKP",
+    "AD2"
   ];
   List<String> roleList = ["Super Admin", "Manager", "Leader", "Staff"];
   String? userRole;

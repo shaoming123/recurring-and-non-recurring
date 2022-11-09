@@ -73,7 +73,7 @@ class _EventAddState extends State<EventAdd> {
   ];
   List<String> userList = [];
   bool checkUser = false;
-
+  DbHelper dbHelper = DbHelper();
   var selectedOption = ''.obs;
   @override
   void initState() {

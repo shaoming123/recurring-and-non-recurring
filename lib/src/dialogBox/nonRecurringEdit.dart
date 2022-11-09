@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:multiselect/multiselect.dart';
 import '../../model/manageUser.dart';
 import '../../model/nonRecurring.dart';
 import '../../util/checkInternet.dart';
@@ -22,7 +25,7 @@ late List<dynamic> user = [];
 
 class _editNonRecurringState extends State<editNonRecurring> {
   final _formkey = GlobalKey<FormState>();
-  DateTime due = DateTime.now();
+  DateTime? due;
   DateTime startDate = DateTime.now();
   String _selectedVal = '';
   String _selectedUser = '';
@@ -46,6 +49,10 @@ class _editNonRecurringState extends State<editNonRecurring> {
     'ALL SITE'
   ];
 
+  List<String> checkUserList = [];
+  List<String> _selectedCheckUser = [];
+  var selectedCheckUser = ''.obs;
+  bool check = false;
   List<int> userid = [];
   @override
   void initState() {
@@ -56,12 +63,24 @@ class _editNonRecurringState extends State<editNonRecurring> {
 
   Future<void> getDataDetails(int id) async {
     nonRecurring_edit = await dbHelper.fetchANonRecurring(id);
+    final data = await dbHelper.getItems();
     var url = 'http://192.168.1.111/testdb/read.php';
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "user_details"});
 
     List userData = json.decode(response.body);
     setState(() {
+      for (int i = 0; i < data.length; i++) {
+        if (data[i]["role"] != "Staff") {
+          checkUserList.add(data[i]["user_name"]);
+        }
+      }
+
+      if (nonRecurring_edit[0]['checked'] != '-' &&
+          nonRecurring_edit[0]['personCheck'] != '-') {
+        check = true;
+      }
+
       user = userData;
 
       _selectedVal = "One";
@@ -71,16 +90,20 @@ class _editNonRecurringState extends State<editNonRecurring> {
       statusController.text = nonRecurring_edit[0]['status'];
       taskController.text = nonRecurring_edit[0]['task'];
       remarkController.text = nonRecurring_edit[0]['remark'];
+      due = DateTime.parse(nonRecurring_edit[0]['due']);
 
-      if (nonRecurring_edit[0]['completeDate'] != null) {
+      if (nonRecurring_edit[0]['personCheck'] != '-') {
+        _selectedCheckUser = nonRecurring_edit[0]['personCheck'].split(",");
+      }
+      if (nonRecurring_edit[0]['completeDate'] != null &&
+          nonRecurring_edit[0]['completeDate'].isNotEmpty) {
         completeDate = DateTime.parse(nonRecurring_edit[0]['completeDate']);
       }
-      if (nonRecurring_edit[0]['startDate'] != null) {
+      if (nonRecurring_edit[0]['startDate'] != null &&
+          nonRecurring_edit[0]['startDate'].isNotEmpty) {
         startDate = DateTime.parse(nonRecurring_edit[0]['startDate']);
       }
-      if (nonRecurring_edit[0]['due'] != null) {
-        due = DateTime.parse(nonRecurring_edit[0]['due']);
-      }
+
       if (nonRecurring_edit[0]['modify'] != null &&
           nonRecurring_edit[0]['modify'].isNotEmpty) {
         modify = DateTime.parse(nonRecurring_edit[0]['modify']);
@@ -175,11 +198,13 @@ class _editNonRecurringState extends State<editNonRecurring> {
         "site": _selectedSite,
         "task": taskController.text,
         "owner": _selectedUser,
-        "startDate": startDate.toString(),
-        "due": due.toString(),
-        "modify": DateTime.now().toString(),
+        "startDate": DateFormat("yyyy-MM-dd").format(startDate).toString(),
+        "due": DateFormat("yyyy-MM-dd").format(due!).toString(),
+        "modify": DateFormat("yyyy-MM-dd").format(DateTime.now()).toString(),
         "remark": remarkController.text,
-        "completeDate": completeDate.toString(),
+        "completeDate": completeDate != null
+            ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+            : '',
         "status": statusController.text
       };
 
@@ -421,6 +446,77 @@ class _editNonRecurringState extends State<editNonRecurring> {
       );
     }
 
+    Widget checkRequest() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              const Text(
+                "Required Checking?",
+                style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+              ),
+              Gap(10),
+              Container(
+                padding: EdgeInsets.all(0),
+                width: 14,
+                height: 14,
+                color: Colors.white,
+                child: Checkbox(
+                  checkColor: Colors.white,
+                  activeColor: Colors.blue,
+                  value: check,
+                  onChanged: (value) {
+                    setState(() {
+                      check = value!;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: check == true ? Color(0xFFd4dce4) : Colors.grey),
+            child: DropdownButtonHideUnderline(
+              child: DropDownMultiSelect(
+                decoration: InputDecoration(border: InputBorder.none),
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+                options: checkUserList,
+
+                // whenEmpty: 'Select position',
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCheckUser = value;
+                    selectedCheckUser.value = "";
+
+                    _selectedCheckUser.forEach((element) {
+                      selectedCheckUser.value =
+                          selectedCheckUser.value + "  " + element;
+                    });
+
+                    // if (selectedPosition.isNotEmpty) {
+                    //   checkFunctionAccess = true;
+                    // }
+                  });
+                },
+                selectedValues: _selectedCheckUser,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     Widget deadlineSelect() {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -440,7 +536,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
                 color: const Color(0xFFd4dce4)),
             child: ListTile(
               title: Text(
-                due == null ? 'dd/mm/yy' : Utils.toDate(due),
+                due == null ? 'dd/mm/yy' : Utils.toDate(due!),
                 style: const TextStyle(fontSize: 14),
               ),
               trailing: const Icon(
@@ -480,7 +576,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
                 color: const Color(0xFFd4dce4)),
             child: ListTile(
               title: Text(
-                Utils.toDate(startDate),
+                startDate == null ? 'dd/mm/yy' : Utils.toDate(startDate),
                 style: const TextStyle(fontSize: 14),
               ),
               trailing: const Icon(
@@ -591,6 +687,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
                       children: [
                         createdOn(),
                         completedDateSelect(),
+                        checkRequest()
                       ],
                     )),
               ]),
