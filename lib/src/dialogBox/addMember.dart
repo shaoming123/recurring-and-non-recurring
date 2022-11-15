@@ -232,6 +232,7 @@ class _AddMemberState extends State<AddMember> {
                 isExpanded: true,
                 hint: const Text("Choose item"),
                 value: _selectedRole == '' ? null : _selectedRole,
+                selectedItemHighlightColor: Colors.grey,
                 validator: (value) {
                   return value == null ? 'Please select' : null;
                 },

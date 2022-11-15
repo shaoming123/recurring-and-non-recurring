@@ -38,55 +38,55 @@ class EventDataSource extends CalendarDataSource {
     return getEvent(index).recurringEvery;
   }
 
-  @override
-  String getRecurrenceRule(int index) {
-    String freq = getEvent(index).recurringOpt.toUpperCase();
-    String recurringDate = DateFormat('yyyyMMdd')
-        .format(DateTime.parse(getEvent(index).recurringUntil));
-    String recurringEvery = getEvent(index).recurringEvery.toString();
-    // print(getEvent(index).recurringId);
-    late String rule;
-    print(getEvent(index).recurringEvery);
+  // @override
+  // String getRecurrenceRule(int index) {
+  //   String freq = getEvent(index).recurringOpt.toUpperCase();
+  //   String recurringDate = DateFormat('yyyyMMdd')
+  //       .format(DateTime.parse(getEvent(index).recurringUntil));
+  //   String recurringEvery = getEvent(index).recurringEvery.toString();
+  //   // print(getEvent(index).recurringId);
+  //   late String rule;
+  //   print(getEvent(index).recurringEvery);
 
-    // Once
-    if (getEvent(index).recurringOpt == 'Once') {
-      String difference = daysBetween(DateTime.parse(getEvent(index).to),
-              DateTime.parse(getEvent(index).recurringUntil))
-          .toString();
+  //   // Once
+  //   if (getEvent(index).recurringOpt == 'Once') {
+  //     String difference = daysBetween(DateTime.parse(getEvent(index).to),
+  //             DateTime.parse(getEvent(index).recurringUntil))
+  //         .toString();
 
-      rule = 'FREQ=DAILY;INTERVAL=$difference;UNTIL=$recurringDate';
+  //     rule = 'FREQ=DAILY;INTERVAL=$difference;UNTIL=$recurringDate';
 
-      //Daily
-    } else if (getEvent(index).recurringOpt == 'Daily') {
-      int dailyInterval = int.parse(getEvent(index).duration) +
-          int.parse(getEvent(index).recurringEvery);
+  //     //Daily
+  //   } else if (getEvent(index).recurringOpt == 'Daily') {
+  //     int dailyInterval = int.parse(getEvent(index).duration) +
+  //         int.parse(getEvent(index).recurringEvery);
 
-      rule = 'FREQ=$freq;INTERVAL=$dailyInterval;UNTIL=$recurringDate';
+  //     rule = 'FREQ=$freq;INTERVAL=$dailyInterval;UNTIL=$recurringDate';
 
-      //Weekly
-    } else if (getEvent(index).recurringOpt == 'Weekly') {
-      String weekday = DateFormat('EEEE')
-          .format(DateTime.parse(getEvent(index).from))
-          .toUpperCase();
+  //     //Weekly
+  //   } else if (getEvent(index).recurringOpt == 'Weekly') {
+  //     String weekday = DateFormat('EEEE')
+  //         .format(DateTime.parse(getEvent(index).from))
+  //         .toUpperCase();
 
-      rule =
-          'FREQ=$freq;INTERVAL=$recurringEvery;BYDAY=$weekday;UNTIL=$recurringDate';
+  //     rule =
+  //         'FREQ=$freq;INTERVAL=$recurringEvery;BYDAY=$weekday;UNTIL=$recurringDate';
 
-      // Monthly
-    } else if (getEvent(index).recurringOpt == 'Monthly') {
-      String dateNumber =
-          DateFormat('dd').format(DateTime.parse(getEvent(index).from));
+  //     // Monthly
+  //   } else if (getEvent(index).recurringOpt == 'Monthly') {
+  //     String dateNumber =
+  //         DateFormat('dd').format(DateTime.parse(getEvent(index).from));
 
-      rule =
-          'FREQ=$freq;BYMONTHDAY=$dateNumber;INTERVAL=$recurringEvery;UNTIL=$recurringDate';
+  //     rule =
+  //         'FREQ=$freq;BYMONTHDAY=$dateNumber;INTERVAL=$recurringEvery;UNTIL=$recurringDate';
 
-      // Yearly
-    } else if (getEvent(index).recurringOpt == 'Yearly') {
-      //  rule = 'FREQ=YEARLY;BYMONTHDAY=17;BYMONTH=10;INTERVAL=1;UNTIL=20231229';
-    }
+  //     // Yearly
+  //   } else if (getEvent(index).recurringOpt == 'Yearly') {
+  //     //  rule = 'FREQ=YEARLY;BYMONTHDAY=17;BYMONTH=10;INTERVAL=1;UNTIL=20231229';
+  //   }
 
-    return rule;
-  }
+  //   return rule;
+  // }
 
   String getSubCategory(int index) => getEvent(index).subCategory;
 

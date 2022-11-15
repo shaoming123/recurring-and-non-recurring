@@ -35,33 +35,33 @@ class Controller {
   }
 
   Future addRecurringToSqlite() async {
-    // await dbHelper.deleteAllEvent();
-    // var url = 'http://192.168.1.111/testdb/read.php';
-    // var response =
-    //     await http.post(Uri.parse(url), body: {"tableName": "tasks"});
-    // List recurringData = json.decode(response.body);
+    await dbHelper.deleteAllEvent();
+    var url = 'http://192.168.1.111/testdb/read.php';
+    var response =
+        await http.post(Uri.parse(url), body: {"tableName": "tasks"});
+    List recurringData = json.decode(response.body);
 
-    // for (int i = 0; i < recurringData.length; i++) {
-    //   final data = Event(
-    //       recurringId: int.parse(recurringData[i]["id"]),
-    //       category: recurringData[i]["category"],
-    //       subCategory: recurringData[i]["subCategory"],
-    //       type: recurringData[i]["type"],
-    //       site: recurringData[i]["site"],
-    //       task: recurringData[i]["task"],
-    //       duration: recurringData[i]["duration"],
-    //       priority: recurringData[i]["priority"],
-    //       from: recurringData[i]["start"],
-    //       to: recurringData[i]["end"],
-    //       person: recurringData[i]["person"],
-    //       remark: recurringData[i]["remarks"],
-    //       recurringOpt: recurringData[i]["recurring"],
-    //       recurringEvery: recurringData[i]["recurringGap"],
-    //       recurringUntil: recurringData[i]["recurringGap"],
-    //       status: recurringData[i]["status"]);
+    for (int i = 0; i < recurringData.length; i++) {
+      final data = Event(
+          recurringId: int.parse(recurringData[i]["id"]),
+          category: recurringData[i]["category"],
+          subCategory: recurringData[i]["subcategory"],
+          type: recurringData[i]["type"],
+          site: recurringData[i]["site"],
+          task: recurringData[i]["task"],
+          duration: recurringData[i]["duration"],
+          priority: recurringData[i]["priority"],
+          from: recurringData[i]["start"],
+          to: recurringData[i]["end"],
+          person: recurringData[i]["person"],
+          remark: recurringData[i]["remarks"],
+          recurringOpt: recurringData[i]["recurring"],
+          recurringEvery: recurringData[i]["recurringGap"],
+          recurringUntil: "",
+          status: recurringData[i]["status"]);
 
-    //   await dbHelper.addEvent(data);
-    // }
+      await dbHelper.addEvent(data);
+    }
   }
 
   Future addNonRecurringToSqlite() async {

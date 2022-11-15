@@ -223,6 +223,7 @@ class _DialogBoxState extends State<DialogBox> {
                 isExpanded: true,
                 hint: const Text("Choose item"),
                 value: userRole == '' ? null : userRole,
+                selectedItemHighlightColor: Colors.grey,
                 validator: (value) {
                   return value == null ? 'Please select' : null;
                 },

@@ -1,4 +1,5 @@
 // ignore: file_names
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -17,8 +18,12 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/manageUser.dart';
+import '../../model/selection.dart';
 import '../../provider/event_provider.dart';
 import '../../util/datetime.dart';
+import 'package:http/http.dart' as http;
+
+import '../../util/selection.dart';
 
 class EventAdd extends StatefulWidget {
   final Event? event;
@@ -50,17 +55,7 @@ class _EventAddState extends State<EventAdd> {
   String _selectedRecurring = '';
   String _selectedSite = '';
   List<String> list = <String>['One', 'Two', 'Three', 'Four'];
-  List<String> siteList = <String>[
-    'HQ',
-    'CRZ',
-    'PR8',
-    'PCR',
-    'AD2',
-    'SKE',
-    'SKP',
-    'SPP',
-    'ALL SITE'
-  ];
+  List<String> siteList = <String>[];
   List<Map<String, dynamic>> category = [];
   List<String> priorityList = <String>['Low', 'Moderate', 'High'];
   List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
@@ -75,16 +70,46 @@ class _EventAddState extends State<EventAdd> {
   bool checkUser = false;
   DbHelper dbHelper = DbHelper();
   var selectedOption = ''.obs;
+
+  List categoryData = [];
+  String userPosition = '';
+
+  TypeSelect? typeselect;
+  List<TypeSelect> typeList = <TypeSelect>[];
+
+  dynamic? _selectedCategory;
+  String? _selectedSubCategory;
   @override
   void initState() {
     super.initState();
-    getUserData();
+
+    Future.delayed(Duration.zero, () async {
+      final SharedPreferences sp = await _pref;
+      String userRole = sp.getString("role")!;
+      List functionAccess = sp.getString("position")!.split(",");
+      final typeOptions =
+          await Selection().typeSelection(functionAccess, userRole);
+      categoryData =
+          await Selection().categorySelection(functionAccess, userRole);
+      userPosition = sp.getString("position")!;
+      //type selection
+      List typeDate = [];
+      typeDate = typeOptions;
+
+      for (int i = 0; i < typeDate.length; i++) {
+        typeList.add(TypeSelect(
+            id: typeDate[i]['id'],
+            value: typeDate[i]['value'],
+            bold: typeDate[i]['bold']));
+      }
+
+      getData();
+    });
 
     setState(() {
       fromDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 9, 00);
       toDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 17, 30);
       category = ListFile().category;
-      print(category);
     });
   }
 
@@ -98,17 +123,26 @@ class _EventAddState extends State<EventAdd> {
     super.dispose();
   }
 
-  Future<void> getUserData() async {
+  Future<void> getData() async {
     final data = await dbHelper.getItems();
     final SharedPreferences sp = await _pref;
 
     String user = sp.getString("user_name")!;
+    final siteOptions = await Selection().siteSelection();
+
     setState(() {
-      userList = [];
+      for (final val in siteOptions) {
+        siteList = val["options"];
+      }
+
+      //
+
+      //
       _selectedUser.add(user);
       for (int i = 0; i < data.length; i++) {
         userList.add(data[i]["user_name"]);
       }
+      //
     });
   }
 
@@ -229,33 +263,67 @@ class _EventAddState extends State<EventAdd> {
 
     if (isValid) {
       String selectedUser = _selectedUser.join(",");
-      final event = Event(
-          category: _selectedVal,
-          subCategory: _selectedVal,
-          type: _selectedVal,
-          site: _selectedSite,
-          task: taskController.text,
-          from: fromDate.toString(),
-          to: toDate.toString(),
-          person: selectedUser,
-          // rule: 'FREQ=DAILY;INTERVAL=1;COUNT=20',
-          // backgroundColor: calendarColor.toString(),
-          duration: durationController.text,
-          priority: _selectedPriority,
-          recurringOpt: _selectedRecurring,
-          recurringEvery:
-              recurringController.text.isEmpty ? '0' : recurringController.text,
-          recurringUntil: recurringDate.toString(),
-          remark: remarkController.text,
-          completeDate: completeDate.toString(),
-          status: _selectedStatus);
 
-      await dbHelper.addEvent(event);
+      var url = 'http://192.168.1.111/testdb/add.php';
+      // final event = Event(
+      //     category: _selectedVal,
+      //     subCategory: _selectedVal,
+      //     type: _selectedVal,
+      //     site: _selectedSite,
+      //     task: taskController.text,
+      //     from: fromDate.toString(),
+      //     to: toDate.toString(),
+      //     person: selectedUser,
+      //     // rule: 'FREQ=DAILY;INTERVAL=1;COUNT=20',
+      //     // backgroundColor: calendarColor.toString(),
+      //     duration: durationController.text,
+      //     priority: _selectedPriority,
+      //     recurringOpt: _selectedRecurring,
+      //     recurringEvery:
+      //         recurringController.text.isEmpty ? '0' : recurringController.text,
+      //     recurringUntil: recurringDate.toString(),
+      //     remark: remarkController.text,
+      //     completeDate: completeDate.toString(),
+      //     status: _selectedStatus);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Recurring()),
-      );
+      // await dbHelper.addEvent(event);
+
+      Map<String, dynamic> data = {
+        "dataTable": "tasks",
+        "category": _selectedCategory["variables"] +
+            "|" +
+            _selectedCategory["department"],
+        "subCategory": _selectedSubCategory,
+        "type": typeselect!.value,
+        "site": _selectedSite,
+        "task": taskController.text,
+        "start": fromDate.toString(),
+        "end": toDate.toString(),
+        "person": selectedUser,
+        // "startDate": DateFormat("yyyy-MM-dd").format(startDate).toString(),
+        // "deadline": DateFormat("yyyy-MM-dd").format(due!).toString(),
+        "modify": DateFormat("yyyy-MM-dd").format(DateTime.now()).toString(),
+        "remark": remarkController.text,
+
+        "completeDate": completeDate != null
+            ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+            : '',
+
+        "status": _selectedStatus,
+      };
+      final response = await http.post(Uri.parse(url), body: data);
+
+      if (response.statusCode == 200) {
+        Navigator.pop(context);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Recurring()),
+        );
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Adding Unsuccessful !")));
+      }
     }
   }
 
@@ -276,7 +344,54 @@ class _EventAddState extends State<EventAdd> {
   contentBox(context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    Widget user() {
+    Widget categoryDropdown() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFd4dce4)),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButtonFormField2<dynamic>(
+            iconSize: 30,
+            isExpanded: true,
+            hint: const Text("Choose item"),
+            value: _selectedCategory,
+            selectedItemHighlightColor: Colors.grey,
+            validator: (value) {
+              return value == null ? 'Please select' : null;
+            },
+            items: [
+              for (final item in categoryData)
+                item["bold"] == true
+                    ? DropdownMenuItem(
+                        enabled: false,
+                        child: Text(item['value'],
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)))
+                    : DropdownMenuItem(
+                        value: item['value'],
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Text(item['value']['variables']),
+                        ))
+            ],
+            onChanged: (value) {
+              setState(() {
+                _selectedCategory = value;
+              });
+            },
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget subCategoryDropdown() {
       return Container(
         margin: const EdgeInsets.only(bottom: 30),
         padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -289,25 +404,75 @@ class _EventAddState extends State<EventAdd> {
             iconSize: 30,
             isExpanded: true,
             hint: const Text("Choose item"),
-            value: _selectedVal == '' ? null : _selectedVal,
+            value: _selectedCategory != null
+                ? _selectedCategory['options'].contains(_selectedSubCategory)
+                    ? _selectedSubCategory
+                    : null
+                : null,
+            selectedItemHighlightColor: Colors.grey,
             validator: (value) {
               return value == null ? 'Please select' : null;
             },
-            items: list
-                .map(
-                  (e) => DropdownMenuItem(
-                    value: e,
-                    child: Text(
-                      e,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ),
-                )
-                .toList(),
+            items: _selectedCategory != null
+                ? [
+                    for (final item in _selectedCategory['options'])
+                      DropdownMenuItem(value: item, child: Text(item))
+                  ]
+                : [],
             onChanged: (val) {
-              String test = val as String;
               setState(() {
-                _selectedVal = test;
+                _selectedSubCategory = val;
+              });
+            },
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget typeDropdown() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: Color(0xFFd4dce4)),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButtonFormField2<TypeSelect>(
+            iconSize: 30,
+            isExpanded: true,
+            hint: Text("Choose item"),
+            value: typeselect,
+            selectedItemHighlightColor: Colors.grey,
+            validator: (value) {
+              return value == null ? 'Please select' : null;
+            },
+            items: typeList.map((TypeSelect e) {
+              return e.bold == "true"
+                  ? DropdownMenuItem<TypeSelect>(
+                      enabled: false,
+                      child: Text(
+                        e.value,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  : DropdownMenuItem<TypeSelect>(
+                      value: e,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Text(
+                          e.value,
+                        ),
+                      ),
+                    );
+            }).toList(),
+            onChanged: (newValue) {
+              setState(() {
+                typeselect = newValue!;
               });
             },
             icon: const Icon(
@@ -374,6 +539,7 @@ class _EventAddState extends State<EventAdd> {
             isExpanded: true,
             hint: const Text("Choose item"),
             value: _selectedSite == '' ? null : _selectedSite,
+            selectedItemHighlightColor: Colors.grey,
             validator: (value) {
               return value == null ? 'Please select' : null;
             },
@@ -417,6 +583,7 @@ class _EventAddState extends State<EventAdd> {
             isExpanded: true,
             hint: const Text("Choose item"),
             value: _selectedPriority == '' ? null : _selectedPriority,
+            selectedItemHighlightColor: Colors.grey,
             validator: (value) {
               return value == null ? 'Please select' : null;
             },
@@ -460,6 +627,7 @@ class _EventAddState extends State<EventAdd> {
             isExpanded: true,
             hint: const Text("Choose item"),
             value: _selectedStatus == '' ? null : _selectedStatus,
+            selectedItemHighlightColor: Colors.grey,
             validator: (value) {
               return value == null ? 'Please select' : null;
             },
@@ -503,6 +671,7 @@ class _EventAddState extends State<EventAdd> {
             isExpanded: true,
             hint: const Text("Choose item"),
             value: _selectedRecurring == '' ? null : _selectedRecurring,
+            selectedItemHighlightColor: Colors.grey,
             validator: (value) {
               return value == null ? 'Please select' : null;
             },
@@ -862,19 +1031,19 @@ class _EventAddState extends State<EventAdd> {
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                     const Gap(10),
-                    user(),
+                    categoryDropdown(),
                     const Text(
                       "Sub-Category :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                     const Gap(10),
-                    user(),
+                    subCategoryDropdown(),
                     const Text(
                       "Type :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                     const Gap(10),
-                    user(),
+                    typeDropdown(),
                     const Text(
                       "Site :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),

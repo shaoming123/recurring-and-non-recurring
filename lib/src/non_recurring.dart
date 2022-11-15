@@ -31,6 +31,7 @@ class _NonRecurringState extends State<NonRecurring> {
   String pendingReviewNumber = '0';
   int requestReview = 0;
   int pendingReview = 0;
+  bool arrowChange = false;
   DbHelper dbHelper = DbHelper();
   List<Map<String, dynamic>> allNonRecurring = [];
   List<Map<String, dynamic>> foundNonRecurring = [];
@@ -236,14 +237,74 @@ class _NonRecurringState extends State<NonRecurring> {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        Task(
-                            allNonRecurring: allNonRecurring,
-                            foundNonRecurring: foundNonRecurring,
-                            LatenonRecurring: LatenonRecurring,
-                            ActivenonRecurring: ActivenonRecurring,
-                            CompletednonRecurring: CompletednonRecurring),
+                        Container(
+                          margin: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Color(0xFF88a4d4),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 1,
+                                blurRadius: 3,
+                                // ignore: prefer_const_constructors
+                                offset:
+                                    Offset(0, 2), // changes position of shadow
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              ExpansionTile(
+                                title: Text("Task Overview",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                // key: PageStorageKey<Task>(Task),
+                                maintainState: true,
+                                children: <Widget>[
+                                  Task(
+                                      allNonRecurring: allNonRecurring,
+                                      foundNonRecurring: foundNonRecurring,
+                                      LatenonRecurring: LatenonRecurring,
+                                      ActivenonRecurring: ActivenonRecurring,
+                                      CompletednonRecurring:
+                                          CompletednonRecurring),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                         const Gap(20),
-                        userRole != 'Staff' ? TeamTask() : Container(),
+                        userRole != 'Staff'
+                            ? Container(
+                                margin: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF88a4d4),
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 1,
+                                      blurRadius: 3,
+                                      // ignore: prefer_const_constructors
+                                      offset: Offset(
+                                          0, 2), // changes position of shadow
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    ExpansionTile(
+                                        title: Text(
+                                          "Team Status Overview",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        children: <Widget>[TeamTask()]),
+                                  ],
+                                ),
+                              )
+                            : Container(),
                       ],
                     ),
                   ),

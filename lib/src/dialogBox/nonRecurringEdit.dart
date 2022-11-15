@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,10 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:ipsolution/model/selection.dart';
+import 'package:ipsolution/util/selection.dart';
 import 'package:multiselect/multiselect.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/manageUser.dart';
 import '../../model/nonRecurring.dart';
 import '../../util/checkInternet.dart';
@@ -22,6 +26,7 @@ class editNonRecurring extends StatefulWidget {
 }
 
 late List<dynamic> user = [];
+Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
 class _editNonRecurringState extends State<editNonRecurring> {
   final _formkey = GlobalKey<FormState>();
@@ -30,6 +35,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
   String _selectedVal = '';
   String _selectedUser = '';
   String _selectedSite = '';
+  String _selectedType = '';
   DateTime? completeDate;
   DateTime? modify;
   List<Map<String, dynamic>> nonRecurring_edit = [];
@@ -37,28 +43,64 @@ class _editNonRecurringState extends State<editNonRecurring> {
   TextEditingController statusController = TextEditingController();
   TextEditingController remarkController = TextEditingController();
   List<String> list = <String>['One', 'Two', 'Three', 'Four'];
-  List<String> siteList = <String>[
-    'HQ',
-    'CRZ',
-    'PR8',
-    'PCR',
-    'AD2',
-    'SKE',
-    'SKP',
-    'SPP',
-    'ALL SITE'
-  ];
+  List<String> siteList = <String>[];
 
   List<String> checkUserList = [];
   List<String> _selectedCheckUser = [];
   var selectedCheckUser = ''.obs;
   bool check = false;
   List<int> userid = [];
+  List categoryData = [];
+  List<TypeSelect> typeList = <TypeSelect>[];
+  TypeSelect? typeselect;
+  dynamic _selectedCategory;
+  String? _selectedSubCategory;
+  List _selectedData = [];
   @override
   void initState() {
-    super.initState();
+    Future.delayed(Duration.zero, () async {
+      final SharedPreferences sp = await _pref;
+      List functionAccess = sp.getString("position")!.split(",");
+      String userRole = sp.getString("role")!;
+      final typeOptions =
+          await Selection().typeSelection(functionAccess, userRole);
+      categoryData =
+          await Selection().categorySelection(functionAccess, userRole);
 
-    getDataDetails(int.parse(widget.id));
+      //type selection
+      setState(() async {
+        List typeDate = [];
+        typeDate = typeOptions;
+        for (int i = 0; i < typeDate.length; i++) {
+          typeList.add(TypeSelect(
+              id: typeDate[i]['id'],
+              value: typeDate[i]['value'],
+              bold: typeDate[i]['bold']));
+        }
+        await getDataDetails(int.parse(widget.id));
+
+        for (final val in typeList) {
+          if (val.value == _selectedType) {
+            setState(() {
+              typeselect = val;
+            });
+
+            break;
+          }
+        }
+
+        for (final item in categoryData) {
+          // print(item['value']);
+          if (item['bold'] == false &&
+              item['value']['department'] == _selectedData[1] &&
+              item['value']['variables'] == _selectedData[0]) {
+            _selectedCategory = item['value'];
+          }
+        }
+      });
+    });
+
+    super.initState();
   }
 
   Future<void> getDataDetails(int id) async {
@@ -69,7 +111,14 @@ class _editNonRecurringState extends State<editNonRecurring> {
         await http.post(Uri.parse(url), body: {"tableName": "user_details"});
 
     List userData = json.decode(response.body);
+    final siteOptions = await Selection().siteSelection();
+
     setState(() {
+      //site options
+      for (final val in siteOptions) {
+        siteList = val["options"];
+      }
+
       for (int i = 0; i < data.length; i++) {
         if (data[i]["role"] != "Staff") {
           checkUserList.add(data[i]["user_name"]);
@@ -83,8 +132,9 @@ class _editNonRecurringState extends State<editNonRecurring> {
 
       user = userData;
 
-      _selectedVal = "One";
-      //  _selectedVal = nonRecurring_edit[0]['category'];
+      _selectedData = nonRecurring_edit[0]['category'].split("|");
+      _selectedSubCategory = nonRecurring_edit[0]['subCategory'];
+      _selectedType = nonRecurring_edit[0]['type'];
       _selectedSite = nonRecurring_edit[0]['site'];
       _selectedUser = nonRecurring_edit[0]['owner'];
       statusController.text = nonRecurring_edit[0]['status'];
@@ -108,6 +158,12 @@ class _editNonRecurringState extends State<editNonRecurring> {
           nonRecurring_edit[0]['modify'].isNotEmpty) {
         modify = DateTime.parse(nonRecurring_edit[0]['modify']);
       }
+
+      // for (final val in categoryData) {
+      //   print(val['value']);
+      //   if (val['value']['variable'] == _selectedData[0] &&
+      //       val['value'] == _selectedData[1]) {}
+      // }
 
       // for (int i = 0; i < userData.length; i++) {
       //   if (_selectedUser != userData[i]["username"]) {
@@ -191,10 +247,13 @@ class _editNonRecurringState extends State<editNonRecurring> {
       // await dbHelper.updateNonRecurring(nonrecurring);
 
       Map<String, dynamic> data = {
+        "dataTable": "nonrecurring",
         "nonRecurringId": id.toString(),
-        "category": _selectedVal,
-        "subCategory": _selectedVal,
-        "type": _selectedVal,
+        "category": _selectedCategory["variables"] +
+            "|" +
+            _selectedCategory["department"],
+        "subCategory": _selectedSubCategory,
+        "type": _selectedType,
         "site": _selectedSite,
         "task": taskController.text,
         "owner": _selectedUser,
@@ -207,6 +266,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
             : '',
         "status": statusController.text
       };
+      print(data);
 
       final response = await http.post(Uri.parse(url), body: data);
 
@@ -307,25 +367,146 @@ class _editNonRecurringState extends State<editNonRecurring> {
                 iconSize: 30,
                 isExpanded: true,
                 hint: const Text("Choose item"),
-                value: _selectedVal == '' ? null : _selectedVal,
+                value: _selectedCategory != null
+                    ? _selectedCategory['options']
+                            .contains(_selectedSubCategory)
+                        ? _selectedSubCategory
+                        : null
+                    : null,
+                selectedItemHighlightColor: Colors.grey,
                 validator: (value) {
                   return value == null ? 'Please select' : null;
                 },
-                items: list
-                    .map(
-                      (e) => DropdownMenuItem(
-                        value: e,
-                        child: Text(
-                          e,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      ),
-                    )
-                    .toList(),
+                items: _selectedCategory != null
+                    ? [
+                        for (final item in _selectedCategory['options'])
+                          DropdownMenuItem(value: item, child: Text(item))
+                      ]
+                    : [],
                 onChanged: (val) {
-                  String test = val as String;
                   setState(() {
-                    _selectedVal = test;
+                    _selectedSubCategory = val;
+                  });
+                },
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget dropdownCategory() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Category',
+            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButtonFormField2<dynamic>(
+                iconSize: 30,
+                isExpanded: true,
+                hint: const Text("Choose item"),
+                value: _selectedCategory,
+                selectedItemHighlightColor: Colors.grey,
+                validator: (value) {
+                  return value == null ? 'Please select' : null;
+                },
+                items: [
+                  for (final item in categoryData)
+                    item["bold"] == true
+                        ? DropdownMenuItem(
+                            enabled: false,
+                            child: Text(item['value'],
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)))
+                        : DropdownMenuItem(
+                            value: item['value'],
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: Text(item['value']['variables']),
+                            ))
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                },
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget dropdownType() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Type',
+            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+          ),
+          const Gap(10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.white, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFd4dce4)),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButtonFormField2<TypeSelect>(
+                iconSize: 30,
+                isExpanded: true,
+                hint: const Text("Choose item"),
+                value: typeselect != null ? typeselect : null,
+                selectedItemHighlightColor: Colors.grey,
+                validator: (value) {
+                  return value == null ? 'Please select' : null;
+                },
+                items: typeList.map((TypeSelect e) {
+                  return e.bold == "true"
+                      ? DropdownMenuItem<TypeSelect>(
+                          enabled: false,
+                          child: Text(
+                            e.value,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        )
+                      : DropdownMenuItem<TypeSelect>(
+                          value: e,
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            child: Text(
+                              e.value,
+                            ),
+                          ),
+                        );
+                }).toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    typeselect = newValue!;
                   });
                 },
                 icon: const Icon(
@@ -362,6 +543,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
                 isExpanded: true,
                 hint: const Text("Choose item"),
                 value: _selectedSite == '' ? null : _selectedSite,
+                selectedItemHighlightColor: Colors.grey,
                 validator: (value) {
                   return value == null ? 'Please select' : null;
                 },
@@ -416,6 +598,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
                 isExpanded: true,
                 hint: const Text("Choose item"),
                 value: _selectedUser == '' ? null : _selectedUser,
+                selectedItemHighlightColor: Colors.grey,
                 validator: (value) {
                   return value == null ? 'Please select' : null;
                 },
@@ -668,9 +851,9 @@ class _editNonRecurringState extends State<editNonRecurring> {
             Form(
               key: _formkey,
               child: Column(children: <Widget>[
-                dropdownList("Category"),
+                dropdownCategory(),
                 dropdownList("Sub-Category"),
-                dropdownList("Type"),
+                dropdownType(),
                 dropdownSite(),
                 buildTextField("Task", "description", taskController),
                 dropdownOwner(),

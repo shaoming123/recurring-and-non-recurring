@@ -45,6 +45,7 @@ class _TeamTaskState extends State<TeamTask> {
   double _animatedHeight = 0.0;
   bool showTable = false;
   bool check = false;
+  int requestcheck = 0;
   @override
   void initState() {
     super.initState();
@@ -166,7 +167,6 @@ class _TeamTaskState extends State<TeamTask> {
         }
       }
     });
-    print(userList);
   }
 
   void getTeamData() async {
@@ -227,342 +227,295 @@ class _TeamTaskState extends State<TeamTask> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      elevation: 8,
-      margin: const EdgeInsets.all(10),
-      child: Column(children: [
-        ListTile(
-          title: Text(
-            "Team Status Overview",
-            style:
-                TextStyle(color: Styles.textColor, fontWeight: FontWeight.w700),
-          ),
-          trailing: IconButton(
-            icon: Icon(
-                _showContent ? Icons.arrow_drop_up : Icons.arrow_drop_down),
-            onPressed: () {
-              setState(() {
-                _showContent = !_showContent;
-              });
-            },
-          ),
-          tileColor: Color(0xFF88a4d4),
-        ),
-        _showContent
-            ? Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Styles.bgColor,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          width: 180,
-                          height: 40,
-                          child: TextFormField(
-                            controller: textcontroller,
-                            style: const TextStyle(color: Colors.black),
-                            cursorColor: Colors.black,
-                            onChanged: (value) {
-                              setState(() {
-                                // _searchResult = value;
-                              });
-                            },
-                            decoration: InputDecoration(
-                              hintText: "Search",
-                              hintStyle: const TextStyle(
-                                  fontSize: 14, color: Colors.black),
-                              isDense: true,
-                              suffixIcon:
-                                  const Icon(Icons.search, color: Colors.black),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: Colors.black,
-                                  width: 2.0,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  style: BorderStyle.none,
-                                ),
-                              ),
-                              // filled: true,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                backgroundColor: Styles.bgColor,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10))),
-                            onPressed: (() {
-                              showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return addNonRecurring(
-                                        userName: _selectedUser, task: false);
-                                  });
-                            }),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Ink(
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: Styles.bgColor,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "Add Task",
-                                    style: TextStyle(
-                                        color: Styles.textColor,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(
-                          bottom: 30, top: 10, left: 10, right: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      decoration: BoxDecoration(
-                          border: Border.all(
-                              color: Colors.blueGrey,
-                              width: 1,
-                              style: BorderStyle.solid),
-                          borderRadius: BorderRadius.circular(8)),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton2(
-                          iconSize: 30,
-                          isExpanded: true,
-                          hint: Text('Choose item'),
-                          value: _selectedPosition == ''
-                              ? null
-                              : _selectedPosition,
-                          items: combineType
-                              .map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(e),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (val) {
-                            setState(() {
-                              _selectedPosition = val!;
-                              _selectedUser = '';
-
-                              _animatedHeight = 85;
-                            });
-                            fetchUsers();
-                          },
-                          icon: const Icon(
-                            Icons.arrow_drop_down,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                    AnimatedContainer(
-                      height: _animatedHeight,
-                      color: Colors.transparent,
-                      width: width,
-                      duration: const Duration(milliseconds: 120),
-                      child: Container(
-                        margin: const EdgeInsets.only(
-                            bottom: 30, left: 10, right: 10),
-                        padding: const EdgeInsets.symmetric(horizontal: 15),
-                        decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Colors.blueGrey,
-                                width: 1,
-                                style: BorderStyle.solid),
-                            borderRadius: BorderRadius.circular(8)),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton2(
-                              iconSize: 30.0,
-                              isExpanded: true,
-                              hint: Text('Choose item'),
-                              value: _selectedUser == '' ? null : _selectedUser,
-                              items: List.generate(
-                                userList.length,
-                                (index) => DropdownMenuItem(
-                                  value: userList[index]["username"].toString(),
-                                  child: Text(
-                                    userList[index]["username"].toString(),
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
-                                ),
-                              ),
-                              onChanged: (val) {
-                                setState(() {
-                                  _selectedUser = val!;
-                                  showTable = true;
-                                });
-                                getTeamData();
-                              },
-                              icon: Visibility(
-                                  visible:
-                                      _animatedHeight != 0.0 ? true : false,
-                                  child: Icon(
-                                    Icons.arrow_drop_down,
-                                    color: Colors.black,
-                                  ))),
-                        ),
-                      ),
-                    ),
-                    showTable
-                        ? foundTeamNonRecurring.isNotEmpty
-                            ? DefaultTabController(
-                                length: 4,
-                                child: SizedBox(
-                                  height: 500,
-                                  child: Column(
-                                    children: <Widget>[
-                                      TabBar(
-                                        indicatorColor: Styles.primaryColor,
-                                        indicatorWeight: 3,
-                                        padding: EdgeInsets.zero,
-                                        indicatorPadding: EdgeInsets.zero,
-                                        labelPadding: EdgeInsets.zero,
-                                        labelStyle: const TextStyle(
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.bold),
-                                        unselectedLabelStyle: const TextStyle(
-                                            fontSize: 14.0,
-                                            fontWeight: FontWeight.bold),
-                                        labelColor: Styles.primaryColor,
-                                        unselectedLabelColor: Colors.black,
-                                        tabs: <Widget>[
-                                          Tab(
-                                            icon: Badge(
-                                              badgeColor: Colors.indigo,
-                                              shape: BadgeShape.square,
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                              position: BadgePosition.topEnd(
-                                                  top: -12, end: -20),
-                                              padding: const EdgeInsets.all(5),
-                                              badgeContent: Text(
-                                                LateTeamnonRecurring.length
-                                                    .toString(),
-                                                style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              child: const Text("Late"),
-                                            ),
-                                          ),
-                                          Tab(
-                                            icon: Badge(
-                                              badgeColor: Colors.indigo,
-                                              shape: BadgeShape.square,
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                              position: BadgePosition.topEnd(
-                                                  top: -12, end: -20),
-                                              padding: const EdgeInsets.all(5),
-                                              badgeContent: Text(
-                                                ActiveTeamnonRecurring.length
-                                                    .toString(),
-                                                style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              child: const Text("Active"),
-                                            ),
-                                          ),
-                                          Tab(
-                                            icon: Badge(
-                                              badgeColor: Colors.indigo,
-                                              shape: BadgeShape.square,
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                              position: BadgePosition.topEnd(
-                                                  top: -12, end: -20),
-                                              padding: const EdgeInsets.all(5),
-                                              badgeContent: Text(
-                                                CompletedTeamnonRecurring.length
-                                                    .toString(),
-                                                style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              child: const Text("Completed"),
-                                            ),
-                                          ),
-                                          Tab(
-                                            icon: Badge(
-                                              badgeColor: Colors.indigo,
-                                              shape: BadgeShape.square,
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                              position: BadgePosition.topEnd(
-                                                  top: -12, end: -20),
-                                              padding: const EdgeInsets.all(5),
-                                              badgeContent: Text(
-                                                foundTeamNonRecurring.length
-                                                    .toString(),
-                                                style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              child: const Text("All"),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Expanded(
-                                        child: TabBarView(
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          children: <Widget>[
-                                            lateView(),
-                                            activeView(),
-                                            completeView(),
-                                            allView(),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : Text(
-                                "No data found !",
-                                style: Styles.subtitle,
-                              )
-                        : Container(),
-                  ],
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Styles.bgColor,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              )
-            : Container()
-      ]),
+                width: 180,
+                height: 40,
+                child: TextFormField(
+                  controller: textcontroller,
+                  style: const TextStyle(color: Colors.black),
+                  cursorColor: Colors.black,
+                  onChanged: (value) {
+                    setState(() {
+                      // _searchResult = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: "Search",
+                    hintStyle:
+                        const TextStyle(fontSize: 14, color: Colors.black),
+                    isDense: true,
+                    suffixIcon: const Icon(Icons.search, color: Colors.black),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Colors.black,
+                        width: 2.0,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        style: BorderStyle.none,
+                      ),
+                    ),
+                    // filled: true,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      backgroundColor: Styles.bgColor,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10))),
+                  onPressed: (() {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return addNonRecurring(
+                              userName: _selectedUser, task: false);
+                        });
+                  }),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Ink(
+                      height: 20,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Styles.bgColor,
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Add Task",
+                          style: TextStyle(
+                              color: Styles.textColor,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Container(
+            margin:
+                const EdgeInsets.only(bottom: 30, top: 10, left: 10, right: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            decoration: BoxDecoration(
+                border: Border.all(
+                    color: Colors.blueGrey, width: 1, style: BorderStyle.solid),
+                borderRadius: BorderRadius.circular(8)),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton2(
+                iconSize: 30,
+                isExpanded: true,
+                hint: Text('Choose item'),
+                value: _selectedPosition == '' ? null : _selectedPosition,
+                selectedItemHighlightColor: Colors.grey,
+                items: combineType
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(e),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (val) {
+                  setState(() {
+                    _selectedPosition = val!;
+                    _selectedUser = '';
+
+                    _animatedHeight = 85;
+                  });
+                  fetchUsers();
+                },
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+          AnimatedContainer(
+            height: _animatedHeight,
+            color: Colors.transparent,
+            width: width,
+            duration: const Duration(milliseconds: 120),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 30, left: 10, right: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              decoration: BoxDecoration(
+                  border: Border.all(
+                      color: Colors.blueGrey,
+                      width: 1,
+                      style: BorderStyle.solid),
+                  borderRadius: BorderRadius.circular(8)),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton2(
+                    iconSize: 30.0,
+                    isExpanded: true,
+                    hint: Text('Choose item'),
+                    value: _selectedUser == '' ? null : _selectedUser,
+                    selectedItemHighlightColor: Colors.grey,
+                    items: List.generate(
+                      userList.length,
+                      (index) => DropdownMenuItem(
+                        value: userList[index]["username"].toString(),
+                        child: Text(
+                          userList[index]["username"].toString(),
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedUser = val!;
+                        showTable = true;
+                      });
+                      getTeamData();
+                    },
+                    icon: Visibility(
+                        visible: _animatedHeight != 0.0 ? true : false,
+                        child: Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.black,
+                        ))),
+              ),
+            ),
+          ),
+          showTable
+              ? foundTeamNonRecurring.isNotEmpty
+                  ? DefaultTabController(
+                      length: 4,
+                      child: SizedBox(
+                        height: 500,
+                        child: Column(
+                          children: <Widget>[
+                            TabBar(
+                              indicatorColor: Styles.primaryColor,
+                              indicatorWeight: 3,
+                              padding: EdgeInsets.zero,
+                              indicatorPadding: EdgeInsets.zero,
+                              labelPadding: EdgeInsets.zero,
+                              labelStyle: const TextStyle(
+                                  fontSize: 16.0, fontWeight: FontWeight.bold),
+                              unselectedLabelStyle: const TextStyle(
+                                  fontSize: 14.0, fontWeight: FontWeight.bold),
+                              labelColor: Styles.primaryColor,
+                              unselectedLabelColor: Colors.black,
+                              tabs: <Widget>[
+                                Tab(
+                                  icon: Badge(
+                                    badgeColor: Colors.indigo,
+                                    shape: BadgeShape.square,
+                                    borderRadius: BorderRadius.circular(5),
+                                    position: BadgePosition.topEnd(
+                                        top: -12, end: -20),
+                                    padding: const EdgeInsets.all(5),
+                                    badgeContent: Text(
+                                      LateTeamnonRecurring.length.toString(),
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    child: const Text("Late"),
+                                  ),
+                                ),
+                                Tab(
+                                  icon: Badge(
+                                    badgeColor: Colors.indigo,
+                                    shape: BadgeShape.square,
+                                    borderRadius: BorderRadius.circular(5),
+                                    position: BadgePosition.topEnd(
+                                        top: -12, end: -20),
+                                    padding: const EdgeInsets.all(5),
+                                    badgeContent: Text(
+                                      ActiveTeamnonRecurring.length.toString(),
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    child: const Text("Active"),
+                                  ),
+                                ),
+                                Tab(
+                                  icon: Badge(
+                                    badgeColor: Colors.indigo,
+                                    shape: BadgeShape.square,
+                                    borderRadius: BorderRadius.circular(5),
+                                    position: BadgePosition.topEnd(
+                                        top: -12, end: -20),
+                                    padding: const EdgeInsets.all(5),
+                                    badgeContent: Text(
+                                      CompletedTeamnonRecurring.length
+                                          .toString(),
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    child: const Text("Completed"),
+                                  ),
+                                ),
+                                Tab(
+                                  icon: Badge(
+                                    badgeColor: Colors.indigo,
+                                    shape: BadgeShape.square,
+                                    borderRadius: BorderRadius.circular(5),
+                                    position: BadgePosition.topEnd(
+                                        top: -12, end: -20),
+                                    padding: const EdgeInsets.all(5),
+                                    badgeContent: Text(
+                                      foundTeamNonRecurring.length.toString(),
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    child: const Text("All"),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Expanded(
+                              child: TabBarView(
+                                physics: const NeverScrollableScrollPhysics(),
+                                children: <Widget>[
+                                  lateView(),
+                                  activeView(),
+                                  completeView(),
+                                  allView(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : Text(
+                      "No data found !",
+                      style: Styles.subtitle,
+                    )
+              : Container(),
+        ],
+      ),
     );
   }
 

@@ -1,12 +1,18 @@
+import 'dart:convert';
+
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:multiselect/multiselect.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/event.dart';
+import '../../model/selection.dart';
 import '../../util/datetime.dart';
+import '../../util/selection.dart';
 import '../recurrring.dart';
+import 'package:http/http.dart' as http;
 
 class EventEdit extends StatefulWidget {
   final String id;
@@ -31,18 +37,8 @@ String _selectedStatus = '';
 String _selectedRecurring = '';
 String _selectedSite = '';
 List<Map<String, dynamic>> event_edit = [];
-List<String> list = <String>['One', 'Two', 'Three', 'Four'];
-List<String> siteList = <String>[
-  'HQ',
-  'CRZ',
-  'PR8',
-  'PCR',
-  'AD2',
-  'SKE',
-  'SKP',
-  'SPP',
-  'ALL SITE'
-];
+
+List<String> siteList = <String>[];
 List<String> priorityList = <String>['Low', 'Moderate', 'High'];
 List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
 List<String> _selectedUser = <String>[];
@@ -54,23 +50,99 @@ class _EventEditState extends State<EventEdit> {
   DateTime? completeDate;
   String _selectedStatus = '';
 
+  final _formkey = GlobalKey<FormState>();
+  late DateTime fromDate = DateTime.now();
+  late DateTime toDate = DateTime.now();
+
+  TextEditingController taskController = TextEditingController();
+  TextEditingController durationController = TextEditingController();
+  TextEditingController recurringController = TextEditingController();
+  final remarkController = TextEditingController();
+  String _selectedVal = '';
+  String _selectedPriority = '';
+
+  String _selectedRecurring = '';
+  String _selectedSite = '';
+  List<Map<String, dynamic>> event_edit = [];
+
+  List<String> siteList = <String>[];
+  List<String> priorityList = <String>['Low', 'Moderate', 'High'];
+  List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
+  List<String> _selectedUser = <String>[];
+
   var selectedOption = ''.obs;
   List<String> userList = <String>[];
   bool checkUser = false;
+
+  String _selectedType = '';
+  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  List categoryData = [];
+  List<TypeSelect> typeList = <TypeSelect>[];
+  TypeSelect? typeselect;
+  dynamic _selectedCategory;
+  String? _selectedSubCategory;
+  List _selectedData = [];
   @override
   void initState() {
-    super.initState();
     getUserData();
     getData(int.parse(widget.id));
+    Future.delayed(Duration.zero, () async {
+      final SharedPreferences sp = await _pref;
+      List functionAccess = sp.getString("position")!.split(",");
+      String userRole = sp.getString("role")!;
+      final typeOptions =
+          await Selection().typeSelection(functionAccess, userRole);
+      categoryData =
+          await Selection().categorySelection(functionAccess, userRole);
+
+      //type selection
+      setState(() {
+        List typeDate = [];
+        typeDate = typeOptions;
+        for (int i = 0; i < typeDate.length; i++) {
+          typeList.add(TypeSelect(
+              id: typeDate[i]['id'],
+              value: typeDate[i]['value'],
+              bold: typeDate[i]['bold']));
+        }
+
+        for (final val in typeList) {
+          if (val.value == _selectedType) {
+            setState(() {
+              typeselect = val;
+            });
+
+            break;
+          }
+        }
+        print(_selectedData);
+        for (final item in categoryData) {
+          // print(item['value']);
+          if (item['bold'] == false &&
+              item['value']['department'] == _selectedData[1] &&
+              item['value']['variables'] == _selectedData[0]) {
+            _selectedCategory = item['value'];
+          }
+        }
+      });
+    });
+    super.initState();
   }
 
   Future<void> getUserData() async {
     final userData = await dbHelper.getItems();
     userList = [];
+    final siteOptions = await Selection().siteSelection();
+
     setState(() {
+      for (final val in siteOptions) {
+        siteList = val["options"];
+      }
+      //
       for (int i = 0; i < userData.length; i++) {
         userList.add(userData[i]["user_name"]);
       }
+      //
     });
   }
 
@@ -81,7 +153,10 @@ class _EventEditState extends State<EventEdit> {
       recurringId = event_edit[0]['recurringId'];
       fromDate = DateTime.parse(event_edit[0]['fromD']);
       toDate = DateTime.parse(event_edit[0]['toD']);
-      _selectedVal = event_edit[0]['category'];
+      _selectedData = event_edit[0]['category'].split("|");
+
+      _selectedSubCategory = event_edit[0]['subCategory'];
+      _selectedType = event_edit[0]['type'];
       _selectedSite = event_edit[0]['site'];
       _selectedPriority = event_edit[0]['priority'];
       _selectedStatus = event_edit[0]['status'];
@@ -91,7 +166,7 @@ class _EventEditState extends State<EventEdit> {
       _selectedRecurring = event_edit[0]['recurringOpt'];
       recurringController.text = event_edit[0]['recurringEvery'];
       remarkController.text = event_edit[0]['remark'];
-      recurringDate = DateTime.parse(event_edit[0]['recurringUntil']);
+      // recurringDate = DateTime.parse(event_edit[0]['recurringUntil']);
 
       if (event_edit[0]['completeDate'] != null &&
           (event_edit[0]['completeDate']) != '') {
@@ -245,7 +320,54 @@ class _EventEditState extends State<EventEdit> {
   }
 
   contentBox(context) {
-    Widget user() {
+    Widget categoryDropdown() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFd4dce4)),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButtonFormField2<dynamic>(
+            iconSize: 30,
+            isExpanded: true,
+            hint: const Text("Choose item"),
+            value: _selectedCategory,
+            selectedItemHighlightColor: Colors.grey,
+            validator: (value) {
+              return value == null ? 'Please select' : null;
+            },
+            items: [
+              for (final item in categoryData)
+                item["bold"] == true
+                    ? DropdownMenuItem(
+                        enabled: false,
+                        child: Text(item['value'],
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)))
+                    : DropdownMenuItem(
+                        value: item['value'],
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Text(item['value']['variables']),
+                        ))
+            ],
+            onChanged: (value) {
+              setState(() {
+                _selectedCategory = value;
+              });
+            },
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget subCategoryDropdown() {
       return Container(
         margin: const EdgeInsets.only(bottom: 30),
         padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -258,25 +380,75 @@ class _EventEditState extends State<EventEdit> {
             iconSize: 30,
             isExpanded: true,
             hint: const Text("Choose item"),
-            value: _selectedVal == '' ? null : _selectedVal,
+            value: _selectedCategory != null
+                ? _selectedCategory['options'].contains(_selectedSubCategory)
+                    ? _selectedSubCategory
+                    : null
+                : null,
+            selectedItemHighlightColor: Colors.grey,
             validator: (value) {
               return value == null ? 'Please select' : null;
             },
-            items: list
-                .map(
-                  (e) => DropdownMenuItem(
-                    value: e,
-                    child: Text(
-                      e,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ),
-                )
-                .toList(),
+            items: _selectedCategory != null
+                ? [
+                    for (final item in _selectedCategory['options'])
+                      DropdownMenuItem(value: item, child: Text(item))
+                  ]
+                : [],
             onChanged: (val) {
-              String test = val as String;
               setState(() {
-                _selectedVal = test;
+                _selectedSubCategory = val;
+              });
+            },
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget typeDropdown() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            color: Color(0xFFd4dce4)),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButtonFormField2<TypeSelect>(
+            iconSize: 30,
+            isExpanded: true,
+            hint: Text("Choose item"),
+            value: typeselect,
+            selectedItemHighlightColor: Colors.grey,
+            validator: (value) {
+              return value == null ? 'Please select' : null;
+            },
+            items: typeList.map((TypeSelect e) {
+              return e.bold == "true"
+                  ? DropdownMenuItem<TypeSelect>(
+                      enabled: false,
+                      child: Text(
+                        e.value,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  : DropdownMenuItem<TypeSelect>(
+                      value: e,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Text(
+                          e.value,
+                        ),
+                      ),
+                    );
+            }).toList(),
+            onChanged: (newValue) {
+              setState(() {
+                typeselect = newValue!;
               });
             },
             icon: const Icon(
@@ -302,6 +474,7 @@ class _EventEditState extends State<EventEdit> {
             isExpanded: true,
             hint: const Text("Choose item"),
             value: _selectedSite == '' ? null : _selectedSite,
+            selectedItemHighlightColor: Colors.grey,
             validator: (value) {
               return value == null ? 'Please select' : null;
             },
@@ -345,6 +518,7 @@ class _EventEditState extends State<EventEdit> {
             isExpanded: true,
             hint: const Text("Choose item"),
             value: _selectedPriority == '' ? null : _selectedPriority,
+            selectedItemHighlightColor: Colors.grey,
             validator: (value) {
               return value == null ? 'Please select' : null;
             },
@@ -609,6 +783,7 @@ class _EventEditState extends State<EventEdit> {
             isExpanded: true,
             hint: const Text("Choose item"),
             value: _selectedStatus == '' ? null : _selectedStatus,
+            selectedItemHighlightColor: Colors.grey,
             validator: (value) {
               return value == null ? 'Please select' : null;
             },
@@ -687,19 +862,19 @@ class _EventEditState extends State<EventEdit> {
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                     const Gap(10),
-                    user(),
+                    categoryDropdown(),
                     const Text(
                       "Sub-Category :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                     const Gap(10),
-                    user(),
+                    subCategoryDropdown(),
                     const Text(
                       "Type :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                     const Gap(10),
-                    user(),
+                    typeDropdown(),
                     const Text(
                       "Site :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),

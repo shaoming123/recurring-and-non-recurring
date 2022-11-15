@@ -11,6 +11,7 @@ import 'package:ipsolution/util/app_styles.dart';
 import 'package:ipsolution/util/conMysql.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import '../util/checkInternet.dart';
 import '../util/fade_animation.dart';
 
 class Login extends StatefulWidget {
@@ -33,10 +34,10 @@ class _LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DbHelper();
+    DbHelper dbHelper = DbHelper();
   }
 
-  void loginForm() async {
+  Future loginForm() async {
     if (_formKey.currentState!.validate()) {
       username = userController.text;
       password = passwordController.text;
@@ -47,7 +48,7 @@ class _LoginState extends State<Login> {
         "password": password,
       });
       final data = json.decode(response.body);
-      print(data);
+
       if (data != null && data != "Error") {
         final dataModel = UserModel(
           user_id: int.parse(data[0]["id"]),
@@ -82,7 +83,7 @@ class _LoginState extends State<Login> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text("Username and Password Incorrect!"),
+              content: Text("Deactive User!"),
             ),
           );
         }
@@ -297,8 +298,15 @@ class _LoginState extends State<Login> {
                             backgroundColor: Styles.bgColor,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10))),
-                        onPressed: (() {
-                          loginForm();
+                        onPressed: (() async {
+                          await Internet.isInternet().then((connection) async {
+                            if (connection) {
+                              await loginForm();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("No Internet !")));
+                            }
+                          });
                         }),
                         child: Ink(
                           height: 50,

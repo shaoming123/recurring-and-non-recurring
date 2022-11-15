@@ -28,40 +28,19 @@ class Recurring extends StatefulWidget {
 
 List<Event> allEvents = [];
 List<String> personList = [];
-List<String> functionList = [
-  'All',
-  'Manager',
-  'Authority & Developer',
-  'Community Management',
-  'Defect',
-  'Engineering',
-  'Financial Management',
-  'Human Resources Management',
-  'ICT',
-  'Legal',
-  'Training & Development',
-  'Maintenance Management',
-  'Marketing & Creative',
-  'Operations',
-  'Procurement',
-  'Statistic'
-];
-List<String> siteList = <String>[
-  'All',
-  'HQ',
-  'CRZ',
-  'PR8',
-  'PCR',
-  'AD2',
-  'SKE',
-  'SKP',
-  'SPP',
-  'ALL SITE'
-];
+List<String> functionList = [];
+List<String> siteList = <String>[];
+List<String> functionData = [];
+List<String> currentUserSite = [];
 DbHelper dbHelper = DbHelper();
+List<String> userList = [];
 
 class _RecurringState extends State<Recurring> {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  String _selectedUser = '';
+  String _selectedFunction = '';
+  String _selectedSite = '';
+  String userRole = '';
   @override
   void initState() {
     super.initState();
@@ -69,25 +48,140 @@ class _RecurringState extends State<Recurring> {
   }
 
   Future<void> _refreshEvent() async {
-    // await Internet.isInternet().then((connection) async {
-    //   if (connection) {
-    //     EasyLoading.show(status: 'Fetching Data...');
-    //     await Controller().addRecurringToSqlite();
-    //     EasyLoading.showSuccess('Successfully');
-    //   }
-    // });
+    await Internet.isInternet().then((connection) async {
+      if (connection) {
+        EasyLoading.show(status: 'Fetching Data...');
+        await Controller().addRecurringToSqlite();
+        EasyLoading.showSuccess('Successfully');
+      }
+    });
     final data = await dbHelper.fetchAllEvent();
+    final userData = await dbHelper.getItems();
 
     final SharedPreferences sp = await _pref;
     String username = sp.getString("user_name")!;
+    userRole = sp.getString("role")!;
+    functionData = sp.getString("position")!.split(",");
+    String currentUserSiteLead = sp.getString("siteLead")!;
+    currentUserSite = sp.getString("site")!.split(",");
+
+    _selectedUser = username;
+    _selectedFunction = "All";
+    _selectedSite = "All";
     allEvents = [];
+    functionList = [];
+    userList = [];
+    siteList = [];
     setState(() {
+      userList.add("All");
+
+      siteList = currentUserSite;
+
       for (int i = 0; i < data.length; i++) {
         personList = [];
         personList = data[i]["person"].split(',');
 
         for (int x = 0; x < personList.length; x++) {
-          if (personList[x] == username) {
+          if (personList[x] == _selectedUser) {
+            allEvents.add(Event.fromMap(data[i]));
+          }
+        }
+      }
+      for (final item in userData) {
+        List siteData = item["site"].split(",");
+        List positionList = item["position"].split(",");
+        if (userRole == "Manager" || userRole == "Super Admin") {
+          functionList = functionData;
+          userList.add(item['user_name']);
+          siteList = [
+            'HQ',
+            'CRZ',
+            'PR8',
+            'PCR',
+            'AD2',
+            'SKE',
+            'SKP',
+            'SPP',
+            'ALL SITE'
+          ];
+        } else if (userRole == "Leader" && currentUserSiteLead != "-") {
+          functionList = [
+            "Community Management",
+            "Maintenance Management",
+            "Defect",
+            "Operations",
+            "Financial Management",
+            "Procurement",
+            "Statistic"
+          ];
+
+          for (int y = 0; y < siteData.length; y++) {
+            if ((item["role"] == "Leader" || item["role"] == "Staff") &&
+                siteData[y] == currentUserSiteLead) {
+              userList.add(item["user_name"]);
+            }
+          }
+        } else {
+          functionList = functionData;
+
+          for (int i = 0; i < positionList.length; i++) {
+            for (int x = 0; x < functionData.length; x++) {
+              if (positionList[i] == functionData[x] &&
+                  (item["role"] == "Leader" || item["role"] == "Staff")) {
+                userList.add(item["user_name"]);
+              }
+            }
+          }
+        }
+      }
+
+      functionList.insert(0, "All");
+      functionList.insert(1, "Manager");
+      siteList.insert(0, "All");
+    });
+  }
+
+  Future runFilter() async {
+    allEvents = [];
+    final data = await dbHelper.fetchAllEvent();
+    setState(() {
+      for (int i = 0; i < data.length; i++) {
+        personList = [];
+        personList = data[i]["person"].split(',');
+        String functionCategory = data[i]['category'].split('|')[1];
+
+        for (int x = 0; x < personList.length; x++) {
+          if (_selectedSite == data[i]['site'] &&
+              _selectedUser == personList[x] &&
+              _selectedFunction == functionCategory) {
+            allEvents.add(Event.fromMap(data[i]));
+          } else if (_selectedUser == 'All' &&
+              _selectedFunction == 'All' &&
+              _selectedSite == data[i]['site']) {
+            allEvents.add(Event.fromMap(data[i]));
+          } else if (_selectedUser == 'All' &&
+              _selectedFunction == functionCategory &&
+              _selectedSite == 'All') {
+            allEvents.add(Event.fromMap(data[i]));
+          } else if (_selectedUser == personList[x] &&
+              _selectedFunction == 'All' &&
+              _selectedSite == 'All') {
+            allEvents.add(Event.fromMap(data[i]));
+          } else if (_selectedUser == personList[x] &&
+              _selectedFunction == functionCategory &&
+              _selectedSite == 'All') {
+            allEvents.add(Event.fromMap(data[i]));
+          } else if (_selectedUser == personList[x] &&
+              _selectedFunction == 'All' &&
+              _selectedSite == data[i]['site']) {
+            allEvents.add(Event.fromMap(data[i]));
+          } else if (_selectedUser == 'All' &&
+              _selectedFunction == functionCategory &&
+              _selectedSite == data[i]['site']) {
+            allEvents.add(Event.fromMap(data[i]));
+          } else if (_selectedSite == 'All' &&
+              _selectedUser == 'All' &&
+              _selectedFunction == 'All') {
             allEvents.add(Event.fromMap(data[i]));
           }
         }
@@ -228,38 +322,52 @@ class _RecurringState extends State<Recurring> {
                   //           }
                   //         }))
 
-                  Container(
-                    height: 30,
-                    margin: const EdgeInsets.only(bottom: 10, top: 10),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white, width: 1),
-                        borderRadius: BorderRadius.circular(5),
-                        color: Colors.white),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton2(
-                        iconSize: 25,
-                        isExpanded: true,
-                        hint: Text('User'),
-                        // value: ,
-                        items: ["asd"]
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e),
+                  userRole != 'Staff'
+                      ? Container(
+                          height: 30,
+                          margin: const EdgeInsets.only(bottom: 10, top: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white, width: 1),
+                              borderRadius: BorderRadius.circular(5),
+                              color: Colors.white),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton2(
+                              iconSize: 25,
+                              isExpanded: true,
+                              value: _selectedUser == '' ? null : _selectedUser,
+                              selectedItemHighlightColor: Colors.grey,
+                              hint: Text(
+                                'User',
+                                style: TextStyle(fontSize: 12),
                               ),
-                            )
-                            .toList(),
-                        onChanged: (val) {
-                          setState(() {});
-                        },
-                        icon: const Icon(
-                          Icons.arrow_drop_down,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                  ),
+                              // value: ,
+                              dropdownMaxHeight: 300,
+                              items: userList
+                                  .map(
+                                    (e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(
+                                        e,
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (val) async {
+                                setState(() {
+                                  _selectedUser = val!;
+                                });
+                                await runFilter();
+                              },
+                              icon: const Icon(
+                                Icons.arrow_drop_down,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -278,18 +386,31 @@ class _RecurringState extends State<Recurring> {
                                 dropdownMaxHeight: 300,
                                 iconSize: 25,
                                 isExpanded: true,
-                                hint: Text('Function'),
+                                value: _selectedFunction == ''
+                                    ? null
+                                    : _selectedFunction,
+                                selectedItemHighlightColor: Colors.grey,
+                                hint: Text(
+                                  'Function',
+                                  style: TextStyle(fontSize: 12),
+                                ),
                                 // value: ,
                                 items: functionList
                                     .map(
                                       (e) => DropdownMenuItem(
                                         value: e,
-                                        child: Text(e),
+                                        child: Text(
+                                          e,
+                                          style: TextStyle(fontSize: 12),
+                                        ),
                                       ),
                                     )
                                     .toList(),
                                 onChanged: (val) {
-                                  setState(() {});
+                                  setState(() {
+                                    _selectedFunction = val!;
+                                    runFilter();
+                                  });
                                 },
                                 icon: const Icon(
                                   Icons.arrow_drop_down,
@@ -314,18 +435,29 @@ class _RecurringState extends State<Recurring> {
                                 dropdownMaxHeight: 300,
                                 iconSize: 25,
                                 isExpanded: true,
-                                hint: Text('Site'),
-                                // value: ,
+                                hint: Text(
+                                  'Site',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                                value:
+                                    _selectedSite == '' ? null : _selectedSite,
+                                selectedItemHighlightColor: Colors.grey,
                                 items: siteList
                                     .map(
                                       (e) => DropdownMenuItem(
                                         value: e,
-                                        child: Text(e),
+                                        child: Text(
+                                          e,
+                                          style: TextStyle(fontSize: 12),
+                                        ),
                                       ),
                                     )
                                     .toList(),
                                 onChanged: (val) {
-                                  setState(() {});
+                                  setState(() {
+                                    _selectedSite = val!;
+                                    runFilter();
+                                  });
                                 },
                                 icon: const Icon(
                                   Icons.arrow_drop_down,
@@ -344,6 +476,7 @@ class _RecurringState extends State<Recurring> {
                       view: CalendarView.month,
                       allowViewNavigation: true,
                       showDatePickerButton: true,
+
                       allowedViews: const <CalendarView>[
                         CalendarView.month,
                         CalendarView.timelineWeek,
@@ -351,16 +484,24 @@ class _RecurringState extends State<Recurring> {
                         CalendarView.schedule
                       ],
                       initialSelectedDate: DateTime.now(),
+
                       timeSlotViewSettings: TimeSlotViewSettings(
                           timelineAppointmentHeight: height / 5),
                       // controller: _calendarController,
+
                       monthViewSettings: MonthViewSettings(
                         showAgenda: true,
                         agendaItemHeight: height / 5,
+                        monthCellStyle: MonthCellStyle(
+                            textStyle: TextStyle(
+                                fontStyle: FontStyle.normal,
+                                fontSize: 10,
+                                color: Colors.black)),
 
                         // appointmentDisplayMode:
                         //     MonthAppointmentDisplayMode.appointment
                       ),
+
                       scheduleViewSettings: ScheduleViewSettings(
                           hideEmptyScheduleWeek: true,
                           appointmentItemHeight: height / 5),
@@ -368,7 +509,9 @@ class _RecurringState extends State<Recurring> {
                       onTap: calendarTapped,
                       todayHighlightColor: Styles.buttonColor,
                       todayTextStyle: const TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.w700),
+                          color: Colors.black,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12),
                       cellBorderColor: Colors.black26,
 
                       selectionDecoration: BoxDecoration(
@@ -408,6 +551,83 @@ class _RecurringState extends State<Recurring> {
     );
   }
 
+  // Widget appointBuilder(
+  //     BuildContext context, CalendarAppointmentDetails details) {
+  //   final event = details.appointments.first;
+
+  //   return GestureDetector(
+  //     onTap: () {
+  //       showDialog(
+  //           context: context,
+  //           builder: (BuildContext context) {
+  //             return EventEdit(id: event.recurrenceId);
+  //           });
+  //     },
+  //     child: Container(
+  //       // width: details.bounds.width,
+
+  //       padding: const EdgeInsets.all(10),
+  //       decoration: BoxDecoration(
+  //         color: event.color,
+  //         borderRadius: BorderRadius.all(
+  //           Radius.circular(10),
+  //         ),
+  //         boxShadow: [
+  //           BoxShadow(
+  //               spreadRadius: 2,
+  //               blurRadius: 10,
+  //               color: Colors.black.withOpacity(0.1),
+  //               offset: const Offset(0, 10))
+  //         ],
+  //       ),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         mainAxisAlignment: MainAxisAlignment.start,
+  //         children: [
+  //           Expanded(
+  //             flex: 1,
+  //             child: Padding(
+  //               padding: const EdgeInsets.all(2.0),
+  //               child: Text(event.recurrenceId,
+  //                   style: TextStyle(
+  //                       fontSize: 16,
+  //                       color: Styles.textColor,
+  //                       fontWeight: FontWeight.w700)),
+  //             ),
+  //           ),
+  //           Expanded(
+  //             flex: 1,
+  //             child: Padding(
+  //               padding: const EdgeInsets.all(2.0),
+  //               child: Text(
+  //                   DateFormat('hh:mm a').format(event.startTime) +
+  //                       ' - ' +
+  //                       DateFormat('hh:mm a').format(event.endTime),
+  //                   maxLines: 2,
+  //                   overflow: TextOverflow.ellipsis,
+  //                   style: TextStyle(
+  //                       fontSize: 16,
+  //                       color: Styles.textColor,
+  //                       fontWeight: FontWeight.w700)),
+  //             ),
+  //           ),
+  //           Expanded(
+  //             flex: 3,
+  //             child: Padding(
+  //               padding: const EdgeInsets.all(5.0),
+  //               child: Text(event.notes,
+  //                   style: TextStyle(
+  //                       fontSize: 16,
+  //                       color: Styles.textColor,
+  //                       fontWeight: FontWeight.w700)),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
   Widget appointBuilder(
       BuildContext context, CalendarAppointmentDetails details) {
     final event = details.appointments.first;
@@ -417,7 +637,7 @@ class _RecurringState extends State<Recurring> {
         showDialog(
             context: context,
             builder: (BuildContext context) {
-              return EventEdit(id: event.recurrenceId);
+              return EventEdit(id: event.recurringId.toString());
             });
       },
       child: Container(
@@ -425,7 +645,7 @@ class _RecurringState extends State<Recurring> {
 
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: event.color,
+          color: Colors.lightGreen,
           borderRadius: BorderRadius.all(
             Radius.circular(10),
           ),
@@ -445,7 +665,7 @@ class _RecurringState extends State<Recurring> {
               flex: 1,
               child: Padding(
                 padding: const EdgeInsets.all(2.0),
-                child: Text(event.recurrenceId,
+                child: Text(event.recurringId.toString(),
                     style: TextStyle(
                         fontSize: 16,
                         color: Styles.textColor,
@@ -457,9 +677,9 @@ class _RecurringState extends State<Recurring> {
               child: Padding(
                 padding: const EdgeInsets.all(2.0),
                 child: Text(
-                    DateFormat('hh:mm a').format(event.startTime) +
+                    DateFormat('hh:mm a').format(DateTime.parse(event.from)) +
                         ' - ' +
-                        DateFormat('hh:mm a').format(event.endTime),
+                        DateFormat('hh:mm a').format(DateTime.parse(event.to)),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -472,7 +692,7 @@ class _RecurringState extends State<Recurring> {
               flex: 3,
               child: Padding(
                 padding: const EdgeInsets.all(5.0),
-                child: Text(event.notes,
+                child: Text(event.task,
                     style: TextStyle(
                         fontSize: 16,
                         color: Styles.textColor,
