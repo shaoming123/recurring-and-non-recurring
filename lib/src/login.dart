@@ -327,36 +327,36 @@ class _LoginState extends State<Login> {
                   const SizedBox(
                     height: 30,
                   ),
-                  FadeAnimation(
-                      2,
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            backgroundColor: Styles.bgColor,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                        onPressed: (() {
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => SignUp()));
-                        }),
-                        child: Ink(
-                          height: 50,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Styles.bgColor,
-                          ),
-                          child: Center(
-                            child: Text(
-                              "Signup",
-                              style: TextStyle(
-                                  color: Styles.textColor,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                      )),
+                  // FadeAnimation(
+                  //     2,
+                  //     ElevatedButton(
+                  //       style: ElevatedButton.styleFrom(
+                  //           padding: EdgeInsets.zero,
+                  //           backgroundColor: Styles.bgColor,
+                  //           shape: RoundedRectangleBorder(
+                  //               borderRadius: BorderRadius.circular(10))),
+                  //       onPressed: (() {
+                  //         Navigator.pushReplacement(
+                  //             context,
+                  //             MaterialPageRoute(
+                  //                 builder: (context) => SignUp()));
+                  //       }),
+                  //       child: Ink(
+                  //         height: 50,
+                  //         decoration: BoxDecoration(
+                  //           borderRadius: BorderRadius.circular(10),
+                  //           color: Styles.bgColor,
+                  //         ),
+                  //         child: Center(
+                  //           child: Text(
+                  //             "Signup",
+                  //             style: TextStyle(
+                  //                 color: Styles.textColor,
+                  //                 fontWeight: FontWeight.bold),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     )),
                 ],
               ),
             )

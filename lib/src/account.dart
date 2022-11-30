@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -10,7 +11,8 @@ import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:http/http.dart' as http;
+import '../util/appbar.dart';
 import '../util/checkInternet.dart';
 
 class Account extends StatefulWidget {
@@ -31,7 +33,7 @@ class _AccountState extends State<Account> {
 
   final username = TextEditingController();
   final password = TextEditingController();
-  late int userid;
+  int? userid;
   final email = TextEditingController();
   final phone = TextEditingController();
   final userRole = TextEditingController();
@@ -39,10 +41,17 @@ class _AccountState extends State<Account> {
   final siteLead = TextEditingController();
   String active = '';
   final function = TextEditingController();
+  List userData = [];
   @override
   void initState() {
     super.initState();
-    getUserData();
+    getUserData().whenComplete(() async {
+      await Internet.isInternet().then((connection) async {
+        if (connection) {
+          await getImage();
+        }
+      });
+    });
 
     dbHelper = DbHelper();
   }
@@ -64,14 +73,49 @@ class _AccountState extends State<Account> {
     });
   }
 
+  Future<void> getImage() async {
+    var url = "http://192.168.1.111/testdb/getProfileImage.php";
+    var response = await http.post(Uri.parse(url),
+        body: {"tableName": "user_details", "user_id": userid.toString()});
+    List user = json.decode(response.body);
+
+    setState(() {
+      userData = user;
+    });
+  }
+
   Future pickImage() async {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
       if (image == null) return;
       final imageTemp = File(image.path);
       setState(() => this.image = imageTemp);
+
+      final uri = Uri.parse("http://192.168.1.111/testdb/uploadImage.php");
+      var request = http.MultipartRequest('POST', uri);
+      request.fields['user_id'] = userid.toString();
+      var pic = await http.MultipartFile.fromPath("image", image.path);
+      request.files.add(pic);
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Image Uploaded!'),
+        ));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Account()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Image Not Uploaded!'),
+        ));
+      }
+      setState(() {});
     } on PlatformException catch (e) {
-      print('Failed to pick image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to pick image: $e'),
+      ));
     }
   }
 
@@ -89,20 +133,7 @@ class _AccountState extends State<Account> {
             margin: EdgeInsets.symmetric(
                 vertical: height * 0.08, horizontal: width * 0.02),
             child: Column(children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.black),
-                  onPressed: () => scaffoldKey.currentState!.openDrawer(),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 90),
-                  child: Text("Profile", style: Styles.title),
-                ),
-                IconButton(
-                    icon: const Icon(Icons.notifications_outlined,
-                        color: Colors.black),
-                    onPressed: () => {}),
-              ]),
+              Appbar(title: "Profile", scaffoldKey: scaffoldKey),
               const Gap(20),
               Expanded(
                 child: Container(
@@ -118,33 +149,52 @@ class _AccountState extends State<Account> {
                       children: [
                         Center(
                           child: GestureDetector(
-                            onTap: () => pickImage(),
+                            onTap: () async {
+                              await Internet.isInternet()
+                                  .then((connection) async {
+                                if (connection) {
+                                  await pickImage();
+                                } else {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(const SnackBar(
+                                    content:
+                                        Text('Not internet connection found'),
+                                  ));
+                                }
+                              });
+                            },
                             child: Stack(
                               children: [
                                 Container(
                                   width: 100,
                                   height: 100,
                                   decoration: BoxDecoration(
-                                      border: Border.all(
-                                          width: 4,
-                                          color: Theme.of(context)
-                                              .scaffoldBackgroundColor),
-                                      boxShadow: [
-                                        BoxShadow(
-                                            spreadRadius: 2,
-                                            blurRadius: 10,
-                                            color:
-                                                Colors.black.withOpacity(0.1),
-                                            offset: const Offset(0, 10))
-                                      ],
-                                      shape: BoxShape.circle,
-                                      image: DecorationImage(
-                                          fit: BoxFit.cover,
-                                          image: image == null
-                                              ? const NetworkImage(
-                                                  'https://invenioptl.com/wp-content/uploads/2022/07/logoip.png')
-                                              : FileImage(image!)
-                                                  as ImageProvider)),
+                                    border: Border.all(
+                                        width: 4,
+                                        color: Theme.of(context)
+                                            .scaffoldBackgroundColor),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          spreadRadius: 2,
+                                          blurRadius: 10,
+                                          color: Colors.black.withOpacity(0.1),
+                                          offset: const Offset(0, 10))
+                                    ],
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: userData.length > 0
+                                          ? userData[0]['filepath']
+                                                      .isNotEmpty &&
+                                                  userData[0]['filepath'] !=
+                                                      null
+                                              ? NetworkImage(
+                                                      "http://192.168.1.111/testdb/uploads/${userData[0]['filepath']}")
+                                                  as ImageProvider
+                                              : AssetImage('assets/logo.png')
+                                          : AssetImage('assets/logo.png'),
+                                    ),
+                                  ),
                                 ),
                                 Positioned(
                                     bottom: 0,
@@ -174,20 +224,22 @@ class _AccountState extends State<Account> {
                         const Gap(35),
                         Column(
                           children: [
-                            buildTextField(
-                                "Username", "Dor Alex", false, true, username),
+                            buildTextField("Username", "Dor Alex", false, true,
+                                username, 1),
                             buildTextField("E-mail", "alexd@gmail.com", false,
-                                true, email),
-                            buildTextField(
-                                "Password", "********", true, true, password),
+                                true, email, 1),
+                            buildTextField("Password", "********", true, true,
+                                password, 1),
                             phoneTextField("Phone No", "", false, true, phone),
 
-                            buildTextField("Role", "-", false, false, userRole),
                             buildTextField(
-                                "Function", "-", false, false, function),
+                                "Role", "-", false, false, userRole, 1),
                             buildTextField(
-                                "Site In-Charge", "-", false, false, site),
-                            buildTextField("Site", "-", false, false, siteLead),
+                                "Function", "-", false, false, function, 5),
+                            buildTextField(
+                                "Site In-Charge", "-", false, false, site, 1),
+                            buildTextField(
+                                "Site", "-", false, false, siteLead, 1),
                             // buildTextField("Site", "-", false, false, null),
                           ],
                         ),
@@ -271,32 +323,35 @@ class _AccountState extends State<Account> {
       String placeholder,
       bool isPasswordTextField,
       bool editable,
-      TextEditingController? controllerText) {
-    return Padding(
+      TextEditingController? controllerText,
+      int line) {
+    return Container(
       padding: const EdgeInsets.only(bottom: 30.0),
       child: TextFormField(
         controller: controllerText,
         enabled: editable,
+        maxLines: line,
+        minLines: 1,
         obscureText: isPasswordTextField ? showPassword : false,
         decoration: InputDecoration(
-          suffixIcon: isPasswordTextField
-              ? IconButton(
-                  onPressed: () {
-                    setState(() {
-                      showPassword = !showPassword;
-                    });
-                  },
-                  icon: const Icon(
-                    Icons.remove_red_eye,
-                    color: Colors.grey,
-                  ),
-                )
-              : null,
-          contentPadding: const EdgeInsets.only(bottom: 3),
-          labelText: labelText,
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          hintText: placeholder,
-        ),
+            suffixIcon: isPasswordTextField
+                ? IconButton(
+                    onPressed: () {
+                      setState(() {
+                        showPassword = !showPassword;
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.remove_red_eye,
+                      color: Colors.grey,
+                    ),
+                  )
+                : null,
+            contentPadding: const EdgeInsets.only(bottom: 3),
+            labelText: labelText,
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+            hintText: placeholder,
+            isDense: true),
         validator: (text) {
           if (text == null || text.isEmpty) {
             return 'Can\'t be empty';

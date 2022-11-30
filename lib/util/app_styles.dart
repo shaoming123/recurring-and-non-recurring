@@ -9,6 +9,7 @@ class Styles {
   static Color secondColor = const Color(0xFFB1D8B7);
   static Color lateColor = const Color(0xFFfc9b93);
   static Color activeColor = const Color(0xFFcaf2eb);
+  static Color todayColor = const Color(0xFFfff4d4);
   static TextStyle title =
       TextStyle(fontSize: 26, color: textColor, fontWeight: FontWeight.bold);
   static TextStyle subtitle =
@@ -17,4 +18,6 @@ class Styles {
       const TextStyle(color: Color(0xFF39948f), fontWeight: FontWeight.bold);
   static TextStyle dayLeftLate =
       const TextStyle(color: Color(0xFFf43a2c), fontWeight: FontWeight.bold);
+  static TextStyle dayLeftToday =
+      const TextStyle(color: Color(0xFFd08c04), fontWeight: FontWeight.bold);
 }

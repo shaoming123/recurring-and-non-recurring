@@ -57,7 +57,7 @@ class Controller {
           remark: recurringData[i]["remarks"],
           recurringOpt: recurringData[i]["recurring"],
           recurringEvery: recurringData[i]["recurringGap"],
-          recurringUntil: "",
+          color: recurringData[i]["color"],
           status: recurringData[i]["status"]);
 
       await dbHelper.addEvent(data);
@@ -91,5 +91,17 @@ class Controller {
 
       await dbHelper.addNonRecurring(datanonRecurring);
     }
+  }
+
+  Future switchToggle(toggle, id, tableName, columnName) async {
+    var url = 'http://192.168.1.111/testdb/toggleSwitch.php';
+    var response = await http.post(Uri.parse(url), body: {
+      "dataTable": tableName,
+      "id": id,
+      "switch": toggle,
+      "columnName": columnName
+    });
+
+    return response;
   }
 }

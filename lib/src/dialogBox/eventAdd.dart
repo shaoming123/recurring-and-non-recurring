@@ -8,18 +8,21 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/event.dart';
-import 'package:ipsolution/src/listfolder/category.dart';
 import 'package:ipsolution/src/recurrring.dart';
 import 'package:ipsolution/util/app_styles.dart';
+import 'package:ipsolution/util/recurringTasks.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:provider/provider.dart';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
 
+import '../../model/eventDataSource.dart';
 import '../../model/manageUser.dart';
 import '../../model/selection.dart';
 import '../../provider/event_provider.dart';
+import '../../util/checkInternet.dart';
 import '../../util/datetime.dart';
 import 'package:http/http.dart' as http;
 
@@ -54,7 +57,7 @@ class _EventAddState extends State<EventAdd> {
   String _selectedStatus = 'Upcoming';
   String _selectedRecurring = '';
   String _selectedSite = '';
-  List<String> list = <String>['One', 'Two', 'Three', 'Four'];
+
   List<String> siteList = <String>[];
   List<Map<String, dynamic>> category = [];
   List<String> priorityList = <String>['Low', 'Moderate', 'High'];
@@ -109,7 +112,6 @@ class _EventAddState extends State<EventAdd> {
     setState(() {
       fromDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 9, 00);
       toDate = DateTime(fromDate.year, fromDate.month, fromDate.day, 17, 30);
-      category = ListFile().category;
     });
   }
 
@@ -260,59 +262,131 @@ class _EventAddState extends State<EventAdd> {
 
   Future saveEvent() async {
     final isValid = _formkey.currentState!.validate();
-
+    String? color;
+    String? _recurrenceRule;
     if (isValid) {
       String selectedUser = _selectedUser.join(",");
 
+      if (_selectedPriority == "Low") {
+        color = "lightgreen";
+      } else if (_selectedPriority == "Moderate") {
+        color = "palegoldenrod";
+      } else if (_selectedPriority == "High") {
+        color = "lightcoral";
+      }
+
+      // get the correct toDate again ( to prevent user didnt click the end time )
+      DateTime to_date =
+          DateTime(fromDate.year, fromDate.month, fromDate.day).add(
+        Duration(
+          days: int.parse(durationController.text) - 1,
+        ),
+      );
+      toDate = to_date.add(
+        Duration(hours: toDate.hour, minutes: toDate.minute),
+      );
+
+      // recurring multiple tasks generate
+      String rule = Rule().recurringRule(_selectedRecurring, recurringDate,
+          recurringController.text, fromDate, toDate, durationController.text);
+
+      List<DateTime> _startDate =
+          SfCalendar.getRecurrenceDateTimeCollection(rule, fromDate);
+
+      // for (int i = 0; i < _startDate.length; i++) {
+      //   DateTime end_date =
+      //       DateTime(_startDate[i].year, _startDate[i].month, _startDate[i].day)
+      //           .add(
+      //     Duration(
+      //       days: int.parse(durationController.text) - 1,
+      //     ),
+      //   );
+      //   DateTime endtime = end_date.add(
+      //     Duration(hours: toDate.hour, minutes: toDate.minute),
+      //   );
+
+      //   final event = Event(
+      //       category: _selectedCategory["variables"] +
+      //           "|" +
+      //           _selectedCategory["department"],
+      //       subCategory: _selectedSubCategory!,
+      //       type: typeselect!.value,
+      //       site: _selectedSite,
+      //       task: taskController.text,
+      //       from: _startDate[i].toString(),
+      //       to: endtime.toString(),
+      //       person: selectedUser,
+      //       // rule: 'FREQ=DAILY;INTERVAL=1;COUNT=20',
+      //       // backgroundColor: calendarColor.toString(),
+      //       duration: durationController.text,
+      //       priority: _selectedPriority,
+      //       recurringOpt: _selectedRecurring,
+      //       color: color!,
+      //       recurringEvery: recurringController.text.isEmpty
+      //           ? '0'
+      //           : recurringController.text,
+      //       recurringUntil: recurringDate.toString(),
+      //       remark: remarkController.text,
+      //       completeDate: completeDate.toString(),
+      //       status: _selectedStatus);
+
+      //   await dbHelper.addEvent(event);
+      // }
+      // Navigator.pop(context);
+
+      // Navigator.pushReplacement(
+      //     context, MaterialPageRoute(builder: (context) => const Recurring()));
+
       var url = 'http://192.168.1.111/testdb/add.php';
-      // final event = Event(
-      //     category: _selectedVal,
-      //     subCategory: _selectedVal,
-      //     type: _selectedVal,
-      //     site: _selectedSite,
-      //     task: taskController.text,
-      //     from: fromDate.toString(),
-      //     to: toDate.toString(),
-      //     person: selectedUser,
-      //     // rule: 'FREQ=DAILY;INTERVAL=1;COUNT=20',
-      //     // backgroundColor: calendarColor.toString(),
-      //     duration: durationController.text,
-      //     priority: _selectedPriority,
-      //     recurringOpt: _selectedRecurring,
-      //     recurringEvery:
-      //         recurringController.text.isEmpty ? '0' : recurringController.text,
-      //     recurringUntil: recurringDate.toString(),
-      //     remark: remarkController.text,
-      //     completeDate: completeDate.toString(),
-      //     status: _selectedStatus);
 
-      // await dbHelper.addEvent(event);
+      var response;
+      for (int i = 0; i < _startDate.length; i++) {
+        DateTime end_date =
+            DateTime(_startDate[i].year, _startDate[i].month, _startDate[i].day)
+                .add(
+          Duration(
+            days: int.parse(durationController.text) - 1,
+          ),
+        );
+        DateTime endtime = end_date.add(
+          Duration(hours: toDate.hour, minutes: toDate.minute),
+        );
 
-      Map<String, dynamic> data = {
-        "dataTable": "tasks",
-        "category": _selectedCategory["variables"] +
-            "|" +
-            _selectedCategory["department"],
-        "subCategory": _selectedSubCategory,
-        "type": typeselect!.value,
-        "site": _selectedSite,
-        "task": taskController.text,
-        "start": fromDate.toString(),
-        "end": toDate.toString(),
-        "person": selectedUser,
-        // "startDate": DateFormat("yyyy-MM-dd").format(startDate).toString(),
-        // "deadline": DateFormat("yyyy-MM-dd").format(due!).toString(),
-        "modify": DateFormat("yyyy-MM-dd").format(DateTime.now()).toString(),
-        "remark": remarkController.text,
+        Map<String, dynamic> data = {
+          "dataTable": "tasks",
+          "category": _selectedCategory["variables"] +
+              "|" +
+              _selectedCategory["department"],
+          "subCategory": _selectedSubCategory,
+          "type": typeselect!.value,
+          "site": _selectedSite,
+          "task": taskController.text,
+          "start": _startDate[i].toString(),
+          "end": endtime.toString(),
+          "date": DateFormat("y-M-d").format(_startDate[i]).toString(),
+          "deadline": DateFormat("y-M-d").format(endtime).toString(),
+          "startTime": DateFormat.Hm().format(_startDate[i]).toString(),
+          "dueTime": DateFormat.Hm().format(endtime).toString(),
+          "person": selectedUser,
+          "duration": durationController.text,
+          "priority": _selectedPriority,
+          "color": color,
+          // "startDate": DateFormat("yyyy-MM-dd").format(startDate).toString(),
+          // "deadline": DateFormat("yyyy-MM-dd").format(due!).toString(),
+          "recurringOpt": _selectedRecurring,
+          "recurringEvery":
+              recurringController.text.isEmpty ? '0' : recurringController.text,
+          // "modify": DateFormat("yyyy-MM-dd").format(DateTime.now()).toString(),
+          "remark": remarkController.text,
 
-        "completeDate": completeDate != null
-            ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
-            : '',
+          "completeDate": completeDate != null
+              ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+              : '',
 
-        "status": _selectedStatus,
-      };
-      final response = await http.post(Uri.parse(url), body: data);
-
+          "status": _selectedStatus,
+        };
+        response = await http.post(Uri.parse(url), body: data);
+      }
       if (response.statusCode == 200) {
         Navigator.pop(context);
 
@@ -1144,8 +1218,16 @@ class _EventAddState extends State<EventAdd> {
                     shape: MaterialStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0))),
                   ),
-                  onPressed: () {
-                    saveEvent();
+                  onPressed: () async {
+                    await Internet.isInternet().then((connection) async {
+                      if (connection) {
+                        await saveEvent();
+                        ;
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("No Internet !")));
+                      }
+                    });
                   },
                   child: const Text(
                     "Save",

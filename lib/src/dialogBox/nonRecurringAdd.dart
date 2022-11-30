@@ -58,6 +58,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
   List categoryData = [];
   bool check = false;
   String userPosition = '';
+  String userRole = '';
   @override
   void initState() {
     super.initState();
@@ -102,7 +103,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
     final SharedPreferences sp = await _pref;
     final data = await dbHelper.getItems();
     final siteOptions = await Selection().siteSelection();
-
+    String currentUserSiteLead = sp.getString("siteLead")!;
+    List functionData = sp.getString("position")!.split(",");
+    userRole = sp.getString("role").toString();
     setState(() {
       //site selection
       for (final val in siteOptions) {
@@ -123,7 +126,31 @@ class _addNonRecurringState extends State<addNonRecurring> {
       // owner
       if (widget.task == false) {
         for (int i = 0; i < data.length; i++) {
-          user.add({'username': data[i]["user_name"]});
+          List positionList = data[i]["position"].split(",");
+          List siteList = data[i]["site"].split(",");
+
+          if (userRole == "Manager" || userRole == "Super Admin") {
+            user.add({'username': data[i]["user_name"]});
+          } else if (userRole == "Leader" && currentUserSiteLead != "-") {
+            for (int y = 0; y < siteList.length; y++) {
+              if ((data[i]["role"] == "Leader" || data[i]["role"] == "Staff") &&
+                  siteList[y] == currentUserSiteLead &&
+                  data[i]["user_id"] != sp.getInt("user_id")) {
+                user.add({'username': data[i]["user_name"]});
+              }
+            }
+          } else {
+            for (int y = 0; y < positionList.length; y++) {
+              for (int x = 0; x < functionData.length; x++) {
+                if (positionList[y] == functionData[x] &&
+                    (data[i]["role"] == "Leader" ||
+                        data[i]["role"] == "Staff") &&
+                    data[i]["user_id"] != sp.getInt("user_id")) {
+                  user.add({'username': data[i]["user_name"]});
+                }
+              }
+            }
+          }
         }
       } else {
         user.add({'username': _selectedUser});
@@ -244,6 +271,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
           "status": statusController.text,
           "department": userPosition
         };
+
         final response = await http.post(Uri.parse(url), body: data);
 
         if (response.statusCode == 200) {
@@ -641,6 +669,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 color: check == true ? Color(0xFFd4dce4) : Colors.grey),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
+                enabled: check == true ? true : false,
                 decoration: InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,

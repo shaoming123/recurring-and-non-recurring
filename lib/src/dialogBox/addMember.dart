@@ -24,6 +24,9 @@ class _AddMemberState extends State<AddMember> {
   final username = TextEditingController();
   final password = TextEditingController();
   final email = TextEditingController();
+  bool checkPosition = false;
+  bool checkSite = false;
+  bool checkSiteLead = false;
   String _selectedRole = '';
   String active = 'Active';
   var selectedOption = ''.obs;
@@ -91,6 +94,36 @@ class _AddMemberState extends State<AddMember> {
     });
   }
 
+  void selectAllPosition() {
+    setState(() {
+      if (checkPosition == true) {
+        selectedPosition = positiondropdownList;
+      } else {
+        selectedPosition = [];
+      }
+    });
+  }
+
+  void selectAllSite() {
+    setState(() {
+      if (checkSite == true) {
+        selectedSite = sitedropdownList;
+      } else {
+        selectedSite = [];
+      }
+    });
+  }
+
+  void selectAllSiteLead() {
+    setState(() {
+      if (checkSiteLead == true) {
+        selectedSiteLead = siteLeaddropdownList;
+      } else {
+        selectedSiteLead = [];
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -151,7 +184,7 @@ class _AddMemberState extends State<AddMember> {
           "password": password.text,
           "email": email.text,
           "role": _selectedRole,
-          "leadFunc": '',
+          "leadFunc": '-',
           "position": _selectedPos,
           "site": _selectedSite.isEmpty ? '-' : _selectedSite,
           "siteLead": _selectedSiteLead.isEmpty ? '-' : _selectedSiteLead,
@@ -265,140 +298,236 @@ class _AddMemberState extends State<AddMember> {
     }
 
     Widget positionSelect() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Function Access',
-            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
-          ),
-          const Gap(10),
-          Container(
-            margin: const EdgeInsets.only(bottom: 30),
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            decoration: BoxDecoration(
-                border: Border.all(color: Colors.white, width: 1),
-                borderRadius: BorderRadius.circular(12),
-                color: const Color(0xFFd4dce4)),
-            child: DropdownButtonHideUnderline(
-              child: DropDownMultiSelect(
-                decoration: InputDecoration(border: InputBorder.none),
-                icon: const Icon(
-                  Icons.arrow_drop_down,
-                  color: Colors.black,
-                ),
-                options: positiondropdownList,
+      return Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Function Access',
+              style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            ),
+            const Gap(10),
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.white, width: 1),
+                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFd4dce4)),
+              child: DropdownButtonHideUnderline(
+                child: DropDownMultiSelect(
+                  decoration: InputDecoration(border: InputBorder.none),
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.black,
+                  ),
+                  options: positiondropdownList,
 
-                // whenEmpty: 'Select position',
-                onChanged: (value) {
-                  setState(() {
-                    selectedPosition = value;
-                    selectedOption.value = "";
+                  // whenEmpty: 'Select position',
+                  onChanged: (value) {
+                    setState(() {
+                      selectedPosition = value;
+                      selectedOption.value = "";
 
-                    selectedPosition.forEach((element) {
-                      selectedOption.value =
-                          selectedOption.value + "  " + element;
+                      selectedPosition.forEach((element) {
+                        selectedOption.value =
+                            selectedOption.value + "  " + element;
+                      });
+
+                      // if (selectedPosition.isNotEmpty) {
+                      //   checkFunctionAccess = true;
+                      // }
                     });
-
-                    // if (selectedPosition.isNotEmpty) {
-                    //   checkFunctionAccess = true;
-                    // }
-                  });
-                },
-                selectedValues: selectedPosition,
+                  },
+                  selectedValues: selectedPosition,
+                ),
               ),
             ),
-          ),
-        ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(0),
+                    width: 14,
+                    height: 14,
+                    color: Colors.white,
+                    child: Checkbox(
+                      checkColor: Colors.white,
+                      activeColor: Colors.blue,
+                      value: checkPosition,
+                      onChanged: (value) {
+                        setState(() {
+                          checkPosition = value!;
+                          selectAllPosition();
+                        });
+                      },
+                    ),
+                  ),
+                  Gap(10),
+                  const Text(
+                    "Select All",
+                    style: TextStyle(color: Color(0xFFd4dce4), fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       );
     }
 
     Widget siteSelect() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Site In-Charge',
-            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
-          ),
-          const Gap(10),
-          Container(
-            margin: const EdgeInsets.only(bottom: 30),
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            decoration: BoxDecoration(
-                border: Border.all(color: Colors.white, width: 1),
-                borderRadius: BorderRadius.circular(12),
-                color: const Color(0xFFd4dce4)),
-            child: DropdownButtonHideUnderline(
-              child: DropDownMultiSelect(
-                decoration: InputDecoration(border: InputBorder.none),
-                icon: const Icon(
-                  Icons.arrow_drop_down,
-                  color: Colors.black,
+      return Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Site In-Charge',
+              style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            ),
+            const Gap(10),
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.white, width: 1),
+                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFd4dce4)),
+              child: DropdownButtonHideUnderline(
+                child: DropDownMultiSelect(
+                  decoration: InputDecoration(border: InputBorder.none),
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.black,
+                  ),
+                  options: sitedropdownList,
+
+                  // whenEmpty: 'Select position',
+                  onChanged: (value) {
+                    selectedSite = value;
+                    selectedSiteOption.value = "";
+
+                    selectedSite.forEach((element) {
+                      selectedSiteOption.value =
+                          selectedSiteOption.value + "  " + element;
+                    });
+                  },
+                  selectedValues: selectedSite,
                 ),
-                options: sitedropdownList,
-
-                // whenEmpty: 'Select position',
-                onChanged: (value) {
-                  selectedSite = value;
-                  selectedSiteOption.value = "";
-
-                  selectedSite.forEach((element) {
-                    selectedSiteOption.value =
-                        selectedSiteOption.value + "  " + element;
-                  });
-                },
-                selectedValues: selectedSite,
               ),
             ),
-          ),
-        ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(0),
+                    width: 14,
+                    height: 14,
+                    color: Colors.white,
+                    child: Checkbox(
+                      checkColor: Colors.white,
+                      activeColor: Colors.blue,
+                      value: checkSite,
+                      onChanged: (value) {
+                        setState(() {
+                          checkSite = value!;
+                          selectAllSite();
+                        });
+                      },
+                    ),
+                  ),
+                  Gap(10),
+                  const Text(
+                    "Select All",
+                    style: TextStyle(color: Color(0xFFd4dce4), fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       );
     }
 
     Widget siteLeadSelect() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Does this user hold any leadership role on the Site?',
-            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
-          ),
-          const Gap(10),
-          Container(
-            margin: const EdgeInsets.only(bottom: 30),
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            decoration: BoxDecoration(
-                border: Border.all(color: Colors.white, width: 1),
-                borderRadius: BorderRadius.circular(12),
-                color: const Color(0xFFd4dce4)),
-            child: DropdownButtonHideUnderline(
-              child: DropDownMultiSelect(
-                decoration: InputDecoration(border: InputBorder.none),
-                icon: const Icon(
-                  Icons.arrow_drop_down,
-                  color: Colors.black,
+      return Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Does this user hold any leadership role on the Site?',
+              style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            ),
+            const Gap(10),
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.white, width: 1),
+                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFd4dce4)),
+              child: DropdownButtonHideUnderline(
+                child: DropDownMultiSelect(
+                  decoration: InputDecoration(border: InputBorder.none),
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.black,
+                  ),
+                  options: siteLeaddropdownList,
+
+                  // whenEmpty: 'Select position',
+                  onChanged: (value) {
+                    selectedSiteLead = value;
+                    selectedSiteLeadOption.value = "";
+
+                    selectedSiteLead.forEach((element) {
+                      selectedSiteLeadOption.value =
+                          selectedSiteLeadOption.value + "  " + element;
+                    });
+                  },
+                  selectedValues: selectedSiteLead,
                 ),
-                options: siteLeaddropdownList,
-
-                // whenEmpty: 'Select position',
-                onChanged: (value) {
-                  selectedSiteLead = value;
-                  selectedSiteLeadOption.value = "";
-
-                  selectedSiteLead.forEach((element) {
-                    selectedSiteLeadOption.value =
-                        selectedSiteLeadOption.value + "  " + element;
-                  });
-                },
-                selectedValues: selectedSiteLead,
               ),
             ),
-          ),
-        ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(0),
+                    width: 14,
+                    height: 14,
+                    color: Colors.white,
+                    child: Checkbox(
+                      checkColor: Colors.white,
+                      activeColor: Colors.blue,
+                      value: checkSiteLead,
+                      onChanged: (value) {
+                        setState(() {
+                          checkSiteLead = value!;
+                          selectAllSiteLead();
+                        });
+                      },
+                    ),
+                  ),
+                  Gap(10),
+                  const Text(
+                    "Select All",
+                    style: TextStyle(color: Color(0xFFd4dce4), fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       );
     }
 

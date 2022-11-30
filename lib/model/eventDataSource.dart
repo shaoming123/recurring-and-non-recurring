@@ -32,7 +32,7 @@ class EventDataSource extends CalendarDataSource {
 
   String getRecurringOption(int index) => getEvent(index).recurringOpt;
 
-  String getRecurringDate(int index) => getEvent(index).recurringUntil;
+  // String getRecurringDate(int index) => getEvent(index).recurringUntil!;
 
   String getRecurringEvery(int index) {
     return getEvent(index).recurringEvery;
@@ -86,6 +86,8 @@ class EventDataSource extends CalendarDataSource {
   //   }
 
   //   return rule;
+
+  //   return _recurrenceRule;
   // }
 
   String getSubCategory(int index) => getEvent(index).subCategory;
@@ -104,14 +106,21 @@ class EventDataSource extends CalendarDataSource {
 
   String getStatus(int index) => getEvent(index).status;
 
+  String getColors(int index) => getEvent(index).color;
+
+  // @override
+  // bool isAllDay(int index) {
+  //   return false;
+  // }
+
   @override
   Color getColor(int index) {
     late Color color;
     if (getEvent(index).status == "Done") {
       color = Colors.grey;
-    } else if (getEvent(index).priority == "High") {
+    } else if (getEvent(index).color == "lightcoral") {
       color = Colors.redAccent;
-    } else if (getEvent(index).priority == "Moderate") {
+    } else if (getEvent(index).color == "palegoldenrod") {
       color = Colors.yellow;
     } else {
       color = Colors.greenAccent;

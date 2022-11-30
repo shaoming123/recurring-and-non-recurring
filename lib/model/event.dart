@@ -14,11 +14,11 @@ class Event {
   late String priority;
   late String recurringOpt;
   late String recurringEvery;
-  late String recurringUntil;
+  // String? recurringUntil;
   String? remark;
   String? completeDate;
   late String status;
-  // late String backgroundColor;
+  late String color;
   // final String rule;
 
   Event({
@@ -35,11 +35,11 @@ class Event {
     required this.priority,
     required this.recurringOpt,
     required this.recurringEvery,
-    required this.recurringUntil,
+    // this.recurringUntil,
     this.remark,
     this.completeDate,
     required this.status,
-    // required this.backgroundColor,
+    required this.color,
     // required this.rule
   });
 
@@ -58,11 +58,11 @@ class Event {
       'priority': priority,
       'recurringOpt': recurringOpt,
       'recurringEvery': recurringEvery,
-      'recurringUntil': recurringUntil,
+      // 'recurringUntil': recurringUntil,
       'remark': remark,
       'completeDate': completeDate,
       'status': status,
-      // 'backgroundColor': backgroundColor,
+      'color': color,
     };
     return map;
   }
@@ -80,12 +80,12 @@ class Event {
     duration = map['duration'];
     priority = map['priority'];
     recurringOpt = map['recurringOpt'];
-     recurringEvery = map['recurringEvery'];
-    recurringUntil = map['recurringUntil'];
+    recurringEvery = map['recurringEvery'];
+    // recurringUntil = map['recurringUntil'];
     remark = map['remark'];
     completeDate = map['completeDate'];
     status = map['status'];
-    // backgroundColor = map['backgroundColor'];
+    color = map['color'];
     // photoName = map['photoName'];
   }
 }

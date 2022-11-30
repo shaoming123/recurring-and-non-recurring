@@ -4,11 +4,13 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/event.dart';
 import '../../model/selection.dart';
+import '../../util/checkInternet.dart';
 import '../../util/datetime.dart';
 import '../../util/selection.dart';
 import '../recurrring.dart';
@@ -115,7 +117,7 @@ class _EventEditState extends State<EventEdit> {
             break;
           }
         }
-        print(_selectedData);
+
         for (final item in categoryData) {
           // print(item['value']);
           if (item['bold'] == false &&
@@ -253,30 +255,74 @@ class _EventEditState extends State<EventEdit> {
   Future<void> updateEvent(int recurringId) async {
     final isValid = _formkey.currentState!.validate();
     String selectedUser = _selectedUser.join(",");
+    String? color;
     if (isValid) {
-      final event = Event(
-          recurringId: recurringId,
-          category: _selectedVal,
-          subCategory: _selectedVal,
-          type: _selectedVal,
-          site: _selectedSite,
-          task: taskController.text,
-          from: fromDate.toString(),
-          to: toDate.toString(),
-          person: selectedUser,
-          // rule: 'FREQ=DAILY;INTERVAL=1;COUNT=20',
-          // backgroundColor: calendarColor.toString(),
-          duration: durationController.text,
-          priority: _selectedPriority,
-          recurringOpt: _selectedRecurring,
-          recurringEvery:
-              recurringController.text.isEmpty ? '0' : recurringController.text,
-          recurringUntil: recurringDate.toString(),
-          remark: remarkController.text,
-          completeDate: completeDate.toString(),
-          status: _selectedStatus);
+      // final event = Event(
+      //     recurringId: recurringId,
+      //     category: _selectedVal,
+      //     subCategory: _selectedVal,
+      //     type: _selectedVal,
+      //     site: _selectedSite,
+      //     task: taskController.text,
+      //     from: fromDate.toString(),
+      //     to: toDate.toString(),
+      //     person: selectedUser,
+      //     // rule: 'FREQ=DAILY;INTERVAL=1;COUNT=20',
+      //     // backgroundColor: calendarColor.toString(),
+      //     duration: durationController.text,
+      //     priority: _selectedPriority,
+      //     recurringOpt: _selectedRecurring,
+      //     recurringEvery:
+      //         recurringController.text.isEmpty ? '0' : recurringController.text,
+      //     recurringUntil: recurringDate.toString(),
+      //     remark: remarkController.text,
+      //     completeDate: completeDate.toString(),
+      //     status: _selectedStatus);
 
-      await dbHelper.updateEvent(event);
+      // await dbHelper.updateEvent(event);
+
+      if (_selectedPriority == "Low") {
+        color = "lightgreen";
+      } else if (_selectedPriority == "Moderate") {
+        color = "palegoldenrod";
+      } else if (_selectedPriority == "High") {
+        color = "lightcoral";
+      }
+
+      var url = 'http://192.168.1.111/testdb/edit.php';
+      Map<String, dynamic> data = {
+        "dataTable": "tasks",
+        "recurringId": recurringId.toString(),
+        "category": _selectedCategory["variables"] +
+            "|" +
+            _selectedCategory["department"],
+        "subCategory": _selectedSubCategory,
+        "type": typeselect!.value,
+        "site": _selectedSite,
+        "task": taskController.text,
+        "start": fromDate.toString(),
+        "end": toDate.toString(),
+         "date": DateFormat("y-M-d").format(fromDate).toString(),
+          "deadline": DateFormat("y-M-d").format(toDate).toString(),
+          "startTime": DateFormat.Hm().format(fromDate).toString(),
+          "dueTime": DateFormat.Hm().format(toDate).toString(),
+        "person": selectedUser,
+        "priority": _selectedPriority,
+        "color": color,
+        // "startDate": DateFormat("yyyy-MM-dd").format(startDate).toString(),
+        // "deadline": DateFormat("yyyy-MM-dd").format(due!).toString(),
+       "recurringOpt": _selectedRecurring,
+          "recurringEvery":
+              recurringController.text.isEmpty ? '0' : recurringController.text,
+        "remark": remarkController.text,
+
+        "completeDate": completeDate != null
+            ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+            : '',
+
+        "status": _selectedStatus,
+      };
+      final response = await http.post(Uri.parse(url), body: data);
 
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
@@ -285,24 +331,42 @@ class _EventEditState extends State<EventEdit> {
         ),
       );
 
-      Navigator.pop(context);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Recurring()),
-      );
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Updated Successfully!"),
+          ),
+        );
+        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Recurring()),
+        );
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Updated Unsuccessful !")));
+      }
     }
   }
 
   Future<void> removeEvent(int recurring_Id) async {
-    await dbHelper.deleteEvent(recurring_Id);
-
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Successfully deleted!'),
-    ));
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const Recurring()),
-    );
+    var url = 'http://192.168.1.111/testdb/delete.php';
+    final response = await http.post(Uri.parse(url), body: {
+      "dataTable": "tasks",
+      "id": recurring_Id.toString(),
+    });
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Successfully deleted!'),
+      ));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Recurring()),
+      );
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Delete Unsuccessful !")));
+    }
   }
 
   @override
@@ -965,8 +1029,15 @@ class _EventEditState extends State<EventEdit> {
                       shape: MaterialStateProperty.all(RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.0))),
                     ),
-                    onPressed: () {
-                      removeEvent(recurringId);
+                    onPressed: () async {
+                      await Internet.isInternet().then((connection) async {
+                        if (connection) {
+                          await removeEvent(recurringId);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("No Internet !")));
+                        }
+                      });
                     },
                     child: const Text(
                       "Delete",
@@ -1011,8 +1082,16 @@ class _EventEditState extends State<EventEdit> {
                               RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.0))),
                         ),
-                        onPressed: () {
-                          updateEvent(recurringId);
+                        onPressed: () async {
+                          await Internet.isInternet().then((connection) async {
+                            if (connection) {
+                              await updateEvent(recurringId);
+                              ;
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("No Internet !")));
+                            }
+                          });
                         },
                         child: const Text(
                           "Update",

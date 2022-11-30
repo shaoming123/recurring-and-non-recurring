@@ -33,6 +33,7 @@ Future updateAccount(UserModel user, context) async {
   var url = 'http://192.168.1.111/testdb/edit.php';
 
   Map<String, dynamic> data = {
+    "dataTable": "user_details",
     "id": user.user_id.toString(),
     "username": user.user_name,
     "password": user.password,
@@ -93,6 +94,7 @@ Future updateAccount(UserModel user, context) async {
 Future removeUser(int id, context) async {
   var url = 'http://192.168.1.111/testdb/delete.php';
   final response = await http.post(Uri.parse(url), body: {
+    "dataTable": "user_details",
     "id": id.toString(),
   });
   if (response.statusCode == 200) {

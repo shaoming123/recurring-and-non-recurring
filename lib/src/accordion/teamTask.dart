@@ -3,15 +3,19 @@ import 'dart:convert';
 import 'package:badges/badges.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
+import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/src/dialogBox/eventAdd.dart';
 import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:http/http.dart' as http;
 import '../../model/eventDataSource.dart';
 import '../../model/manageUser.dart';
+import '../../util/checkInternet.dart';
+import '../../util/conMysql.dart';
 import '../dialogBox/nonRecurringAdd.dart';
 import '../dialogBox/nonRecurringEdit.dart';
 import '../non_recurring.dart';
@@ -26,6 +30,7 @@ final textcontroller = TextEditingController();
 Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
 class _TeamTaskState extends State<TeamTask> {
+  TextEditingController? textcontroller;
   String _selectedPosition = "";
   String _selectedUser = "";
   bool _showContent = false;
@@ -41,22 +46,29 @@ class _TeamTaskState extends State<TeamTask> {
   List<Map<String, dynamic>> LateTeamnonRecurring = [];
   List<Map<String, dynamic>> ActiveTeamnonRecurring = [];
   List<Map<String, dynamic>> CompletedTeamnonRecurring = [];
+
+  List<Map<String, dynamic>> full_foundTeamNonRecurring = [];
+  List<Map<String, dynamic>> full_LateTeamnonRecurring = [];
+  List<Map<String, dynamic>> full_ActiveTeamnonRecurring = [];
+  List<Map<String, dynamic>> full_CompletedTeamnonRecurring = [];
+  List<String> positionType = <String>[];
   List<dynamic> userList = [];
   double _animatedHeight = 0.0;
   bool showTable = false;
   bool check = false;
   int requestcheck = 0;
+  DbHelper dbHelper = DbHelper();
   @override
   void initState() {
     super.initState();
-
+    textcontroller = TextEditingController();
     //get the user position
     getUserPosition();
   }
 
   Future<void> getUserPosition() async {
     final SharedPreferences sp = await _pref;
-    List<String> positionType = <String>[];
+    positionType = <String>[];
     siteType = <String>[];
     userRole = sp.getString("role").toString();
     currentUserPosition = sp.getString("position")!;
@@ -89,6 +101,7 @@ class _TeamTaskState extends State<TeamTask> {
     CompletedTeamnonRecurring = [];
     LateTeamnonRecurring = [];
     ActiveTeamnonRecurring = [];
+
     final SharedPreferences sp = await _pref;
     final data = await dbHelper.getItems();
     List userSite = currentUserSite.split(',');
@@ -175,9 +188,34 @@ class _TeamTaskState extends State<TeamTask> {
     CompletedTeamnonRecurring = [];
     LateTeamnonRecurring = [];
     ActiveTeamnonRecurring = [];
+    textcontroller!.clear();
     setState(() {
       for (int x = 0; x < data.length; x++) {
-        if (userRole == "Leader" && currentUserSiteLead != '-') {
+        if (userRole == "Super Admin" || userRole == 'Manager') {
+          final dayLeft =
+              daysBetween(DateTime.now(), DateTime.parse(data[x]["due"]));
+          if (data[x]["owner"] == _selectedUser) {
+            if (data[x]["site"] == _selectedPosition) {
+              foundTeamNonRecurring.add(data[x]);
+              if (data[x]["status"] == '100') {
+                CompletedTeamnonRecurring.add(data[x]);
+              } else if (dayLeft.isNegative) {
+                LateTeamnonRecurring.add(data[x]);
+              } else if (dayLeft > 0) {
+                ActiveTeamnonRecurring.add(data[x]);
+              }
+            } else if (positionType.contains(_selectedPosition)) {
+              foundTeamNonRecurring.add(data[x]);
+              if (data[x]["status"] == '100') {
+                CompletedTeamnonRecurring.add(data[x]);
+              } else if (dayLeft.isNegative) {
+                LateTeamnonRecurring.add(data[x]);
+              } else if (dayLeft > 0) {
+                ActiveTeamnonRecurring.add(data[x]);
+              }
+            }
+          }
+        } else if (userRole == "Leader" && currentUserSiteLead != '-') {
           if (data[x]["site"] == currentUserSiteLead) {
             if (data[x]["owner"] == _selectedUser) {
               final dayLeft =
@@ -209,19 +247,333 @@ class _TeamTaskState extends State<TeamTask> {
           }
         }
       }
+
+      full_LateTeamnonRecurring = LateTeamnonRecurring;
+      full_ActiveTeamnonRecurring = ActiveTeamnonRecurring;
+      full_CompletedTeamnonRecurring = CompletedTeamnonRecurring;
+      full_foundTeamNonRecurring = foundTeamNonRecurring;
     });
   }
 
-  Future<void> removeTeamNonRecurring(int id) async {
-    await dbHelper.deleteNonRecurring(id);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Successfully deleted!'),
-    ));
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const NonRecurring()),
-    );
+  Future<void> toggleSwitch(value, int id) async {
+    String checked = '';
+    String tableName = "nonrecurring";
+    setState(() {
+      if (value == true) {
+        checked = 'Checked';
+      } else {
+        checked = 'Pending Review';
+      }
+    });
+
+    final response = await Controller()
+        .switchToggle(checked, id.toString(), tableName, "checked");
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Updated Successfully!"),
+        ),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const NonRecurring()),
+      );
+    }
   }
+
+  Future<void> removeTeamNonRecurring(int id) async {
+    var url = 'http://192.168.1.111/testdb/delete.php';
+    final response = await http.post(Uri.parse(url), body: {
+      "dataTable": "nonrecurring",
+      "id": id.toString(),
+    });
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Successfully deleted!'),
+      ));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const NonRecurring()),
+      );
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Delete Unsuccessful !")));
+    }
+  }
+
+  void searchResult(String enteredKeyword) {
+    List<Map<String, dynamic>> results_one = [];
+    List<Map<String, dynamic>> results_two = [];
+    List<Map<String, dynamic>> results_three = [];
+    List<Map<String, dynamic>> results_four = [];
+
+    if (enteredKeyword.isEmpty) {
+      // if the search field is empty or only contains white-space, we'll display all users
+      results_one = full_LateTeamnonRecurring;
+      results_two = full_ActiveTeamnonRecurring;
+      results_three = full_CompletedTeamnonRecurring;
+      results_four = full_foundTeamNonRecurring;
+    } else {
+      results_one = full_LateTeamnonRecurring
+          .where((data) =>
+              data["category"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["subCategory"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["type"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["site"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["task"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["owner"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["due"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["startDate"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["modify"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["remark"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["status"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()))
+          .toList();
+
+      // active
+      results_two = full_ActiveTeamnonRecurring
+          .where((data) =>
+              data["category"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["subCategory"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["type"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["site"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["task"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["owner"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["due"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["startDate"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["modify"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["remark"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["status"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()))
+          .toList();
+
+      //complete
+      results_three = full_CompletedTeamnonRecurring
+          .where((data) =>
+              data["category"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["subCategory"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["type"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["site"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["task"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["owner"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["due"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["startDate"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["modify"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["remark"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["personCheck"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["checked"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()))
+          .toList();
+
+      // all
+      results_four = full_foundTeamNonRecurring
+          .where((data) =>
+              data["category"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["subCategory"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["type"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["site"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["task"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["owner"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["due"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["startDate"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["modify"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["remark"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["status"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["personCheck"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()) ||
+              data["checked"]
+                  .toLowerCase()
+                  .contains(enteredKeyword.toLowerCase()))
+          .toList();
+    }
+    setState(() {
+      LateTeamnonRecurring = results_one;
+      ActiveTeamnonRecurring = results_two;
+      CompletedTeamnonRecurring = results_three;
+      foundTeamNonRecurring = results_four;
+    });
+  }
+
+  // Widget Search(context) {
+  //   return SingleChildScrollView(
+  //     child: Dialog(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(20),
+  //       ),
+  //       backgroundColor: Colors.transparent,
+  //       child: Container(
+  //           padding: const EdgeInsets.all(20),
+  //           margin: const EdgeInsets.only(top: 45),
+  //           decoration: BoxDecoration(
+  //               shape: BoxShape.rectangle,
+  //               color: const Color(0xFF384464),
+  //               borderRadius: BorderRadius.circular(20),
+  //               boxShadow: [
+  //                 const BoxShadow(
+  //                     color: Colors.black,
+  //                     offset: Offset(0, 10),
+  //                     blurRadius: 10),
+  //               ]),
+  //           child: Column(
+  //               mainAxisAlignment: MainAxisAlignment.end,
+  //               crossAxisAlignment: CrossAxisAlignment.end,
+  //               children: [
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     const Text("Search",
+  //                         style: TextStyle(
+  //                             color: Color(0xFFd4dce4),
+  //                             fontSize: 26,
+  //                             fontWeight: FontWeight.w700)),
+  //                     IconButton(
+  //                       icon: const Icon(
+  //                         Icons.cancel_outlined,
+  //                         color: Color(0XFFd4dce4),
+  //                         size: 30,
+  //                       ),
+  //                       onPressed: () => Navigator.of(context).pop(),
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 const Gap(20),
+  //                 Container(
+  //                   margin: const EdgeInsets.only(bottom: 30),
+  //                   padding: const EdgeInsets.symmetric(horizontal: 5),
+  //                   decoration: BoxDecoration(
+  //                       border: Border.all(color: Colors.white, width: 1),
+  //                       borderRadius: BorderRadius.circular(12),
+  //                       color: const Color(0xFFd4dce4)),
+  //                   child: TextFormField(
+  //                     cursorColor: Colors.black,
+  //                     style: const TextStyle(fontSize: 14),
+
+  //                     decoration: InputDecoration(hintText: "Search...."),
+  //                     onChanged: (value) {
+  //                       setState(() {
+  //                         searchResult(value);
+  //                       });
+  //                     },
+  //                     // controller: controllerText,
+  //                   ),
+  //                 ),
+  //                 Align(
+  //                   alignment: Alignment.bottomRight,
+  //                   child: TextButton(
+  //                       style: ButtonStyle(
+  //                         padding: MaterialStateProperty.all<EdgeInsets>(
+  //                           const EdgeInsets.all(10),
+  //                         ),
+  //                         backgroundColor: MaterialStateProperty.all<Color>(
+  //                             const Color(0xFF60b4b4)),
+  //                         shape: MaterialStateProperty.all(
+  //                             RoundedRectangleBorder(
+  //                                 borderRadius: BorderRadius.circular(10.0))),
+  //                       ),
+  //                       onPressed: () {
+  //                         Navigator.pop(context);
+  //                       },
+  //                       child: const Text(
+  //                         "search",
+  //                         style: TextStyle(
+  //                             fontSize: 18,
+  //                             color: Color(0xFFd4dce4),
+  //                             fontWeight: FontWeight.w700),
+  //                       )),
+  //                 ),
+  //               ])),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +600,7 @@ class _TeamTaskState extends State<TeamTask> {
                   cursorColor: Colors.black,
                   onChanged: (value) {
                     setState(() {
-                      // _searchResult = value;
+                      searchResult(value);
                     });
                   },
                   decoration: InputDecoration(
@@ -691,9 +1043,16 @@ class _TeamTaskState extends State<TeamTask> {
                   )),
                   DataCell(IconButton(
                       icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        removeTeamNonRecurring(
-                            LateTeamnonRecurring[index]["nonRecurringId"]);
+                      onPressed: () async {
+                        await Internet.isInternet().then((connection) async {
+                          if (connection) {
+                            await removeTeamNonRecurring(
+                                LateTeamnonRecurring[index]["nonRecurringId"]);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("No Internet !")));
+                          }
+                        });
                       })),
                 ],
                 // onSelectChanged: (e) {
@@ -888,9 +1247,17 @@ class _TeamTaskState extends State<TeamTask> {
                   )),
                   DataCell(IconButton(
                       icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        removeTeamNonRecurring(
-                            ActiveTeamnonRecurring[index]["nonRecurringId"]);
+                      onPressed: () async {
+                        await Internet.isInternet().then((connection) async {
+                          if (connection) {
+                            await removeTeamNonRecurring(
+                                ActiveTeamnonRecurring[index]
+                                    ["nonRecurringId"]);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("No Internet !")));
+                          }
+                        });
                       })),
                 ],
                 // onSelectChanged: (e) {
@@ -1019,25 +1386,37 @@ class _TeamTaskState extends State<TeamTask> {
                     ),
                   )),
                   DataCell(CompletedTeamnonRecurring[index]["checked"] != '-'
-                      ? Row(
-                          children: [
-                            Text(CompletedTeamnonRecurring[index]["checked"]),
-                            Checkbox(
-                              checkColor: Colors.white,
-                              activeColor: Colors.blue,
-                              value: CompletedTeamnonRecurring[index]
-                                          ["checked"] ==
-                                      'Checked'
-                                  ? true
-                                  : false,
-                              shape: CircleBorder(),
-                              onChanged: (value) {
-                                // setState(() {
-                                //   check = value!;
-                                // });
-                              },
-                            )
-                          ],
+                      ? Center(
+                          child: Row(
+                            children: [
+                              Text(CompletedTeamnonRecurring[index]["checked"]),
+                              Checkbox(
+                                checkColor: Colors.white,
+                                activeColor: Colors.blue,
+                                value: CompletedTeamnonRecurring[index]
+                                            ["checked"] ==
+                                        'Checked'
+                                    ? true
+                                    : false,
+                                shape: CircleBorder(),
+                                onChanged: (value) async {
+                                  await Internet.isInternet()
+                                      .then((connection) async {
+                                    if (connection) {
+                                      await toggleSwitch(
+                                          value,
+                                          CompletedTeamnonRecurring[index]
+                                              ["nonRecurringId"]);
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content: Text("No Internet !")));
+                                    }
+                                  });
+                                },
+                              )
+                            ],
+                          ),
                         )
                       : Text("No Review Needed")),
                   DataCell(Center(
@@ -1078,9 +1457,17 @@ class _TeamTaskState extends State<TeamTask> {
                   )),
                   DataCell(IconButton(
                       icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        removeTeamNonRecurring(
-                            CompletedTeamnonRecurring[index]["nonRecurringId"]);
+                      onPressed: () async {
+                        await Internet.isInternet().then((connection) async {
+                          if (connection) {
+                            await removeTeamNonRecurring(
+                                CompletedTeamnonRecurring[index]
+                                    ["nonRecurringId"]);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("No Internet !")));
+                          }
+                        });
                       })),
                 ],
                 // onSelectChanged: (e) {
@@ -1222,10 +1609,21 @@ class _TeamTaskState extends State<TeamTask> {
                                       ? true
                                       : false,
                                   shape: CircleBorder(),
-                                  onChanged: (value) {
-                                    // setState(() {
-                                    //   check = value!;
-                                    // });
+                                  onChanged: (value) async {
+                                    await Internet.isInternet()
+                                        .then((connection) async {
+                                      if (connection) {
+                                        await toggleSwitch(
+                                            value,
+                                            foundTeamNonRecurring[index]
+                                                ["nonRecurringId"]);
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(
+                                                content:
+                                                    Text("No Internet !")));
+                                      }
+                                    });
                                   },
                                 )
                               ],
@@ -1307,9 +1705,16 @@ class _TeamTaskState extends State<TeamTask> {
                   )),
                   DataCell(IconButton(
                       icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        removeTeamNonRecurring(
-                            foundTeamNonRecurring[index]["nonRecurringId"]);
+                      onPressed: () async {
+                        await Internet.isInternet().then((connection) async {
+                          if (connection) {
+                            await removeTeamNonRecurring(
+                                foundTeamNonRecurring[index]["nonRecurringId"]);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("No Internet !")));
+                          }
+                        });
                       })),
                 ],
                 // onSelectChanged: (e) {

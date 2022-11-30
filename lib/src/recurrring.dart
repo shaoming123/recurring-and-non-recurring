@@ -7,6 +7,7 @@ import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/src/navbar.dart';
+import 'package:ipsolution/util/appbar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -59,13 +60,7 @@ class _RecurringState extends State<Recurring> {
     final userData = await dbHelper.getItems();
 
     final SharedPreferences sp = await _pref;
-    String username = sp.getString("user_name")!;
-    userRole = sp.getString("role")!;
-    functionData = sp.getString("position")!.split(",");
-    String currentUserSiteLead = sp.getString("siteLead")!;
-    currentUserSite = sp.getString("site")!.split(",");
 
-    _selectedUser = username;
     _selectedFunction = "All";
     _selectedSite = "All";
     allEvents = [];
@@ -73,6 +68,15 @@ class _RecurringState extends State<Recurring> {
     userList = [];
     siteList = [];
     setState(() {
+      String username = sp.getString("user_name")!;
+      userRole = sp.getString("role")!;
+      functionData = sp.getString("position")!.split(",");
+      String currentUserSiteLead = sp.getString("siteLead")!;
+
+      currentUserSite = sp.getString("site")!.split(",");
+
+      _selectedUser = username;
+
       userList.add("All");
 
       siteList = currentUserSite;
@@ -123,12 +127,15 @@ class _RecurringState extends State<Recurring> {
           }
         } else {
           functionList = functionData;
-
+          print(positionList);
           for (int i = 0; i < positionList.length; i++) {
             for (int x = 0; x < functionData.length; x++) {
               if (positionList[i] == functionData[x] &&
                   (item["role"] == "Leader" || item["role"] == "Staff")) {
-                userList.add(item["user_name"]);
+                if (userList.contains(item['user_name'])) {
+                } else {
+                  userList.add(item["user_name"]);
+                }
               }
             }
           }
@@ -136,57 +143,84 @@ class _RecurringState extends State<Recurring> {
       }
 
       functionList.insert(0, "All");
-      functionList.insert(1, "Manager");
+      if (userRole == 'Super Admin' || userRole == 'Manager') {
+        functionList.insert(1, "Manager");
+      }
       siteList.insert(0, "All");
     });
   }
 
   Future runFilter() async {
-    allEvents = [];
     final data = await dbHelper.fetchAllEvent();
+    allEvents = [];
     setState(() {
+      if (siteList.length == 2) {
+        _selectedSite = siteList[1];
+      }
+
+      if (functionList.length == 2) {
+        _selectedFunction = functionList[1];
+      }
+
       for (int i = 0; i < data.length; i++) {
         personList = [];
+
         personList = data[i]["person"].split(',');
         String functionCategory = data[i]['category'].split('|')[1];
 
         for (int x = 0; x < personList.length; x++) {
-          if (_selectedSite == data[i]['site'] &&
-              _selectedUser == personList[x] &&
-              _selectedFunction == functionCategory) {
-            allEvents.add(Event.fromMap(data[i]));
-          } else if (_selectedUser == 'All' &&
-              _selectedFunction == 'All' &&
-              _selectedSite == data[i]['site']) {
-            allEvents.add(Event.fromMap(data[i]));
-          } else if (_selectedUser == 'All' &&
-              _selectedFunction == functionCategory &&
-              _selectedSite == 'All') {
-            allEvents.add(Event.fromMap(data[i]));
-          } else if (_selectedUser == personList[x] &&
-              _selectedFunction == 'All' &&
-              _selectedSite == 'All') {
-            allEvents.add(Event.fromMap(data[i]));
-          } else if (_selectedUser == personList[x] &&
-              _selectedFunction == functionCategory &&
-              _selectedSite == 'All') {
-            allEvents.add(Event.fromMap(data[i]));
-          } else if (_selectedUser == personList[x] &&
-              _selectedFunction == 'All' &&
-              _selectedSite == data[i]['site']) {
-            allEvents.add(Event.fromMap(data[i]));
-          } else if (_selectedUser == 'All' &&
-              _selectedFunction == functionCategory &&
-              _selectedSite == data[i]['site']) {
-            allEvents.add(Event.fromMap(data[i]));
-          } else if (_selectedSite == 'All' &&
-              _selectedUser == 'All' &&
-              _selectedFunction == 'All') {
-            allEvents.add(Event.fromMap(data[i]));
+          if (userList.contains(personList[x])) {
+            // if (!allEvents.contains(Event.fromMap(data[i]))) {
+            if (_selectedSite == data[i]['site'] &&
+                _selectedUser == personList[x] &&
+                _selectedFunction == functionCategory) {
+              allEvents.add(Event.fromMap(data[i]));
+            } else if (_selectedUser == 'All' &&
+                _selectedFunction == 'All' &&
+                _selectedSite == data[i]['site']) {
+              allEvents.add(Event.fromMap(data[i]));
+            } else if (_selectedUser == 'All' &&
+                _selectedFunction == functionCategory &&
+                _selectedSite == 'All') {
+              allEvents.add(Event.fromMap(data[i]));
+            } else if (_selectedUser == personList[x] &&
+                _selectedFunction == 'All' &&
+                _selectedSite == 'All') {
+              allEvents.add(Event.fromMap(data[i]));
+            } else if (_selectedUser == personList[x] &&
+                _selectedFunction == functionCategory &&
+                _selectedSite == 'All') {
+              allEvents.add(Event.fromMap(data[i]));
+            } else if (_selectedUser == personList[x] &&
+                _selectedFunction == 'All' &&
+                _selectedSite == data[i]['site']) {
+              allEvents.add(Event.fromMap(data[i]));
+            } else if (_selectedUser == 'All' &&
+                _selectedFunction == functionCategory &&
+                _selectedSite == data[i]['site']) {
+              allEvents.add(Event.fromMap(data[i]));
+            } else if (_selectedSite == 'All' &&
+                _selectedUser == 'All' &&
+                _selectedFunction == 'All') {
+              allEvents.add(Event.fromMap(data[i]));
+            }
           }
+          // }
         }
       }
+      allEvents = removeDuplicates(allEvents);
     });
+  }
+
+  List<Event> removeDuplicates(List<Event> items) {
+    List<Event> uniqueItems = [];
+    var uniqueIDs = items
+        .map((e) => e.recurringId)
+        .toSet(); //list if UniqueID to remove duplicates
+    uniqueIDs.forEach((e) {
+      uniqueItems.add(items.firstWhere((i) => i.recurringId == e));
+    });
+    return uniqueItems;
   }
 
   @override
@@ -227,21 +261,8 @@ class _RecurringState extends State<Recurring> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.menu, color: Colors.black),
-                        onPressed: () => scaffoldKey.currentState!.openDrawer(),
-                      ),
-                      Text("Recurring", style: Styles.title),
-                      IconButton(
-                        icon: const Icon(Icons.notifications_outlined,
-                            color: Colors.black),
-                        onPressed: () => {},
-                      ),
-                    ],
-                  ),
+                  Appbar(title: "Recurring", scaffoldKey: scaffoldKey),
+
                   // const Gap(20),
                   // Expanded(
                   //     child: FutureBuilder<List>(
@@ -486,7 +507,9 @@ class _RecurringState extends State<Recurring> {
                       initialSelectedDate: DateTime.now(),
 
                       timeSlotViewSettings: TimeSlotViewSettings(
-                          timelineAppointmentHeight: height / 5),
+                        timelineAppointmentHeight: height / 5,
+                      ),
+
                       // controller: _calendarController,
 
                       monthViewSettings: MonthViewSettings(
@@ -503,8 +526,9 @@ class _RecurringState extends State<Recurring> {
                       ),
 
                       scheduleViewSettings: ScheduleViewSettings(
-                          hideEmptyScheduleWeek: true,
-                          appointmentItemHeight: height / 5),
+                        hideEmptyScheduleWeek: true,
+                        appointmentItemHeight: height / 5,
+                      ),
 
                       onTap: calendarTapped,
                       todayHighlightColor: Styles.buttonColor,
@@ -631,6 +655,17 @@ class _RecurringState extends State<Recurring> {
   Widget appointBuilder(
       BuildContext context, CalendarAppointmentDetails details) {
     final event = details.appointments.first;
+    Color cardColor;
+
+    if (event.status == "Done") {
+      cardColor = Colors.grey;
+    } else if (event.color == "lightcoral") {
+      cardColor = Color(0xFFf08080);
+    } else if (event.color == "palegoldenrod") {
+      cardColor = Color(0xFFeee8aa);
+    } else {
+      cardColor = Colors.lightGreen;
+    }
 
     return GestureDetector(
       onTap: () {
@@ -645,7 +680,7 @@ class _RecurringState extends State<Recurring> {
 
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.lightGreen,
+          color: cardColor,
           borderRadius: BorderRadius.all(
             Radius.circular(10),
           ),
@@ -665,11 +700,28 @@ class _RecurringState extends State<Recurring> {
               flex: 1,
               child: Padding(
                 padding: const EdgeInsets.all(2.0),
-                child: Text(event.recurringId.toString(),
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: Styles.textColor,
-                        fontWeight: FontWeight.w700)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("(" + event.status + ")",
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF5b5b5c),
+                            fontWeight: FontWeight.w700,
+                            fontStyle: FontStyle.italic)),
+                    Text(
+                        DateFormat('d/M/y').format(DateTime.parse(event.from)) +
+                            ' - ' +
+                            DateFormat('d/M/y')
+                                .format(DateTime.parse(event.to)),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Styles.textColor,
+                            fontWeight: FontWeight.w700)),
+                  ],
+                ),
               ),
             ),
             Expanded(
@@ -683,7 +735,7 @@ class _RecurringState extends State<Recurring> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Styles.textColor,
                         fontWeight: FontWeight.w700)),
               ),

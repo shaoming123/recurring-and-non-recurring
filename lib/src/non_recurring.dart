@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
@@ -6,10 +8,12 @@ import 'package:ipsolution/src/accordion/task.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
 import '../model/manageUser.dart';
+import '../util/appbar.dart';
 import '../util/checkInternet.dart';
 import '../util/conMysql.dart';
 import 'accordion/teamTask.dart';
@@ -22,6 +26,7 @@ class NonRecurring extends StatefulWidget {
 }
 
 class _NonRecurringState extends State<NonRecurring> {
+  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   String completedTask = '0';
   String totalTasks = '0';
@@ -39,9 +44,23 @@ class _NonRecurringState extends State<NonRecurring> {
   List<Map<String, dynamic>> ActivenonRecurring = [];
   List<Map<String, dynamic>> CompletednonRecurring = [];
   String userRole = '';
+  bool _isExpanded = true;
   @override
   void initState() {
     super.initState();
+
+    String? _recurrenceRule = 'FREQ=DAILY;INTERVAL=2;UNTIL=20221210';
+    DateTime? _startTime = DateTime.now();
+    DateTime? end = DateTime(2022, 11, 24, 6, 30);
+
+    List<DateTime> _dateCollection =
+        SfCalendar.getRecurrenceDateTimeCollection(_recurrenceRule, _startTime);
+
+    List<DateTime> _dateCollection123 =
+        SfCalendar.getRecurrenceDateTimeCollection(_recurrenceRule, end);
+
+    print(_dateCollection);
+    print(_dateCollection123);
     _refresh();
   }
 
@@ -118,8 +137,6 @@ class _NonRecurringState extends State<NonRecurring> {
 
   @override
   Widget build(BuildContext context) {
-    GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -136,21 +153,7 @@ class _NonRecurringState extends State<NonRecurring> {
                 right: width * 0.02),
             child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.menu, color: Colors.black),
-                      onPressed: () => scaffoldKey.currentState!.openDrawer(),
-                    ),
-                    Text("Non-Recurring", style: Styles.title),
-                    IconButton(
-                      icon: const Icon(Icons.notifications_outlined,
-                          color: Colors.black),
-                      onPressed: () => {},
-                    ),
-                  ],
-                ),
+                Appbar(title: "Non-Recurring", scaffoldKey: scaffoldKey),
                 const Gap(20),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -261,14 +264,16 @@ class _NonRecurringState extends State<NonRecurring> {
                                         TextStyle(fontWeight: FontWeight.bold)),
                                 // key: PageStorageKey<Task>(Task),
                                 maintainState: true,
+
                                 children: <Widget>[
                                   Task(
-                                      allNonRecurring: allNonRecurring,
-                                      foundNonRecurring: foundNonRecurring,
-                                      LatenonRecurring: LatenonRecurring,
-                                      ActivenonRecurring: ActivenonRecurring,
-                                      CompletednonRecurring:
-                                          CompletednonRecurring),
+                                    allNonRecurring: allNonRecurring,
+                                    foundNonRecurring: foundNonRecurring,
+                                    LatenonRecurring: LatenonRecurring,
+                                    ActivenonRecurring: ActivenonRecurring,
+                                    CompletednonRecurring:
+                                        CompletednonRecurring,
+                                  ),
                                 ],
                               ),
                             ],
@@ -295,12 +300,13 @@ class _NonRecurringState extends State<NonRecurring> {
                                 child: Column(
                                   children: [
                                     ExpansionTile(
+                                        maintainState: true,
                                         title: Text(
                                           "Team Status Overview",
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold),
                                         ),
-                                        children: <Widget>[TeamTask()]),
+                                        children: [TeamTask()]),
                                   ],
                                 ),
                               )

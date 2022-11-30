@@ -120,6 +120,7 @@ class _DialogBoxState extends State<DialogBox> {
       //     siteLead: _selectedSiteLead,
       //     active: userActive));
       Map<String, dynamic> data = {
+        "dataTable": "user_details",
         "id": id.toString(),
         "username": usernameController.text,
         "password": passwordController.text,

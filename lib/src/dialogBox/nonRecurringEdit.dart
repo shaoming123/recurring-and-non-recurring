@@ -669,6 +669,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
                 color: check == true ? Color(0xFFd4dce4) : Colors.grey),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
+                enabled: check == true ? true : false,
                 decoration: InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,

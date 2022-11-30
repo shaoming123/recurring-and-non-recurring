@@ -52,6 +52,11 @@ class DbHelper {
   String remark = 'remark';
   String completeDate = 'completeDate';
   String status = 'status';
+  String color = 'color';
+  String date = 'date';
+  String deadline = 'deadline';
+  String start = 'start';
+  String end = 'end';
 
   //non-recurring
   String nonRecurringId = 'nonRecurringId';
@@ -102,7 +107,7 @@ class DbHelper {
         " $C_Active TEXT "
         ")");
     await db.execute(
-        "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT ,$from TEXT,$to TEXT, $duration TEXT,$priority TEXT,$recurringOpt TEXT, $recurringEvery TEXT, $recurringUntil TEXT, $remark TEXT, $completeDate TEXT, $status TEXT, $person TEXT)");
+        "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT,$date TEXT,$deadline TEXT,$start TEXT,$end TEXT, $from TEXT,$to TEXT, $duration TEXT,$priority TEXT, $color TEXT, $recurringOpt TEXT, $recurringEvery TEXT, $remark TEXT, $completeDate TEXT, $status TEXT, $person TEXT)");
     await db.execute(
         "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY AUTOINCREMENT, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate TEXT,$due TEXT,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $checked TEXT, $personCheck TEXT, $nonstatus TEXT)");
   }

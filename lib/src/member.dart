@@ -8,6 +8,7 @@ import 'package:ipsolution/src/navbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../util/app_styles.dart';
+import '../util/appbar.dart';
 import '../util/checkInternet.dart';
 import '../util/conMysql.dart';
 
@@ -95,6 +96,7 @@ class _MemberState extends State<Member> {
 
   Future<void> toggleSwitch(value, int id) async {
     String active = '';
+    String tableName = "user_details";
     setState(() {
       if (value == true) {
         active = 'Active';
@@ -103,16 +105,20 @@ class _MemberState extends State<Member> {
       }
     });
 
-    final data = await dbHelper.updateUserActive(active, id);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Updated Successfully!"),
-      ),
-    );
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const Member()),
-    );
+    final response = await Controller()
+        .switchToggle(active, id.toString(), tableName, "active");
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Updated Successfully!"),
+        ),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Member()),
+      );
+    }
   }
 
   @override
@@ -129,21 +135,7 @@ class _MemberState extends State<Member> {
               margin: EdgeInsets.only(
                   top: height * 0.08, left: width * 0.02, right: width * 0.02),
               child: Column(children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.menu, color: Colors.black),
-                      onPressed: () => scaffoldKey.currentState!.openDrawer(),
-                    ),
-                    Text("Member", style: Styles.title),
-                    IconButton(
-                      icon: const Icon(Icons.notifications_outlined,
-                          color: Colors.black),
-                      onPressed: () => {},
-                    ),
-                  ],
-                ),
+                Appbar(title: "Member", scaffoldKey: scaffoldKey),
                 const Gap(20),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -417,19 +409,29 @@ class _MemberState extends State<Member> {
                                                                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No Internet !")));
                                                                           }
                                                                         });
-                                                                      }),
+                                                                      }
+                                                                      
+                                                                      ),
                                                                   Switch(
                                                                     value: _foundUsers[index]["active"] ==
                                                                             'Active'
                                                                         ? true
                                                                         : false,
                                                                     onChanged:
-                                                                        ((value) {
-                                                                      // toggleSwitch(
-                                                                      //     value,
-                                                                      //     _foundUsers[index]
-                                                                      //         [
-                                                                      //         "user_id"]);
+                                                                        ((value) async {
+                                                                      await Internet
+                                                                              .isInternet()
+                                                                          .then(
+                                                                              (connection) async {
+                                                                        if (connection) {
+                                                                          await toggleSwitch(
+                                                                              value,
+                                                                              _foundUsers[index]["user_id"]);
+                                                                        } else {
+                                                                          ScaffoldMessenger.of(context)
+                                                                              .showSnackBar(SnackBar(content: Text("No Internet !")));
+                                                                        }
+                                                                      });
                                                                     }),
                                                                     activeColor:
                                                                         Colors
