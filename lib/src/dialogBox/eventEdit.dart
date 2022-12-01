@@ -18,7 +18,9 @@ import 'package:http/http.dart' as http;
 
 class EventEdit extends StatefulWidget {
   final String id;
-  const EventEdit({Key? key, required this.id}) : super(key: key);
+  final List<String> user_list;
+  EventEdit({Key? key, required this.id, required this.user_list})
+      : super(key: key);
 
   @override
   State<EventEdit> createState() => _EventEditState();
@@ -140,10 +142,12 @@ class _EventEditState extends State<EventEdit> {
       for (final val in siteOptions) {
         siteList = val["options"];
       }
+
+      userList = widget.user_list..removeWhere((item) => item == 'All');
       //
-      for (int i = 0; i < userData.length; i++) {
-        userList.add(userData[i]["user_name"]);
-      }
+      // for (int i = 0; i < userData.length; i++) {
+      //   userList.add(userData[i]["user_name"]);
+      // }
       //
     });
   }
@@ -302,18 +306,18 @@ class _EventEditState extends State<EventEdit> {
         "task": taskController.text,
         "start": fromDate.toString(),
         "end": toDate.toString(),
-         "date": DateFormat("y-M-d").format(fromDate).toString(),
-          "deadline": DateFormat("y-M-d").format(toDate).toString(),
-          "startTime": DateFormat.Hm().format(fromDate).toString(),
-          "dueTime": DateFormat.Hm().format(toDate).toString(),
+        "date": DateFormat("y-M-d").format(fromDate).toString(),
+        "deadline": DateFormat("y-M-d").format(toDate).toString(),
+        "startTime": DateFormat.Hm().format(fromDate).toString(),
+        "dueTime": DateFormat.Hm().format(toDate).toString(),
         "person": selectedUser,
         "priority": _selectedPriority,
         "color": color,
         // "startDate": DateFormat("yyyy-MM-dd").format(startDate).toString(),
         // "deadline": DateFormat("yyyy-MM-dd").format(due!).toString(),
-       "recurringOpt": _selectedRecurring,
-          "recurringEvery":
-              recurringController.text.isEmpty ? '0' : recurringController.text,
+        "recurringOpt": _selectedRecurring,
+        "recurringEvery":
+            recurringController.text.isEmpty ? '0' : recurringController.text,
         "remark": remarkController.text,
 
         "completeDate": completeDate != null
@@ -326,15 +330,35 @@ class _EventEditState extends State<EventEdit> {
 
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text("Updated Successfully!"),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(20),
+          action: SnackBarAction(
+            label: 'Dismiss',
+            disabledTextColor: Colors.white,
+            textColor: Colors.blue,
+            onPressed: () {
+              //Do whatever you want
+            },
+          ),
         ),
       );
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text("Updated Successfully!"),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
           ),
         );
         Navigator.pop(context);
@@ -343,8 +367,19 @@ class _EventEditState extends State<EventEdit> {
           MaterialPageRoute(builder: (context) => Recurring()),
         );
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Updated Unsuccessful !")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Updated Unsuccessful !"),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(20),
+          action: SnackBarAction(
+            label: 'Dismiss',
+            disabledTextColor: Colors.white,
+            textColor: Colors.blue,
+            onPressed: () {
+              //Do whatever you want
+            },
+          ),
+        ));
       }
     }
   }
@@ -356,16 +391,37 @@ class _EventEditState extends State<EventEdit> {
       "id": recurring_Id.toString(),
     });
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Successfully deleted!'),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(20),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          disabledTextColor: Colors.white,
+          textColor: Colors.blue,
+          onPressed: () {
+            //Do whatever you want
+          },
+        ),
       ));
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const Recurring()),
       );
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Delete Unsuccessful !")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Delete Unsuccessful !"),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(20),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          disabledTextColor: Colors.white,
+          textColor: Colors.blue,
+          onPressed: () {
+            //Do whatever you want
+          },
+        ),
+      ));
     }
   }
 
@@ -1034,8 +1090,19 @@ class _EventEditState extends State<EventEdit> {
                         if (connection) {
                           await removeEvent(recurringId);
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("No Internet !")));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text("No Internet !"),
+                            behavior: SnackBarBehavior.floating,
+                            margin: EdgeInsets.all(20),
+                            action: SnackBarAction(
+                              label: 'Dismiss',
+                              disabledTextColor: Colors.white,
+                              textColor: Colors.blue,
+                              onPressed: () {
+                                //Do whatever you want
+                              },
+                            ),
+                          ));
                         }
                       });
                     },
@@ -1088,8 +1155,20 @@ class _EventEditState extends State<EventEdit> {
                               await updateEvent(recurringId);
                               ;
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text("No Internet !")));
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text("No Internet !"),
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.all(20),
+                                action: SnackBarAction(
+                                  label: 'Dismiss',
+                                  disabledTextColor: Colors.white,
+                                  textColor: Colors.blue,
+                                  onPressed: () {
+                                    //Do whatever you want
+                                  },
+                                ),
+                              ));
                             }
                           });
                         },

@@ -57,16 +57,36 @@ class _SignUpState extends State<SignUp> {
             context, MaterialPageRoute(builder: (context) => Login()));
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text("Register account Successfully!"),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
           ),
         );
       }).catchError((error) {
         print(error);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text("Error: Data Save Fail"),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
           ),
         );
       });

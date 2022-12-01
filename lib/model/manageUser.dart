@@ -49,8 +49,18 @@ Future updateAccount(UserModel user, context) async {
 
   if (response.statusCode == 200) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text("Updated Successfully!"),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(20),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          disabledTextColor: Colors.white,
+          textColor: Colors.blue,
+          onPressed: () {
+            //Do whatever you want
+          },
+        ),
       ),
     );
     updateSP(user, true).whenComplete(() {
@@ -58,8 +68,19 @@ Future updateAccount(UserModel user, context) async {
           context, MaterialPageRoute(builder: (context) => const Account()));
     });
   } else {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Updated Unsuccessful !")));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Updated Unsuccessful !"),
+      behavior: SnackBarBehavior.floating,
+      margin: EdgeInsets.all(20),
+      action: SnackBarAction(
+        label: 'Dismiss',
+        disabledTextColor: Colors.white,
+        textColor: Colors.blue,
+        onPressed: () {
+          //Do whatever you want
+        },
+      ),
+    ));
   }
   // await dbHelper.updateUser(user).then((value) {
   //   if (value == 1) {
@@ -98,15 +119,36 @@ Future removeUser(int id, context) async {
     "id": id.toString(),
   });
   if (response.statusCode == 200) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('Successfully deleted!'),
+      behavior: SnackBarBehavior.floating,
+      margin: EdgeInsets.all(20),
+      action: SnackBarAction(
+        label: 'Dismiss',
+        disabledTextColor: Colors.white,
+        textColor: Colors.blue,
+        onPressed: () {
+          //Do whatever you want
+        },
+      ),
     ));
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const Member()),
     );
   } else {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Delete Unsuccessful !")));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Delete Unsuccessful !"),
+      behavior: SnackBarBehavior.floating,
+      margin: EdgeInsets.all(20),
+      action: SnackBarAction(
+        label: 'Dismiss',
+        disabledTextColor: Colors.white,
+        textColor: Colors.blue,
+        onPressed: () {
+          //Do whatever you want
+        },
+      ),
+    ));
   }
 }

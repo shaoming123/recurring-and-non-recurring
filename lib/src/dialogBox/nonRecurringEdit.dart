@@ -272,8 +272,18 @@ class _editNonRecurringState extends State<editNonRecurring> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text("Updated Successfully!"),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
           ),
         );
         Navigator.pop(context);
@@ -282,8 +292,19 @@ class _editNonRecurringState extends State<editNonRecurring> {
           MaterialPageRoute(builder: (context) => NonRecurring()),
         );
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Updated Unsuccessful !")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Updated Unsuccessful !"),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(20),
+          action: SnackBarAction(
+            label: 'Dismiss',
+            disabledTextColor: Colors.white,
+            textColor: Colors.blue,
+            onPressed: () {
+              //Do whatever you want
+            },
+          ),
+        ));
       }
     }
   }
@@ -893,8 +914,19 @@ class _editNonRecurringState extends State<editNonRecurring> {
                       if (connection) {
                         await updateNonRecurring(int.parse(widget.id));
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("No Internet !")));
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("No Internet !"),
+                          behavior: SnackBarBehavior.floating,
+                          margin: EdgeInsets.all(20),
+                          action: SnackBarAction(
+                            label: 'Dismiss',
+                            disabledTextColor: Colors.white,
+                            textColor: Colors.blue,
+                            onPressed: () {
+                              //Do whatever you want
+                            },
+                          ),
+                        ));
                       }
                     });
                   },

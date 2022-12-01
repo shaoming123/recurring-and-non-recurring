@@ -130,6 +130,9 @@ class _EventAddState extends State<EventAdd> {
     final SharedPreferences sp = await _pref;
 
     String user = sp.getString("user_name")!;
+    String userRole = sp.getString("role")!;
+    String currentUserSiteLead = sp.getString("siteLead")!;
+    userList = [];
     final siteOptions = await Selection().siteSelection();
 
     setState(() {
@@ -139,10 +142,31 @@ class _EventAddState extends State<EventAdd> {
 
       //
 
-      //
+      // get person List
       _selectedUser.add(user);
       for (int i = 0; i < data.length; i++) {
-        userList.add(data[i]["user_name"]);
+        List positionList = data[i]["position"].split(",");
+        List siteList = data[i]["site"].split(",");
+
+        if (userRole == "Manager" || userRole == "Super Admin") {
+          userList.add(data[i]["user_name"]);
+        } else if (userRole == "Leader" && currentUserSiteLead != "-") {
+          for (int y = 0; y < siteList.length; y++) {
+            if ((data[i]["role"] == "Leader" || data[i]["role"] == "Staff") &&
+                siteList[y] == currentUserSiteLead) {
+              userList.add(data[i]["user_name"]);
+            }
+          }
+        } else {
+          for (int y = 0; y < positionList.length; y++) {
+            for (int x = 0; x < functionData.length; x++) {
+              if (positionList[y] == functionData[x] &&
+                  (data[i]["role"] == "Leader" || data[i]["role"] == "Staff")) {
+                userList.add(data[i]["user_name"]);
+              }
+            }
+          }
+        }
       }
       //
     });
@@ -395,8 +419,19 @@ class _EventAddState extends State<EventAdd> {
           MaterialPageRoute(builder: (context) => const Recurring()),
         );
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Adding Unsuccessful !")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Adding Unsuccessful !"),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(20),
+          action: SnackBarAction(
+            label: 'Dismiss',
+            disabledTextColor: Colors.white,
+            textColor: Colors.blue,
+            onPressed: () {
+              //Do whatever you want
+            },
+          ),
+        ));
       }
     }
   }
@@ -1224,8 +1259,19 @@ class _EventAddState extends State<EventAdd> {
                         await saveEvent();
                         ;
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("No Internet !")));
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text("No Internet !"),
+                          behavior: SnackBarBehavior.floating,
+                          margin: EdgeInsets.all(20),
+                          action: SnackBarAction(
+                            label: 'Dismiss',
+                            disabledTextColor: Colors.white,
+                            textColor: Colors.blue,
+                            onPressed: () {
+                              //Do whatever you want
+                            },
+                          ),
+                        ));
                       }
                     });
                   },

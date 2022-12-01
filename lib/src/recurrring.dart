@@ -672,7 +672,8 @@ class _RecurringState extends State<Recurring> {
         showDialog(
             context: context,
             builder: (BuildContext context) {
-              return EventEdit(id: event.recurringId.toString());
+              return EventEdit(
+                  id: event.recurringId.toString(), user_list: userList);
             });
       },
       child: Container(

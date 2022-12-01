@@ -253,8 +253,19 @@ class _TaskState extends State<Task> {
         MaterialPageRoute(builder: (context) => const NonRecurring()),
       );
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Delete Unsuccessful !")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Delete Unsuccessful !"),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(20),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          disabledTextColor: Colors.white,
+          textColor: Colors.blue,
+          onPressed: () {
+            //Do whatever you want
+          },
+        ),
+      ));
     }
   }
 
@@ -684,12 +695,23 @@ class _TaskState extends State<Task> {
                                 await removeNonRecurring(
                                     LatenonRecurring[index]["nonRecurringId"]);
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text("No Internet !")));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text("No Internet !"),
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: EdgeInsets.all(20),
+                                  action: SnackBarAction(
+                                    label: 'Dismiss',
+                                    disabledTextColor: Colors.white,
+                                    textColor: Colors.blue,
+                                    onPressed: () {
+                                      //Do whatever you want
+                                    },
+                                  ),
+                                ));
                               }
                             });
-                          }
-                          )
+                          })
                     ],
                   )),
                 ],
@@ -894,8 +916,19 @@ class _TaskState extends State<Task> {
                             await removeNonRecurring(
                                 ActivenonRecurring[index]["nonRecurringId"]);
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("No Internet !")));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("No Internet !"),
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(20),
+                              action: SnackBarAction(
+                                label: 'Dismiss',
+                                disabledTextColor: Colors.white,
+                                textColor: Colors.blue,
+                                onPressed: () {
+                                  //Do whatever you want
+                                },
+                              ),
+                            ));
                           }
                         });
                       })),
@@ -1095,8 +1128,19 @@ class _TaskState extends State<Task> {
                             await removeNonRecurring(
                                 CompletednonRecurring[index]["nonRecurringId"]);
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("No Internet !")));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("No Internet !"),
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(20),
+                              action: SnackBarAction(
+                                label: 'Dismiss',
+                                disabledTextColor: Colors.white,
+                                textColor: Colors.blue,
+                                onPressed: () {
+                                  //Do whatever you want
+                                },
+                              ),
+                            ));
                           }
                         });
                       })),
@@ -1341,8 +1385,19 @@ class _TaskState extends State<Task> {
                             await removeNonRecurring(
                                 foundNonRecurring[index]["nonRecurringId"]);
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("No Internet !")));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("No Internet !"),
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(20),
+                              action: SnackBarAction(
+                                label: 'Dismiss',
+                                disabledTextColor: Colors.white,
+                                textColor: Colors.blue,
+                                onPressed: () {
+                                  //Do whatever you want
+                                },
+                              ),
+                            ));
                           }
                         });
                       })),

@@ -164,17 +164,15 @@ class _TeamTaskState extends State<TeamTask> {
             }
           }
         } else {
-          for (int y = 0; y < siteList.length; y++) {
-            for (int i = 0; i < positionList.length; i++) {
-              if (positionList[i] == _selectedPosition &&
-                  data[x]["user_id"] != sp.getInt("user_id") &&
-                  (data[x]["role"] == "Leader" || data[x]["role"] == "Staff")) {
-                userList.add({
-                  'userId': data[x]["user_id"],
-                  'username': data[x]["user_name"],
-                  'position': data[x]["position"],
-                });
-              }
+          for (int i = 0; i < positionList.length; i++) {
+            if (positionList[i] == _selectedPosition &&
+                data[x]["user_id"] != sp.getInt("user_id") &&
+                (data[x]["role"] == "Leader" || data[x]["role"] == "Staff")) {
+              userList.add({
+                'userId': data[x]["user_id"],
+                'username': data[x]["user_name"],
+                'position': data[x]["position"],
+              });
             }
           }
         }
@@ -271,8 +269,18 @@ class _TeamTaskState extends State<TeamTask> {
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text("Updated Successfully!"),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(20),
+          action: SnackBarAction(
+            label: 'Dismiss',
+            disabledTextColor: Colors.white,
+            textColor: Colors.blue,
+            onPressed: () {
+              //Do whatever you want
+            },
+          ),
         ),
       );
       Navigator.pushReplacement(
@@ -289,16 +297,37 @@ class _TeamTaskState extends State<TeamTask> {
       "id": id.toString(),
     });
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Successfully deleted!'),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(20),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          disabledTextColor: Colors.white,
+          textColor: Colors.blue,
+          onPressed: () {
+            //Do whatever you want
+          },
+        ),
       ));
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const NonRecurring()),
       );
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Delete Unsuccessful !")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Delete Unsuccessful !"),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(20),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          disabledTextColor: Colors.white,
+          textColor: Colors.blue,
+          onPressed: () {
+            //Do whatever you want
+          },
+        ),
+      ));
     }
   }
 
@@ -1049,8 +1078,19 @@ class _TeamTaskState extends State<TeamTask> {
                             await removeTeamNonRecurring(
                                 LateTeamnonRecurring[index]["nonRecurringId"]);
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("No Internet !")));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("No Internet !"),
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(20),
+                              action: SnackBarAction(
+                                label: 'Dismiss',
+                                disabledTextColor: Colors.white,
+                                textColor: Colors.blue,
+                                onPressed: () {
+                                  //Do whatever you want
+                                },
+                              ),
+                            ));
                           }
                         });
                       })),
@@ -1254,8 +1294,19 @@ class _TeamTaskState extends State<TeamTask> {
                                 ActiveTeamnonRecurring[index]
                                     ["nonRecurringId"]);
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("No Internet !")));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("No Internet !"),
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(20),
+                              action: SnackBarAction(
+                                label: 'Dismiss',
+                                disabledTextColor: Colors.white,
+                                textColor: Colors.blue,
+                                onPressed: () {
+                                  //Do whatever you want
+                                },
+                              ),
+                            ));
                           }
                         });
                       })),
@@ -1410,7 +1461,18 @@ class _TeamTaskState extends State<TeamTask> {
                                     } else {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(SnackBar(
-                                              content: Text("No Internet !")));
+                                        content: Text("No Internet !"),
+                                        behavior: SnackBarBehavior.floating,
+                                        margin: EdgeInsets.all(20),
+                                        action: SnackBarAction(
+                                          label: 'Dismiss',
+                                          disabledTextColor: Colors.white,
+                                          textColor: Colors.blue,
+                                          onPressed: () {
+                                            //Do whatever you want
+                                          },
+                                        ),
+                                      ));
                                     }
                                   });
                                 },
@@ -1464,8 +1526,19 @@ class _TeamTaskState extends State<TeamTask> {
                                 CompletedTeamnonRecurring[index]
                                     ["nonRecurringId"]);
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("No Internet !")));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("No Internet !"),
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(20),
+                              action: SnackBarAction(
+                                label: 'Dismiss',
+                                disabledTextColor: Colors.white,
+                                textColor: Colors.blue,
+                                onPressed: () {
+                                  //Do whatever you want
+                                },
+                              ),
+                            ));
                           }
                         });
                       })),
@@ -1620,8 +1693,18 @@ class _TeamTaskState extends State<TeamTask> {
                                       } else {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(SnackBar(
-                                                content:
-                                                    Text("No Internet !")));
+                                          content: Text("No Internet !"),
+                                          behavior: SnackBarBehavior.floating,
+                                          margin: EdgeInsets.all(20),
+                                          action: SnackBarAction(
+                                            label: 'Dismiss',
+                                            disabledTextColor: Colors.white,
+                                            textColor: Colors.blue,
+                                            onPressed: () {
+                                              //Do whatever you want
+                                            },
+                                          ),
+                                        ));
                                       }
                                     });
                                   },
@@ -1711,8 +1794,19 @@ class _TeamTaskState extends State<TeamTask> {
                             await removeTeamNonRecurring(
                                 foundTeamNonRecurring[index]["nonRecurringId"]);
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("No Internet !")));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("No Internet !"),
+                              behavior: SnackBarBehavior.floating,
+                              margin: EdgeInsets.all(20),
+                              action: SnackBarAction(
+                                label: 'Dismiss',
+                                disabledTextColor: Colors.white,
+                                textColor: Colors.blue,
+                                onPressed: () {
+                                  //Do whatever you want
+                                },
+                              ),
+                            ));
                           }
                         });
                       })),

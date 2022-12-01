@@ -99,22 +99,52 @@ class _AccountState extends State<Account> {
       var response = await request.send();
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Image Uploaded!'),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(20),
+          action: SnackBarAction(
+            label: 'Dismiss',
+            disabledTextColor: Colors.white,
+            textColor: Colors.blue,
+            onPressed: () {
+              //Do whatever you want
+            },
+          ),
         ));
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const Account()),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Image Not Uploaded!'),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error!'),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(20),
+          action: SnackBarAction(
+            label: 'Dismiss',
+            disabledTextColor: Colors.white,
+            textColor: Colors.blue,
+            onPressed: () {
+              //Do whatever you want
+            },
+          ),
         ));
       }
       setState(() {});
     } on PlatformException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Failed to pick image: $e'),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(20),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          disabledTextColor: Colors.white,
+          textColor: Colors.blue,
+          onPressed: () {
+            //Do whatever you want
+          },
+        ),
       ));
     }
   }
@@ -156,9 +186,19 @@ class _AccountState extends State<Account> {
                                   await pickImage();
                                 } else {
                                   ScaffoldMessenger.of(context)
-                                      .showSnackBar(const SnackBar(
+                                      .showSnackBar(SnackBar(
                                     content:
                                         Text('Not internet connection found'),
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.all(20),
+                                    action: SnackBarAction(
+                                      label: 'Dismiss',
+                                      disabledTextColor: Colors.white,
+                                      textColor: Colors.blue,
+                                      onPressed: () {
+                                        //Do whatever you want
+                                      },
+                                    ),
                                   ));
                                 }
                               });
@@ -292,7 +332,18 @@ class _AccountState extends State<Account> {
                                     } else {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(SnackBar(
-                                              content: Text("No Internet !")));
+                                        content: Text("No Internet !"),
+                                        behavior: SnackBarBehavior.floating,
+                                        margin: EdgeInsets.all(20),
+                                        action: SnackBarAction(
+                                          label: 'Dismiss',
+                                          disabledTextColor: Colors.white,
+                                          textColor: Colors.blue,
+                                          onPressed: () {
+                                            //Do whatever you want
+                                          },
+                                        ),
+                                      ));
                                     }
                                   });
                                 }

@@ -75,22 +75,52 @@ class _LoginState extends State<Login> {
                 MaterialPageRoute(builder: (_) => Dashboard()),
                 (Route<dynamic> route) => false);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text("Login Successfully"),
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.all(20),
+                action: SnackBarAction(
+                  label: 'Dismiss',
+                  disabledTextColor: Colors.white,
+                  textColor: Colors.blue,
+                  onPressed: () {
+                    //Do whatever you want
+                  },
+                ),
               ),
             );
           });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text("Deactive User!"),
+              behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.all(20),
+              action: SnackBarAction(
+                label: 'Dismiss',
+                disabledTextColor: Colors.white,
+                textColor: Colors.blue,
+                onPressed: () {
+                  //Do whatever you want
+                },
+              ),
             ),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text("Username and Password Incorrect!"),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
           ),
         );
       }
@@ -303,8 +333,20 @@ class _LoginState extends State<Login> {
                             if (connection) {
                               await loginForm();
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text("No Internet !")));
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text("No Internet !"),
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.all(20),
+                                action: SnackBarAction(
+                                  label: 'Dismiss',
+                                  disabledTextColor: Colors.white,
+                                  textColor: Colors.blue,
+                                  onPressed: () {
+                                    //Do whatever you want
+                                  },
+                                ),
+                              ));
                             }
                           });
                         }),

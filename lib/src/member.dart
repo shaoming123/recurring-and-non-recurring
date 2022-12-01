@@ -110,8 +110,18 @@ class _MemberState extends State<Member> {
 
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text("Updated Successfully!"),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(20),
+          action: SnackBarAction(
+            label: 'Dismiss',
+            disabledTextColor: Colors.white,
+            textColor: Colors.blue,
+            onPressed: () {
+              //Do whatever you want
+            },
+          ),
         ),
       );
       Navigator.pushReplacement(
@@ -406,12 +416,22 @@ class _MemberState extends State<Member> {
                                                                             await removeUser(_foundUsers[index]["user_id"],
                                                                                 context);
                                                                           } else {
-                                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No Internet !")));
+                                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                                              content: Text("No Internet !"),
+                                                                              behavior: SnackBarBehavior.floating,
+                                                                              margin: EdgeInsets.all(20),
+                                                                              action: SnackBarAction(
+                                                                                label: 'Dismiss',
+                                                                                disabledTextColor: Colors.white,
+                                                                                textColor: Colors.blue,
+                                                                                onPressed: () {
+                                                                                  //Do whatever you want
+                                                                                },
+                                                                              ),
+                                                                            ));
                                                                           }
                                                                         });
-                                                                      }
-                                                                      
-                                                                      ),
+                                                                      }),
                                                                   Switch(
                                                                     value: _foundUsers[index]["active"] ==
                                                                             'Active'
@@ -429,7 +449,23 @@ class _MemberState extends State<Member> {
                                                                               _foundUsers[index]["user_id"]);
                                                                         } else {
                                                                           ScaffoldMessenger.of(context)
-                                                                              .showSnackBar(SnackBar(content: Text("No Internet !")));
+                                                                              .showSnackBar(SnackBar(
+                                                                            content:
+                                                                                Text("No Internet !"),
+                                                                            behavior:
+                                                                                SnackBarBehavior.floating,
+                                                                            margin:
+                                                                                EdgeInsets.all(20),
+                                                                            action:
+                                                                                SnackBarAction(
+                                                                              label: 'Dismiss',
+                                                                              disabledTextColor: Colors.white,
+                                                                              textColor: Colors.blue,
+                                                                              onPressed: () {
+                                                                                //Do whatever you want
+                                                                              },
+                                                                            ),
+                                                                          ));
                                                                         }
                                                                       });
                                                                     }),
