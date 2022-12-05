@@ -7,7 +7,7 @@ import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/src/navbar.dart';
-import 'package:ipsolution/util/appbar.dart';
+import 'package:ipsolution/src/appbar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -651,6 +651,14 @@ class _RecurringState extends State<Recurring> {
   //     ),
   //   );
   // }
+  Color darken(Color color, [double amount = .1]) {
+    assert(amount >= 0 && amount <= 1);
+
+    final hsl = HSLColor.fromColor(color);
+    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+
+    return hslDark.toColor();
+  }
 
   Widget appointBuilder(
       BuildContext context, CalendarAppointmentDetails details) {
@@ -680,7 +688,12 @@ class _RecurringState extends State<Recurring> {
         // width: details.bounds.width,
 
         padding: const EdgeInsets.all(10),
+
         decoration: BoxDecoration(
+          border: Border.all(
+              color: darken(cardColor, .2),
+              width: 4.0,
+              style: BorderStyle.solid),
           color: cardColor,
           borderRadius: BorderRadius.all(
             Radius.circular(10),

@@ -207,6 +207,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
   }
 
   Future saveNonRecurring() async {
+    final SharedPreferences sp = await _pref;
     final isValid = _formkey.currentState!.validate();
     if (isValid) {
       if (due == null) {
@@ -232,6 +233,37 @@ class _addNonRecurringState extends State<addNonRecurring> {
         var url = 'http://192.168.1.111/testdb/add.php';
 
         String selectedCheckUser = _selectedCheckUser.join(",");
+
+        String currentUsername = sp.getString("user_name")!;
+
+        if (_selectedCheckUser.isNotEmpty &&
+            _selectedCheckUser != null &&
+            statusController.text == '100') {
+          for (var item in _selectedCheckUser) {
+            Map<String, dynamic> notificationData = {
+              "dataTable": "notification",
+              'owner': item,
+              'assigner': _selectedUser,
+              'type': "Checking",
+              'task': taskController.text,
+              'deadline': DateFormat("yyyy-MM-dd").format(due!).toString(),
+              'noted': "No",
+            };
+            await http.post(Uri.parse(url), body: notificationData);
+          }
+        } else if (_selectedUser != currentUsername) {
+          Map<String, dynamic> notificationData = {
+            "dataTable": "notification",
+            'owner': _selectedUser,
+            'assigner': currentUsername,
+            'type': "Non-recurring",
+            'task': taskController.text,
+            'deadline': DateFormat("yyyy-MM-dd").format(due!).toString(),
+            'noted': "No",
+          };
+
+          await http.post(Uri.parse(url), body: notificationData);
+        }
 
         // final nonrecurring = nonRecurring(
         //     category: _selectedVal,

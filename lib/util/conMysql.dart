@@ -1,10 +1,12 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/user.dart';
 
 import '../databaseHandler/DbHelper.dart';
 import '../model/nonRecurring.dart';
+import '../model/notification.dart';
 
 DbHelper dbHelper = DbHelper();
 
@@ -103,5 +105,28 @@ class Controller {
     });
 
     return response;
+  }
+
+// anotherways to sync
+  Future addNotificationDateToSqlite() async {
+    await dbHelper.deleteAllNotification();
+    var url = 'http://192.168.1.111/testdb/read.php';
+    var response =
+        await http.post(Uri.parse(url), body: {"tableName": "notification"});
+    List notificationData = json.decode(response.body);
+
+    // for (int i = 0; i < notificationData.length; i++) {
+    //   final data = NotificationModel(
+    //     id: int.parse(notificationData[i]["id"]),
+    //     owner: notificationData[i]["owner"],
+    //     assigner: notificationData[i]["assigner"],
+    //     task: notificationData[i]["task"],
+    //     deadline: notificationData[i]["deadline"],
+    //     type: notificationData[i]["type"],
+    //     noted: notificationData[i]["noted"],
+    //   );
+
+    await dbHelper.addNotification(notificationData);
+    // }
   }
 }

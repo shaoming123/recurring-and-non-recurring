@@ -13,7 +13,7 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
 import '../model/manageUser.dart';
-import '../util/appbar.dart';
+import 'appbar.dart';
 import '../util/checkInternet.dart';
 import '../util/conMysql.dart';
 import 'accordion/teamTask.dart';
@@ -49,18 +49,6 @@ class _NonRecurringState extends State<NonRecurring> {
   void initState() {
     super.initState();
 
-    String? _recurrenceRule = 'FREQ=DAILY;INTERVAL=2;UNTIL=20221210';
-    DateTime? _startTime = DateTime.now();
-    DateTime? end = DateTime(2022, 11, 24, 6, 30);
-
-    List<DateTime> _dateCollection =
-        SfCalendar.getRecurrenceDateTimeCollection(_recurrenceRule, _startTime);
-
-    List<DateTime> _dateCollection123 =
-        SfCalendar.getRecurrenceDateTimeCollection(_recurrenceRule, end);
-
-    print(_dateCollection);
-    print(_dateCollection123);
     _refresh();
   }
 

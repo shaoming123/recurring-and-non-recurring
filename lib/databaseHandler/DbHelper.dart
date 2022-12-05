@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/animation.dart';
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/user.dart';
@@ -9,6 +11,7 @@ import 'package:path/path.dart';
 import 'dart:io' as io;
 
 import '../model/nonRecurring.dart';
+import '../model/notification.dart';
 import '../provider/event_provider.dart';
 
 class DbHelper {
@@ -18,6 +21,7 @@ class DbHelper {
   final Table_User = 'user_account';
   final Table_Event = 'recurring_table';
   final Table_NonRecurring = 'non_recurring';
+  final Table_Notification = 'notification';
   int Version = 1;
 
   // user
@@ -75,6 +79,15 @@ class DbHelper {
   String personCheck = 'personCheck';
   String nonstatus = 'status';
 
+  //notification
+  String notificationId = 'id';
+  String notificationOwner = 'owner';
+  String assigner = 'assigner';
+  String notificationTask = 'task';
+  String notificationDeadline = 'deadline';
+  String notificationType = 'type';
+  String noted = 'noted';
+
   Future<Database> get db async {
     if (_db != null) {
       return _db!;
@@ -110,6 +123,8 @@ class DbHelper {
         "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT,$date TEXT,$deadline TEXT,$start TEXT,$end TEXT, $from TEXT,$to TEXT, $duration TEXT,$priority TEXT, $color TEXT, $recurringOpt TEXT, $recurringEvery TEXT, $remark TEXT, $completeDate TEXT, $status TEXT, $person TEXT)");
     await db.execute(
         "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY AUTOINCREMENT, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate TEXT,$due TEXT,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $checked TEXT, $personCheck TEXT, $nonstatus TEXT)");
+    await db.execute(
+        "CREATE TABLE $Table_Notification($notificationId INTEGER PRIMARY KEY AUTOINCREMENT, $notificationOwner TEXT, $assigner TEXT, $notificationTask TEXT,$notificationDeadline TEXT,$notificationType TEXT ,$noted TEXT)");
   }
 
   Future<int> getUserQuantity() async {
@@ -288,4 +303,39 @@ class DbHelper {
     return res;
   }
   /*end non-recurring*/
+
+  /*start notification*/
+
+  Future addNotification(List item) async {
+    var dbClient = await db;
+    item.forEach((element) async {
+      await dbClient.insert(
+        Table_Notification,
+        element, //toMap() function from MemoModel
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      ); //ignores conflicts due to duplicate entries
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> fetchAllNotification() async {
+    var dbClient = await db;
+    return dbClient.query(Table_Notification, orderBy: notificationId);
+  }
+
+  Future<int> deleteAllNotification() async {
+    var dbClient = await db;
+    var res = await dbClient.delete(Table_Notification);
+    return res;
+  }
+
+  Future<int> deleteNotification(int id) async {
+    //returns number of items deleted
+    final dbClient = await db; //open database
+
+    var res = await dbClient.delete(Table_Notification,
+        where: '$notificationId = ?', whereArgs: [id]);
+
+    return res;
+  }
+  /*end notification*/
 }

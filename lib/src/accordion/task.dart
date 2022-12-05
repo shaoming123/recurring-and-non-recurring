@@ -1033,6 +1033,7 @@ class _TaskState extends State<Task> {
                   DateTime.parse(
                       DateFormat('yyyy-MM-dd').format(DateTime.now())),
                   DateTime.parse(CompletednonRecurring[index]["due"]));
+              print(CompletednonRecurring);
               return DataRow(
                 cells: [
                   DataCell(Text((index + 1).toString())),

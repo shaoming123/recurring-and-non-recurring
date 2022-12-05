@@ -56,10 +56,12 @@ class _editNonRecurringState extends State<editNonRecurring> {
   dynamic _selectedCategory;
   String? _selectedSubCategory;
   List _selectedData = [];
+  String? userPosition;
   @override
   void initState() {
     Future.delayed(Duration.zero, () async {
       final SharedPreferences sp = await _pref;
+      userPosition = sp.getString("position")!;
       List functionAccess = sp.getString("position")!.split(",");
       String userRole = sp.getString("role")!;
       final typeOptions =
@@ -219,6 +221,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
   }
 
   Future updateNonRecurring(int id) async {
+    final SharedPreferences sp = await _pref;
     final isValid = _formkey.currentState!.validate();
 
     if (statusController.text.toString() == '100') {
@@ -229,6 +232,29 @@ class _editNonRecurringState extends State<editNonRecurring> {
 
     if (isValid) {
       var url = 'http://192.168.1.111/testdb/edit.php';
+      var url_noti = 'http://192.168.1.111/testdb/add.php';
+
+      String currentUsername = sp.getString("user_name")!;
+
+      String selectedCheckUser = _selectedCheckUser.join(",");
+
+      if (_selectedCheckUser.isNotEmpty &&
+          _selectedCheckUser != null &&
+          statusController.text == '100') {
+        for (var item in _selectedCheckUser) {
+          Map<String, dynamic> notificationData = {
+            "dataTable": "notification",
+            'owner': item,
+            'assigner': _selectedUser,
+            'type': "Checking",
+            'task': taskController.text,
+            'deadline': DateFormat("yyyy-MM-dd").format(due!).toString(),
+            'noted': "No",
+          };
+          await http.post(Uri.parse(url_noti), body: notificationData);
+        }
+      }
+
       // final nonrecurring = nonRecurring(
       //     nonRecurringId: id,
       //     category: _selectedVal,
@@ -264,9 +290,11 @@ class _editNonRecurringState extends State<editNonRecurring> {
         "completeDate": completeDate != null
             ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
             : '',
-        "status": statusController.text
+        "checked": check == false ? "-" : "Pending Review",
+        "personCheck": selectedCheckUser.isEmpty ? "-" : selectedCheckUser,
+        "status": statusController.text,
+        "department": userPosition
       };
-      print(data);
 
       final response = await http.post(Uri.parse(url), body: data);
 

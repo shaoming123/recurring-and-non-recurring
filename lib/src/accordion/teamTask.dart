@@ -38,6 +38,7 @@ class _TeamTaskState extends State<TeamTask> {
   String currentUserSite = '';
   List<String> combineType = <String>[];
   String userRole = '';
+  String? currentUsername;
   String currentUserSiteLead = '';
   String currentUserLeadFunc = '';
   List<String> siteType = <String>[];
@@ -70,6 +71,7 @@ class _TeamTaskState extends State<TeamTask> {
     final SharedPreferences sp = await _pref;
     positionType = <String>[];
     siteType = <String>[];
+    currentUsername = sp.getString("user_name").toString();
     userRole = sp.getString("role").toString();
     currentUserPosition = sp.getString("position")!;
     currentUserSite = sp.getString("site")!;
@@ -1454,10 +1456,14 @@ class _TeamTaskState extends State<TeamTask> {
                                   await Internet.isInternet()
                                       .then((connection) async {
                                     if (connection) {
-                                      await toggleSwitch(
-                                          value,
-                                          CompletedTeamnonRecurring[index]
-                                              ["nonRecurringId"]);
+                                      if (CompletedTeamnonRecurring[index]
+                                              ["personCheck"] ==
+                                          currentUsername) {
+                                        await toggleSwitch(
+                                            value,
+                                            CompletedTeamnonRecurring[index]
+                                                ["nonRecurringId"]);
+                                      }
                                     } else {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(SnackBar(
@@ -1686,10 +1692,14 @@ class _TeamTaskState extends State<TeamTask> {
                                     await Internet.isInternet()
                                         .then((connection) async {
                                       if (connection) {
-                                        await toggleSwitch(
-                                            value,
-                                            foundTeamNonRecurring[index]
-                                                ["nonRecurringId"]);
+                                        if (foundTeamNonRecurring[index]
+                                                ["personCheck"] ==
+                                            currentUsername) {
+                                          await toggleSwitch(
+                                              value,
+                                              foundTeamNonRecurring[index]
+                                                  ["nonRecurringId"]);
+                                        }
                                       } else {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(SnackBar(

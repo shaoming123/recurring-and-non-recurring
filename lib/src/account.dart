@@ -12,7 +12,7 @@ import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../util/appbar.dart';
+import 'appbar.dart';
 import '../util/checkInternet.dart';
 
 class Account extends StatefulWidget {

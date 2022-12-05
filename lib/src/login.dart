@@ -68,6 +68,7 @@ class _LoginState extends State<Login> {
 
           setSP(dataModel).whenComplete(() async {
             await Controller().addDataToSqlite();
+              await Controller().addNotificationDateToSqlite();
             // await Controller().addRecurringToSqlite();
             // await Controller().addNonRecurringToSqlite();
             Navigator.pushAndRemoveUntil(

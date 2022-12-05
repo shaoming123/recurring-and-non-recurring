@@ -285,7 +285,10 @@ class _EventAddState extends State<EventAdd> {
   }
 
   Future saveEvent() async {
+    var url = 'http://192.168.1.111/testdb/add.php';
     final isValid = _formkey.currentState!.validate();
+    final SharedPreferences sp = await _pref;
+    String currentUsername = sp.getString("user_name")!;
     String? color;
     String? _recurrenceRule;
     if (isValid) {
@@ -297,6 +300,23 @@ class _EventAddState extends State<EventAdd> {
         color = "palegoldenrod";
       } else if (_selectedPriority == "High") {
         color = "lightcoral";
+      }
+
+      if (_selectedUser.isNotEmpty && _selectedUser != null) {
+        for (var item in _selectedUser) {
+          if (item != currentUsername) {
+            Map<String, dynamic> notificationData = {
+              "dataTable": "notification",
+              'owner': item,
+              'assigner': currentUsername,
+              'type': "Recurring",
+              'task': taskController.text,
+              'deadline': _selectedRecurring,
+              'noted': "No",
+            };
+            await http.post(Uri.parse(url), body: notificationData);
+          }
+        }
       }
 
       // get the correct toDate again ( to prevent user didnt click the end time )
@@ -360,8 +380,6 @@ class _EventAddState extends State<EventAdd> {
 
       // Navigator.pushReplacement(
       //     context, MaterialPageRoute(builder: (context) => const Recurring()));
-
-      var url = 'http://192.168.1.111/testdb/add.php';
 
       var response;
       for (int i = 0; i < _startDate.length; i++) {

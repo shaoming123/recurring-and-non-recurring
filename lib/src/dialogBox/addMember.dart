@@ -295,6 +295,17 @@ class _AddMemberState extends State<AddMember> {
                   String test = val as String;
                   setState(() {
                     _selectedRole = test;
+
+                    if (_selectedRole == "Super Admin" ||
+                        _selectedRole == "Manager") {
+                      checkPosition = true;
+                      checkSite = true;
+                    } else {
+                      checkPosition = false;
+                      checkSite = false;
+                    }
+                    selectAllPosition();
+                    selectAllSite();
                   });
                 },
                 icon: const Icon(

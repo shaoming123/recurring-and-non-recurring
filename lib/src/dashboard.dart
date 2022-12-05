@@ -11,7 +11,9 @@ import 'package:ipsolution/src/non_recurring.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../util/appbar.dart';
+import 'appbar.dart';
+
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 class Dashboard extends StatefulWidget {
   Dashboard({super.key});
@@ -42,8 +44,6 @@ class _DashboardState extends State<Dashboard> {
     startDate = DateTime(dateNow.year, dateNow.month, 1);
     endDate = DateTime(dateNow.year, dateNow.month + 1, 0);
 
-    print(startDate);
-    print(endDate);
     refresh();
   }
 

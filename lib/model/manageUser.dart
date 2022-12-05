@@ -29,7 +29,6 @@ Future updateSP(UserModel? user, bool add) async {
 }
 
 Future updateAccount(UserModel user, context) async {
-  print(user);
   var url = 'http://192.168.1.111/testdb/edit.php';
 
   Map<String, dynamic> data = {
