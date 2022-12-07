@@ -45,7 +45,10 @@ class Rule {
 
       // Yearly
     } else if (_selectedRecurring == 'Yearly') {
-      //  rule = 'FREQ=YEARLY;BYMONTHDAY=17;BYMONTH=10;INTERVAL=1;UNTIL=20231229';
+      String dateNumber = DateFormat('dd').format(fromDate);
+      String monthNumber = DateFormat('MM').format(fromDate);
+      rule =
+          'FREQ=YEARLY;BYMONTHDAY=$dateNumber;BYMONTH=$monthNumber;INTERVAL=$recurringEvery;UNTIL=$recurring_date';
     }
 
     return rule!;

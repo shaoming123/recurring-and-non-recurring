@@ -59,6 +59,8 @@ class _TeamTaskState extends State<TeamTask> {
   bool check = false;
   int requestcheck = 0;
   DbHelper dbHelper = DbHelper();
+
+  int checkNum = 0;
   @override
   void initState() {
     super.initState();
@@ -252,6 +254,11 @@ class _TeamTaskState extends State<TeamTask> {
       full_ActiveTeamnonRecurring = ActiveTeamnonRecurring;
       full_CompletedTeamnonRecurring = CompletedTeamnonRecurring;
       full_foundTeamNonRecurring = foundTeamNonRecurring;
+
+      checkNum = 0;
+      for (var item in foundTeamNonRecurring)
+        if (item["checked"] == "Pending Review" &&
+            item["personCheck"] == currentUsername) checkNum = checkNum + 1;
     });
   }
 
@@ -783,114 +790,137 @@ class _TeamTaskState extends State<TeamTask> {
           ),
           showTable
               ? foundTeamNonRecurring.isNotEmpty
-                  ? DefaultTabController(
-                      length: 4,
-                      child: SizedBox(
-                        height: 500,
-                        child: Column(
-                          children: <Widget>[
-                            TabBar(
-                              indicatorColor: Styles.primaryColor,
-                              indicatorWeight: 3,
-                              padding: EdgeInsets.zero,
-                              indicatorPadding: EdgeInsets.zero,
-                              labelPadding: EdgeInsets.zero,
-                              labelStyle: const TextStyle(
-                                  fontSize: 16.0, fontWeight: FontWeight.bold),
-                              unselectedLabelStyle: const TextStyle(
-                                  fontSize: 14.0, fontWeight: FontWeight.bold),
-                              labelColor: Styles.primaryColor,
-                              unselectedLabelColor: Colors.black,
-                              tabs: <Widget>[
-                                Tab(
-                                  icon: Badge(
-                                    badgeColor: Colors.indigo,
-                                    shape: BadgeShape.square,
-                                    borderRadius: BorderRadius.circular(5),
-                                    position: BadgePosition.topEnd(
-                                        top: -12, end: -20),
-                                    padding: const EdgeInsets.all(5),
-                                    badgeContent: Text(
-                                      LateTeamnonRecurring.length.toString(),
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    child: const Text("Late"),
-                                  ),
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        checkNum > 0
+                            ? Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 8.0, bottom: 20, top: 0),
+                                child: Text(
+                                  "***Request Checking*** ",
+                                  style: TextStyle(
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.bold),
                                 ),
-                                Tab(
-                                  icon: Badge(
-                                    badgeColor: Colors.indigo,
-                                    shape: BadgeShape.square,
-                                    borderRadius: BorderRadius.circular(5),
-                                    position: BadgePosition.topEnd(
-                                        top: -12, end: -20),
-                                    padding: const EdgeInsets.all(5),
-                                    badgeContent: Text(
-                                      ActiveTeamnonRecurring.length.toString(),
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold),
+                              )
+                            : Container(),
+                        DefaultTabController(
+                          length: 4,
+                          child: SizedBox(
+                            height: 500,
+                            child: Column(
+                              children: <Widget>[
+                                TabBar(
+                                  indicatorColor: Styles.primaryColor,
+                                  indicatorWeight: 3,
+                                  padding: EdgeInsets.zero,
+                                  indicatorPadding: EdgeInsets.zero,
+                                  labelPadding: EdgeInsets.zero,
+                                  labelStyle: const TextStyle(
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.bold),
+                                  unselectedLabelStyle: const TextStyle(
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.bold),
+                                  labelColor: Styles.primaryColor,
+                                  unselectedLabelColor: Colors.black,
+                                  tabs: <Widget>[
+                                    Tab(
+                                      icon: Badge(
+                                        badgeColor: Colors.indigo,
+                                        shape: BadgeShape.square,
+                                        borderRadius: BorderRadius.circular(5),
+                                        position: BadgePosition.topEnd(
+                                            top: -12, end: -20),
+                                        padding: const EdgeInsets.all(5),
+                                        badgeContent: Text(
+                                          LateTeamnonRecurring.length
+                                              .toString(),
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        child: const Text("Late"),
+                                      ),
                                     ),
-                                    child: const Text("Active"),
-                                  ),
+                                    Tab(
+                                      icon: Badge(
+                                        badgeColor: Colors.indigo,
+                                        shape: BadgeShape.square,
+                                        borderRadius: BorderRadius.circular(5),
+                                        position: BadgePosition.topEnd(
+                                            top: -12, end: -20),
+                                        padding: const EdgeInsets.all(5),
+                                        badgeContent: Text(
+                                          ActiveTeamnonRecurring.length
+                                              .toString(),
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        child: const Text("Active"),
+                                      ),
+                                    ),
+                                    Tab(
+                                      icon: Badge(
+                                        badgeColor: Colors.indigo,
+                                        shape: BadgeShape.square,
+                                        borderRadius: BorderRadius.circular(5),
+                                        position: BadgePosition.topEnd(
+                                            top: -12, end: -20),
+                                        padding: const EdgeInsets.all(5),
+                                        badgeContent: Text(
+                                          CompletedTeamnonRecurring.length
+                                              .toString(),
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        child: const Text("Completed"),
+                                      ),
+                                    ),
+                                    Tab(
+                                      icon: Badge(
+                                        badgeColor: Colors.indigo,
+                                        shape: BadgeShape.square,
+                                        borderRadius: BorderRadius.circular(5),
+                                        position: BadgePosition.topEnd(
+                                            top: -12, end: -20),
+                                        padding: const EdgeInsets.all(5),
+                                        badgeContent: Text(
+                                          foundTeamNonRecurring.length
+                                              .toString(),
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        child: const Text("All"),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Tab(
-                                  icon: Badge(
-                                    badgeColor: Colors.indigo,
-                                    shape: BadgeShape.square,
-                                    borderRadius: BorderRadius.circular(5),
-                                    position: BadgePosition.topEnd(
-                                        top: -12, end: -20),
-                                    padding: const EdgeInsets.all(5),
-                                    badgeContent: Text(
-                                      CompletedTeamnonRecurring.length
-                                          .toString(),
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    child: const Text("Completed"),
-                                  ),
-                                ),
-                                Tab(
-                                  icon: Badge(
-                                    badgeColor: Colors.indigo,
-                                    shape: BadgeShape.square,
-                                    borderRadius: BorderRadius.circular(5),
-                                    position: BadgePosition.topEnd(
-                                        top: -12, end: -20),
-                                    padding: const EdgeInsets.all(5),
-                                    badgeContent: Text(
-                                      foundTeamNonRecurring.length.toString(),
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    child: const Text("All"),
+                                Expanded(
+                                  child: TabBarView(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    children: <Widget>[
+                                      lateView(),
+                                      activeView(),
+                                      completeView(),
+                                      allView(),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
-                            Expanded(
-                              child: TabBarView(
-                                physics: const NeverScrollableScrollPhysics(),
-                                children: <Widget>[
-                                  lateView(),
-                                  activeView(),
-                                  completeView(),
-                                  allView(),
-                                ],
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     )
                   : Text(
                       "No data found !",

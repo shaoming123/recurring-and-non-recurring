@@ -17,7 +17,7 @@ import '../provider/event_provider.dart';
 class DbHelper {
   static Database? _db;
 
-  final DB_Name = 'test.db';
+  final DB_Name = 'sqlite.db';
   final Table_User = 'user_account';
   final Table_Event = 'recurring_table';
   final Table_NonRecurring = 'non_recurring';
@@ -59,8 +59,11 @@ class DbHelper {
   String color = 'color';
   String date = 'date';
   String deadline = 'deadline';
-  String start = 'start';
-  String end = 'end';
+  String start = 'startTime';
+  String end = 'dueTime';
+  String uniqueNumber = 'uniqueNumber';
+  String dependent = 'dependent';
+  String checkRecurring = 'checkRecurring';
 
   //non-recurring
   String nonRecurringId = 'nonRecurringId';
@@ -119,12 +122,36 @@ class DbHelper {
         " $C_Phone TEXT, "
         " $C_Active TEXT "
         ")");
+    await db.execute("CREATE TABLE $Table_Event ("
+        " $recurringId INTEGER PRIMARY KEY, "
+        " $category TEXT, "
+        " $subCategory TEXT, "
+        " $type TEXT, "
+        " $site TEXT, "
+        " $task TEXT, "
+        " $date TEXT, "
+        " $deadline TEXT, "
+        " $start TEXT, "
+        " $end TEXT, "
+        " $from TEXT, "
+        " $to TEXT, "
+        " $duration TEXT, "
+        " $priority TEXT, "
+        " $color TEXT, "
+        " $recurringOpt TEXT, "
+        " $recurringEvery TEXT, "
+        " $remark TEXT, "
+        " $completeDate TEXT, "
+        " $dependent TEXT, "
+        " $uniqueNumber TEXT, "
+        " $checkRecurring TEXT, "
+        " $status TEXT, "
+        " $person TEXT "
+        ")");
     await db.execute(
-        "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT,$date TEXT,$deadline TEXT,$start TEXT,$end TEXT, $from TEXT,$to TEXT, $duration TEXT,$priority TEXT, $color TEXT, $recurringOpt TEXT, $recurringEvery TEXT, $remark TEXT, $completeDate TEXT, $status TEXT, $person TEXT)");
+        "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate TEXT,$due TEXT,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $checked TEXT, $personCheck TEXT, $nonstatus TEXT)");
     await db.execute(
-        "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY AUTOINCREMENT, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate TEXT,$due TEXT,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $checked TEXT, $personCheck TEXT, $nonstatus TEXT)");
-    await db.execute(
-        "CREATE TABLE $Table_Notification($notificationId INTEGER PRIMARY KEY AUTOINCREMENT, $notificationOwner TEXT, $assigner TEXT, $notificationTask TEXT,$notificationDeadline TEXT,$notificationType TEXT ,$noted TEXT)");
+        "CREATE TABLE $Table_Notification($notificationId INTEGER PRIMARY KEY, $notificationOwner TEXT, $assigner TEXT, $notificationTask TEXT,$notificationDeadline TEXT,$notificationType TEXT ,$noted TEXT)");
   }
 
   Future<int> getUserQuantity() async {

@@ -68,7 +68,7 @@ class _LoginState extends State<Login> {
 
           setSP(dataModel).whenComplete(() async {
             await Controller().addDataToSqlite();
-              await Controller().addNotificationDateToSqlite();
+            await Controller().addNotificationDateToSqlite();
             // await Controller().addRecurringToSqlite();
             // await Controller().addNonRecurringToSqlite();
             Navigator.pushAndRemoveUntil(
@@ -160,7 +160,7 @@ class _LoginState extends State<Login> {
 
   Future setSP(UserModel user) async {
     final SharedPreferences sp = await _pref;
-
+    sp.setBool("isLoggedIn", true);
     sp.setInt("user_id", user.user_id!);
     sp.setString("user_name", user.user_name);
 

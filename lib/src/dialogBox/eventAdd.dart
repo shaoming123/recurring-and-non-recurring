@@ -57,7 +57,7 @@ class _EventAddState extends State<EventAdd> {
   String _selectedStatus = 'Upcoming';
   String _selectedRecurring = '';
   String _selectedSite = '';
-
+  var rng = new Random();
   List<String> siteList = <String>[];
   List<Map<String, dynamic>> category = [];
   List<String> priorityList = <String>['Low', 'Moderate', 'High'];
@@ -381,6 +381,15 @@ class _EventAddState extends State<EventAdd> {
       // Navigator.pushReplacement(
       //     context, MaterialPageRoute(builder: (context) => const Recurring()));
 
+      var url_add = 'http://192.168.1.111/testdb/add.php';
+      int dependent_code = rng.nextInt(900000000) + 100000000;
+
+      const availableChars =
+          'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+      final unique_code = List.generate(
+              6, (index) => availableChars[rng.nextInt(availableChars.length)])
+          .join();
+
       var response;
       for (int i = 0; i < _startDate.length; i++) {
         DateTime end_date =
@@ -420,14 +429,18 @@ class _EventAddState extends State<EventAdd> {
               recurringController.text.isEmpty ? '0' : recurringController.text,
           // "modify": DateFormat("yyyy-MM-dd").format(DateTime.now()).toString(),
           "remark": remarkController.text,
-
+          "uniqueNumber": unique_code.toString(),
+          "dependent": dependent_code.toString(),
           "completeDate": completeDate != null
               ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
               : '',
 
           "status": _selectedStatus,
         };
-        response = await http.post(Uri.parse(url), body: data);
+
+        print(data);
+
+        response = await http.post(Uri.parse(url_add), body: data);
       }
       if (response.statusCode == 200) {
         Navigator.pop(context);

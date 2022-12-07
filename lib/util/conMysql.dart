@@ -53,6 +53,10 @@ class Controller {
           task: recurringData[i]["task"],
           duration: recurringData[i]["duration"],
           priority: recurringData[i]["priority"],
+          date: recurringData[i]["date"],
+          deadline: recurringData[i]["deadline"],
+          startTime: recurringData[i]["startTime"],
+          dueTime: recurringData[i]["dueTime"],
           from: recurringData[i]["start"],
           to: recurringData[i]["end"],
           person: recurringData[i]["person"],
@@ -60,7 +64,11 @@ class Controller {
           recurringOpt: recurringData[i]["recurring"],
           recurringEvery: recurringData[i]["recurringGap"],
           color: recurringData[i]["color"],
-          status: recurringData[i]["status"]);
+          status: recurringData[i]["status"],
+          uniqueNumber: recurringData[i]["unique"],
+          dependent: recurringData[i]["dependent"],
+          completeDate: recurringData[i]["completedDate"],
+          checkRecurring: "false");
 
       await dbHelper.addEvent(data);
     }

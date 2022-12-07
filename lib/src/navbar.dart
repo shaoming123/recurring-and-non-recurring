@@ -41,13 +41,7 @@ class _NavbarState extends State<Navbar> {
     dbHelper = DbHelper();
 
     _ipsolutionTapRecognizer = TapGestureRecognizer()..onTap = () => _openUrl();
-    getUserData().whenComplete(() async {
-      await Internet.isInternet().then((connection) async {
-        if (connection) {
-          await getImage();
-        }
-      });
-    });
+    getUserData();
 
     super.initState();
   }
@@ -57,11 +51,23 @@ class _NavbarState extends State<Navbar> {
     if (!await launchUrl(ipsolutionUrl)) {
       throw 'Could not launch $ipsolutionUrl';
     }
+    // var urllaunchable = await canLaunch(
+    //     ipsolutionUrl.toString()); //canLaunch is from url_launcher package
+    // if (urllaunchable) {
+    //   await window.open(ipsolutionUrl
+    //       .toString()); //launch is from url_launcher package to launch URL
+    // } else {
+    //   print("URL can't be launched.");
+    // }
   }
 
   Future<void> getUserData() async {
     final SharedPreferences sp = await _pref;
-
+    await Internet.isInternet().then((connection) async {
+      if (connection) {
+        await getImage();
+      }
+    });
     setState(() {
       userid = sp.getInt("user_id")!;
       username = sp.getString("user_name")!;
@@ -70,15 +76,21 @@ class _NavbarState extends State<Navbar> {
     });
   }
 
-  Future<void> getImage() async {
+  Future getImage() async {
     var url = "http://192.168.1.111/testdb/getProfileImage.php";
     var response = await http.post(Uri.parse(url),
         body: {"tableName": "user_details", "user_id": userid.toString()});
     List user = json.decode(response.body);
 
-    setState(() {
-      userData = user;
-    });
+    userData = user;
+  }
+
+  void websitelaunch() async {
+    final Uri url =
+        Uri(scheme: 'https', host: 'www.ipsolutions4u.com', path: '');
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw 'Could not launch $url';
+    }
   }
 
   @override
@@ -202,7 +214,7 @@ class _NavbarState extends State<Navbar> {
                                 TextSpan(
                                     text: 'here',
                                     recognizer: TapGestureRecognizer()
-                                      ..onTap = () => _openUrl(),
+                                      ..onTap = () => websitelaunch(),
                                     style: TextStyle(
                                         color: Colors.blue, fontSize: 16)),
                                 const TextSpan(
@@ -408,11 +420,14 @@ class _NavbarState extends State<Navbar> {
           const Divider(),
           const Gap(50),
           ListTile(
-            title: const Text('Logout'),
-            leading: const Icon(Icons.exit_to_app),
-            onTap: () => Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => const Login())),
-          ),
+              title: const Text('Logout'),
+              leading: const Icon(Icons.exit_to_app),
+              onTap: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                prefs.clear();
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => const Login()));
+              }),
         ],
       ),
     );
