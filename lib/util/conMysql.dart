@@ -6,31 +6,30 @@ import 'package:ipsolution/model/user.dart';
 
 import '../databaseHandler/DbHelper.dart';
 import '../model/nonRecurring.dart';
-import '../model/notification.dart';
 
 DbHelper dbHelper = DbHelper();
 
 class Controller {
   Future addDataToSqlite() async {
     await dbHelper.deleteAllUser();
-    var url = 'http://192.168.1.111/testdb/read.php';
+    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "user_details"});
     List userData = json.decode(response.body);
 
     for (int i = 0; i < userData.length; i++) {
       final data = UserModel(
-        user_id: int.parse(userData[i]["id"]),
-        user_name: userData[i]["username"],
-        password: userData[i]["password"],
-        email: userData[i]["email"],
-        role: userData[i]["role"],
-        position: userData[i]["position"],
-        leadFunc: userData[i]["leadFunc"],
-        site: userData[i]["site"],
-        active: userData[i]["active"],
-        siteLead: userData[i]["siteLead"],
-      );
+          user_id: int.parse(userData[i]["id"]),
+          user_name: userData[i]["username"],
+          password: userData[i]["password"],
+          email: userData[i]["email"],
+          role: userData[i]["role"],
+          position: userData[i]["position"],
+          leadFunc: userData[i]["leadFunc"],
+          site: userData[i]["site"],
+          active: userData[i]["active"],
+          siteLead: userData[i]["siteLead"],
+          filepath: userData[i]["filepath"]);
 
       await dbHelper.saveData(data);
     }
@@ -38,7 +37,7 @@ class Controller {
 
   Future addRecurringToSqlite() async {
     await dbHelper.deleteAllEvent();
-    var url = 'http://192.168.1.111/testdb/read.php';
+    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "tasks"});
     List recurringData = json.decode(response.body);
@@ -76,7 +75,7 @@ class Controller {
 
   Future addNonRecurringToSqlite() async {
     await dbHelper.deleteAllNonRecurring();
-    var url = 'http://192.168.1.111/testdb/read.php';
+    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "nonrecurring"});
     List nonrecurringData = json.decode(response.body);
@@ -104,7 +103,8 @@ class Controller {
   }
 
   Future switchToggle(toggle, id, tableName, columnName) async {
-    var url = 'http://192.168.1.111/testdb/toggleSwitch.php';
+    var url =
+        'https://ipsolutiontesting.000webhostapp.com/ipsolution/toggleSwitch.php';
     var response = await http.post(Uri.parse(url), body: {
       "dataTable": tableName,
       "id": id,
@@ -118,7 +118,7 @@ class Controller {
 // anotherways to sync
   Future addNotificationDateToSqlite() async {
     await dbHelper.deleteAllNotification();
-    var url = 'http://192.168.1.111/testdb/read.php';
+    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "notification"});
     List notificationData = json.decode(response.body);

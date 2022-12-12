@@ -1,17 +1,14 @@
-import 'dart:convert';
-
-import 'package:collection/collection.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:ipsolution/model/user.dart';
+import 'dart:convert';
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/manageUser.dart';
-import '../../model/nonRecurring.dart';
+
 import '../../model/selection.dart';
 import '../../util/checkInternet.dart';
 import '../../util/datetime.dart';
@@ -35,7 +32,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
   final _formkey = GlobalKey<FormState>();
   DateTime? due;
   DateTime startDate = DateTime.now();
-  String _selectedVal = '';
+
   String? _selectedUser;
   String _selectedSite = '';
   // String _selectedType = '';
@@ -43,7 +40,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
   final taskController = TextEditingController();
   final statusController = TextEditingController();
   final remarkController = TextEditingController();
-
+  bool isTapped = false;
   List<String> siteList = <String>[];
   List<TypeSelect> typeList = <TypeSelect>[];
   List<dynamic> user = [];
@@ -52,7 +49,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
   List<String> _selectedCheckUser = [];
   var selectedCheckUser = ''.obs;
 
-  dynamic? _selectedCategory;
+  dynamic _selectedCategory;
   String? _selectedSubCategory;
   List<int> userid = [];
   List categoryData = [];
@@ -104,8 +101,10 @@ class _addNonRecurringState extends State<addNonRecurring> {
     final data = await dbHelper.getItems();
     final siteOptions = await Selection().siteSelection();
     String currentUserSiteLead = sp.getString("siteLead")!;
+    String currentUsername = sp.getString("user_name")!;
     List functionData = sp.getString("position")!.split(",");
     userRole = sp.getString("role").toString();
+
     setState(() {
       //site selection
       for (final val in siteOptions) {
@@ -157,7 +156,8 @@ class _addNonRecurringState extends State<addNonRecurring> {
       }
 
       for (int i = 0; i < data.length; i++) {
-        if (data[i]["role"] != "Staff") {
+        if (data[i]["role"] != "Staff" &&
+            data[i]["user_name"] != currentUsername) {
           checkUserList.add(data[i]["user_name"]);
         }
       }
@@ -230,7 +230,8 @@ class _addNonRecurringState extends State<addNonRecurring> {
           },
         );
       } else {
-        var url = 'http://192.168.1.111/testdb/add.php';
+        var url =
+            'https://ipsolutiontesting.000webhostapp.com/ipsolution/add.php';
 
         String selectedCheckUser = _selectedCheckUser.join(",");
 
@@ -307,6 +308,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
         final response = await http.post(Uri.parse(url), body: data);
 
         if (response.statusCode == 200) {
+          if (!mounted) return;
           Navigator.pop(context);
 
           Navigator.pushReplacement(
@@ -314,10 +316,11 @@ class _addNonRecurringState extends State<addNonRecurring> {
             MaterialPageRoute(builder: (context) => const NonRecurring()),
           );
         } else {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Adding Unsuccessful !"),
+            content: const Text("Adding Unsuccessful !"),
             behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
+            margin: const EdgeInsets.all(20),
             action: SnackBarAction(
               label: 'Dismiss',
               disabledTextColor: Colors.white,
@@ -448,9 +451,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Category',
-            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
           const Gap(10),
           Container(
@@ -506,9 +509,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Type',
-            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
           const Gap(10),
           Container(
@@ -517,12 +520,12 @@ class _addNonRecurringState extends State<addNonRecurring> {
             decoration: BoxDecoration(
                 border: Border.all(color: Colors.white, width: 1),
                 borderRadius: BorderRadius.circular(12),
-                color: Color(0xFFd4dce4)),
+                color: const Color(0xFFd4dce4)),
             child: DropdownButtonHideUnderline(
               child: DropdownButtonFormField2<TypeSelect>(
                 iconSize: 30,
                 isExpanded: true,
-                hint: Text("Choose item"),
+                hint: const Text("Choose item"),
                 value: typeselect,
                 selectedItemHighlightColor: Colors.grey,
                 validator: (value) {
@@ -534,7 +537,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                           enabled: false,
                           child: Text(
                             e.value,
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         )
                       : DropdownMenuItem<TypeSelect>(
@@ -569,9 +572,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Site',
-            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
           const Gap(10),
           Container(
@@ -683,9 +686,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 "Required Checking?",
                 style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
               ),
-              Gap(10),
+              const Gap(10),
               Container(
-                padding: EdgeInsets.all(0),
+                padding: const EdgeInsets.all(0),
                 width: 14,
                 height: 14,
                 color: Colors.white,
@@ -702,18 +705,18 @@ class _addNonRecurringState extends State<addNonRecurring> {
               ),
             ],
           ),
-          Gap(10),
+          const Gap(10),
           Container(
             margin: const EdgeInsets.only(bottom: 20),
             padding: const EdgeInsets.symmetric(horizontal: 5),
             decoration: BoxDecoration(
                 border: Border.all(color: Colors.white, width: 1),
                 borderRadius: BorderRadius.circular(12),
-                color: check == true ? Color(0xFFd4dce4) : Colors.grey),
+                color: check == true ? const Color(0xFFd4dce4) : Colors.grey),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
                 enabled: check == true ? true : false,
-                decoration: InputDecoration(border: InputBorder.none),
+                decoration: const InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
@@ -726,10 +729,10 @@ class _addNonRecurringState extends State<addNonRecurring> {
                     _selectedCheckUser = value;
                     selectedCheckUser.value = "";
 
-                    _selectedCheckUser.forEach((element) {
+                    for (var element in _selectedCheckUser) {
                       selectedCheckUser.value =
-                          selectedCheckUser.value + "  " + element;
-                    });
+                          "${selectedCheckUser.value}  $element";
+                    }
 
                     // if (selectedPosition.isNotEmpty) {
                     //   checkFunctionAccess = true;
@@ -868,8 +871,8 @@ class _addNonRecurringState extends State<addNonRecurring> {
               shape: BoxShape.rectangle,
               color: const Color(0xFF384464),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                const BoxShadow(
+              boxShadow: const [
+                BoxShadow(
                     color: Colors.black, offset: Offset(0, 10), blurRadius: 10),
               ]),
           child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
@@ -934,13 +937,16 @@ class _addNonRecurringState extends State<addNonRecurring> {
                   onPressed: () async {
                     await Internet.isInternet().then((connection) async {
                       if (connection) {
-                        await saveNonRecurring();
-                        ;
+                        if (!isTapped) {
+                          isTapped = true;
+                          await saveNonRecurring();
+                        }
                       } else {
+                        Navigator.of(context).pop();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text("No Internet !"),
+                          content: const Text("No Internet !"),
                           behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.all(20),
+                          margin: const EdgeInsets.all(20),
                           action: SnackBarAction(
                             label: 'Dismiss',
                             disabledTextColor: Colors.white,

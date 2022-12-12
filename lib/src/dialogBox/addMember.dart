@@ -2,13 +2,10 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get_rx/get_rx.dart';
-import 'package:ipsolution/model/manageUser.dart';
-import 'package:ipsolution/src/account.dart';
 import 'package:ipsolution/src/member.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../../model/user.dart';
 import '../../util/checkInternet.dart';
 
 class AddMember extends StatefulWidget {
@@ -19,7 +16,7 @@ class AddMember extends StatefulWidget {
 }
 
 class _AddMemberState extends State<AddMember> {
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   final _formkey = GlobalKey<FormState>();
   final username = TextEditingController();
   final password = TextEditingController();
@@ -160,7 +157,8 @@ class _AddMemberState extends State<AddMember> {
           },
         );
       } else {
-        var url = 'http://192.168.1.111/testdb/add.php';
+        var url =
+            'https://ipsolutiontesting.000webhostapp.com/ipsolution/add.php';
         String _selectedPos = selectedPosition.join(",");
         String _selectedSite = selectedSite.join(",");
         String _selectedSiteLead = selectedSiteLead.join(",");
@@ -188,20 +186,37 @@ class _AddMemberState extends State<AddMember> {
           "position": _selectedPos,
           "site": _selectedSite.isEmpty ? '-' : _selectedSite,
           "siteLead": _selectedSiteLead.isEmpty ? '-' : _selectedSiteLead,
-          "active": active
+          "active": active,
+          "filepath": ""
         };
 
         final response = await http.post(Uri.parse(url), body: data);
 
         if (response.statusCode == 200) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text("Add User Successful!"),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
+          ));
           Navigator.pop(context);
+          // ignore: use_build_context_synchronously
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => const Member()));
         } else {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Adding Unsuccessful !"),
+            content: const Text("Adding Unsuccessful !"),
             behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
+            margin: const EdgeInsets.all(20),
             action: SnackBarAction(
               label: 'Dismiss',
               disabledTextColor: Colors.white,
@@ -225,7 +240,7 @@ class _AddMemberState extends State<AddMember> {
         children: [
           Text(
             labelText,
-            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
           const Gap(10),
           Container(
@@ -258,7 +273,7 @@ class _AddMemberState extends State<AddMember> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Role',
             style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
@@ -326,7 +341,7 @@ class _AddMemberState extends State<AddMember> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            const Text(
               'Function Access',
               style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
             ),
@@ -340,7 +355,7 @@ class _AddMemberState extends State<AddMember> {
                   color: const Color(0xFFd4dce4)),
               child: DropdownButtonHideUnderline(
                 child: DropDownMultiSelect(
-                  decoration: InputDecoration(border: InputBorder.none),
+                  decoration: const InputDecoration(border: InputBorder.none),
                   icon: const Icon(
                     Icons.arrow_drop_down,
                     color: Colors.black,
@@ -372,7 +387,7 @@ class _AddMemberState extends State<AddMember> {
               child: Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
                     width: 14,
                     height: 14,
                     color: Colors.white,
@@ -388,7 +403,7 @@ class _AddMemberState extends State<AddMember> {
                       },
                     ),
                   ),
-                  Gap(10),
+                  const Gap(10),
                   const Text(
                     "Select All",
                     style: TextStyle(color: Color(0xFFd4dce4), fontSize: 16),
@@ -408,7 +423,7 @@ class _AddMemberState extends State<AddMember> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            const Text(
               'Site In-Charge',
               style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
             ),
@@ -422,7 +437,7 @@ class _AddMemberState extends State<AddMember> {
                   color: const Color(0xFFd4dce4)),
               child: DropdownButtonHideUnderline(
                 child: DropDownMultiSelect(
-                  decoration: InputDecoration(border: InputBorder.none),
+                  decoration: const InputDecoration(border: InputBorder.none),
                   icon: const Icon(
                     Icons.arrow_drop_down,
                     color: Colors.black,
@@ -448,7 +463,7 @@ class _AddMemberState extends State<AddMember> {
               child: Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
                     width: 14,
                     height: 14,
                     color: Colors.white,
@@ -464,7 +479,7 @@ class _AddMemberState extends State<AddMember> {
                       },
                     ),
                   ),
-                  Gap(10),
+                  const Gap(10),
                   const Text(
                     "Select All",
                     style: TextStyle(color: Color(0xFFd4dce4), fontSize: 16),
@@ -484,7 +499,7 @@ class _AddMemberState extends State<AddMember> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            const Text(
               'Does this user hold any leadership role on the Site?',
               style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
             ),
@@ -498,7 +513,7 @@ class _AddMemberState extends State<AddMember> {
                   color: const Color(0xFFd4dce4)),
               child: DropdownButtonHideUnderline(
                 child: DropDownMultiSelect(
-                  decoration: InputDecoration(border: InputBorder.none),
+                  decoration: const InputDecoration(border: InputBorder.none),
                   icon: const Icon(
                     Icons.arrow_drop_down,
                     color: Colors.black,
@@ -510,10 +525,10 @@ class _AddMemberState extends State<AddMember> {
                     selectedSiteLead = value;
                     selectedSiteLeadOption.value = "";
 
-                    selectedSiteLead.forEach((element) {
+                    for (var element in selectedSiteLead) {
                       selectedSiteLeadOption.value =
-                          selectedSiteLeadOption.value + "  " + element;
-                    });
+                          "${selectedSiteLeadOption.value}  $element";
+                    }
                   },
                   selectedValues: selectedSiteLead,
                 ),
@@ -524,7 +539,7 @@ class _AddMemberState extends State<AddMember> {
               child: Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
                     width: 14,
                     height: 14,
                     color: Colors.white,
@@ -540,7 +555,7 @@ class _AddMemberState extends State<AddMember> {
                       },
                     ),
                   ),
-                  Gap(10),
+                  const Gap(10),
                   const Text(
                     "Select All",
                     style: TextStyle(color: Color(0xFFd4dce4), fontSize: 16),
@@ -561,8 +576,8 @@ class _AddMemberState extends State<AddMember> {
               shape: BoxShape.rectangle,
               color: const Color(0xFF384464),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                const BoxShadow(
+              boxShadow: const [
+                BoxShadow(
                     color: Colors.black, offset: Offset(0, 10), blurRadius: 10),
               ]),
           child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
@@ -616,9 +631,9 @@ class _AddMemberState extends State<AddMember> {
                         await addUser();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text("No Internet !"),
+                          content: const Text("No Internet !"),
                           behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.all(20),
+                          margin: const EdgeInsets.all(20),
                           action: SnackBarAction(
                             label: 'Dismiss',
                             disabledTextColor: Colors.white,

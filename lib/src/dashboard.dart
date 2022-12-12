@@ -2,21 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
-import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/src/dashboardDetails.dart';
 import 'package:ipsolution/src/navbar.dart';
-import 'package:ipsolution/src/non_recurring.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'appbar.dart';
 
-import 'package:flutter_localizations/flutter_localizations.dart';
-
 class Dashboard extends StatefulWidget {
-  Dashboard({super.key});
+  const Dashboard({super.key});
 
   @override
   State<Dashboard> createState() => _DashboardState();
@@ -24,7 +18,7 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
   List<Map<String, dynamic>> completed = [];
   List<Map<String, dynamic>> late = [];
@@ -178,7 +172,7 @@ class _DashboardState extends State<Dashboard> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Icon(Icons.calendar_month),
+                        const Icon(Icons.calendar_month),
                         Text(
                           "${DateFormat.yMMMMd('en_US').format(startDate!).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate!).toString()}",
                           style:
@@ -251,7 +245,7 @@ class _DashboardState extends State<Dashboard> {
                                     subtitle: Text(
                                       (upcoming.length + upcomingNon.length)
                                           .toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
                                           fontWeight: FontWeight.w800),
@@ -299,7 +293,7 @@ class _DashboardState extends State<Dashboard> {
                 Card(
                   // ignore: sort_child_properties_last
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
                     height: 100,
                     color: Colors.white,
                     child: Row(
@@ -343,7 +337,7 @@ class _DashboardState extends State<Dashboard> {
                                 Expanded(
                                   flex: 5,
                                   child: ListTile(
-                                    title: Padding(
+                                    title: const Padding(
                                       padding: EdgeInsets.only(bottom: 8.0),
                                       child: Text(
                                         "In-Progress",
@@ -355,7 +349,7 @@ class _DashboardState extends State<Dashboard> {
                                     subtitle: Text(
                                       (progress.length + progressNon.length)
                                           .toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
                                           fontWeight: FontWeight.w800),
@@ -449,7 +443,7 @@ class _DashboardState extends State<Dashboard> {
                                 Expanded(
                                   flex: 5,
                                   child: ListTile(
-                                    title: Padding(
+                                    title: const Padding(
                                       padding: EdgeInsets.only(bottom: 8.0),
                                       child: Text(
                                         "Late",
@@ -460,7 +454,7 @@ class _DashboardState extends State<Dashboard> {
                                     ),
                                     subtitle: Text(
                                       (late.length + lateNon.length).toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
                                           fontWeight: FontWeight.w800),
@@ -510,7 +504,7 @@ class _DashboardState extends State<Dashboard> {
                 Card(
                   // ignore: sort_child_properties_last
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
                     height: 100,
                     color: Colors.white,
                     child: Row(
@@ -554,7 +548,7 @@ class _DashboardState extends State<Dashboard> {
                                 Expanded(
                                   flex: 5,
                                   child: ListTile(
-                                    title: Padding(
+                                    title: const Padding(
                                       padding: EdgeInsets.only(bottom: 8.0),
                                       child: Text(
                                         "Completed",
@@ -566,7 +560,7 @@ class _DashboardState extends State<Dashboard> {
                                     subtitle: Text(
                                       (completed.length + completedNon.length)
                                           .toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
                                           fontWeight: FontWeight.w800),

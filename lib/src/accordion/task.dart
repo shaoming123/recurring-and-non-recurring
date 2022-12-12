@@ -1,17 +1,14 @@
 import 'package:badges/badges.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
-import 'package:ipsolution/src/dialogBox/eventAdd.dart';
-import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/src/dialogBox/nonRecurringAdd.dart';
 import 'package:ipsolution/src/dialogBox/nonRecurringEdit.dart';
 import 'package:ipsolution/src/non_recurring.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../model/manageUser.dart';
+
 import '../../util/checkInternet.dart';
 import 'package:http/http.dart' as http;
 
@@ -41,9 +38,9 @@ class _TaskState extends State<Task> {
   List<Map<String, dynamic>> ActivenonRecurring = [];
   List<Map<String, dynamic>> CompletednonRecurring = [];
   List<String> type = <String>['Late', 'Active', 'Completed', 'All'];
-  String _selectedVal = "Late";
+
   String _selectedUser = "";
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   TextEditingController? textcontroller;
   @override
   void initState() {
@@ -239,12 +236,14 @@ class _TaskState extends State<Task> {
   }
 
   Future<void> removeNonRecurring(int id) async {
-    var url = 'http://192.168.1.111/testdb/delete.php';
+    var url =
+        'https://ipsolutiontesting.000webhostapp.com/ipsolution/delete.php';
     final response = await http.post(Uri.parse(url), body: {
       "dataTable": "nonrecurring",
       "id": id.toString(),
     });
     if (response.statusCode == 200) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Successfully deleted!'),
       ));
@@ -253,10 +252,11 @@ class _TaskState extends State<Task> {
         MaterialPageRoute(builder: (context) => const NonRecurring()),
       );
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Delete Unsuccessful !"),
+        content: const Text("Delete Unsuccessful !"),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         action: SnackBarAction(
           label: 'Dismiss',
           disabledTextColor: Colors.white,
@@ -413,9 +413,9 @@ class _TaskState extends State<Task> {
                     indicatorPadding: EdgeInsets.zero,
                     labelPadding: EdgeInsets.zero,
                     labelStyle: const TextStyle(
-                        fontSize: 16.0, fontWeight: FontWeight.bold),
-                    unselectedLabelStyle: const TextStyle(
                         fontSize: 14.0, fontWeight: FontWeight.bold),
+                    unselectedLabelStyle: const TextStyle(
+                        fontSize: 12.0, fontWeight: FontWeight.bold),
                     labelColor: const Color(0xFF88a4d4),
                     unselectedLabelColor: Colors.black,
                     tabs: <Widget>[
@@ -428,7 +428,7 @@ class _TaskState extends State<Task> {
                           padding: const EdgeInsets.all(5),
                           badgeContent: Text(
                             LatenonRecurring.length.toString(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold),
@@ -445,7 +445,7 @@ class _TaskState extends State<Task> {
                           padding: const EdgeInsets.all(5),
                           badgeContent: Text(
                             ActivenonRecurring.length.toString(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold),
@@ -462,7 +462,7 @@ class _TaskState extends State<Task> {
                           padding: const EdgeInsets.all(5),
                           badgeContent: Text(
                             CompletednonRecurring.length.toString(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold),
@@ -479,7 +479,7 @@ class _TaskState extends State<Task> {
                           padding: const EdgeInsets.all(5),
                           badgeContent: Text(
                             foundNonRecurring.length.toString(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold),
@@ -598,7 +598,7 @@ class _TaskState extends State<Task> {
                 cells: [
                   DataCell(Text((index + 1).toString())),
                   DataCell(Container(
-                    margin: EdgeInsets.symmetric(vertical: 15),
+                    margin: const EdgeInsets.symmetric(vertical: 15),
                     child: Text(
                       LatenonRecurring[index]["task"],
                       softWrap: true,
@@ -647,7 +647,7 @@ class _TaskState extends State<Task> {
                       child: Center(
                           child: Text(
                         "${dayLeft.abs()} DAYS LATE",
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: Color(0xFFf43a2c),
                             fontWeight: FontWeight.bold),
                       )))),
@@ -658,7 +658,7 @@ class _TaskState extends State<Task> {
                   )),
                   DataCell(Center(
                     child: Container(
-                      margin: EdgeInsets.symmetric(vertical: 15),
+                      margin: const EdgeInsets.symmetric(vertical: 15),
                       child: Text(
                         LatenonRecurring[index]["remark"],
                       ),
@@ -697,9 +697,9 @@ class _TaskState extends State<Task> {
                               } else {
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(SnackBar(
-                                  content: Text("No Internet !"),
+                                  content: const Text("No Internet !"),
                                   behavior: SnackBarBehavior.floating,
-                                  margin: EdgeInsets.all(20),
+                                  margin: const EdgeInsets.all(20),
                                   action: SnackBarAction(
                                     label: 'Dismiss',
                                     disabledTextColor: Colors.white,
@@ -819,7 +819,7 @@ class _TaskState extends State<Task> {
                 cells: [
                   DataCell(Text((index + 1).toString())),
                   DataCell(Container(
-                      margin: EdgeInsets.symmetric(vertical: 15),
+                      margin: const EdgeInsets.symmetric(vertical: 15),
                       child: Text(ActivenonRecurring[index]["task"]))),
                   DataCell(Center(
                     child: Text(
@@ -867,7 +867,7 @@ class _TaskState extends State<Task> {
                       child: Center(
                           child: dayLeft.isNegative
                               ? Text(
-                                  dayLeft.abs().toString() + " DAYS LATE",
+                                  "${dayLeft.abs()} DAYS LATE",
                                   style: Styles.dayLeftLate,
                                 )
                               : Text(
@@ -881,7 +881,7 @@ class _TaskState extends State<Task> {
                         .toString(),
                   )),
                   DataCell(Container(
-                    margin: EdgeInsets.symmetric(vertical: 15),
+                    margin: const EdgeInsets.symmetric(vertical: 15),
                     child: Center(
                       child: Text(
                         ActivenonRecurring[index]["remark"],
@@ -917,9 +917,9 @@ class _TaskState extends State<Task> {
                                 ActivenonRecurring[index]["nonRecurringId"]);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("No Internet !"),
+                              content: const Text("No Internet !"),
                               behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(20),
+                              margin: const EdgeInsets.all(20),
                               action: SnackBarAction(
                                 label: 'Dismiss',
                                 disabledTextColor: Colors.white,
@@ -1033,12 +1033,12 @@ class _TaskState extends State<Task> {
                   DateTime.parse(
                       DateFormat('yyyy-MM-dd').format(DateTime.now())),
                   DateTime.parse(CompletednonRecurring[index]["due"]));
-              print(CompletednonRecurring);
+
               return DataRow(
                 cells: [
                   DataCell(Text((index + 1).toString())),
                   DataCell(Container(
-                      margin: EdgeInsets.symmetric(vertical: 15),
+                      margin: const EdgeInsets.symmetric(vertical: 15),
                       child: Text(CompletednonRecurring[index]["task"]))),
                   DataCell(Center(
                     child: Text(
@@ -1062,7 +1062,7 @@ class _TaskState extends State<Task> {
                   )),
                   DataCell(
                     CompletednonRecurring[index]["checked"] == "-"
-                        ? Text("No Review Needed")
+                        ? const Text("No Review Needed")
                         : Row(
                             children: [
                               Text(CompletednonRecurring[index]["checked"]),
@@ -1074,7 +1074,7 @@ class _TaskState extends State<Task> {
                                         "Checked"
                                     ? true
                                     : false,
-                                shape: CircleBorder(),
+                                shape: const CircleBorder(),
                                 onChanged: (value) {
                                   setState(() {
                                     // isChecked = value!;
@@ -1094,7 +1094,7 @@ class _TaskState extends State<Task> {
                         .toString(),
                   )),
                   DataCell(Container(
-                    margin: EdgeInsets.symmetric(vertical: 15),
+                    margin: const EdgeInsets.symmetric(vertical: 15),
                     child: Text(
                       CompletednonRecurring[index]["remark"],
                     ),
@@ -1130,9 +1130,9 @@ class _TaskState extends State<Task> {
                                 CompletednonRecurring[index]["nonRecurringId"]);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("No Internet !"),
+                              content: const Text("No Internet !"),
                               behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(20),
+                              margin: const EdgeInsets.all(20),
                               action: SnackBarAction(
                                 label: 'Dismiss',
                                 disabledTextColor: Colors.white,
@@ -1250,7 +1250,7 @@ class _TaskState extends State<Task> {
                 cells: [
                   DataCell(Text((index + 1).toString())),
                   DataCell(Container(
-                      margin: EdgeInsets.symmetric(vertical: 15),
+                      margin: const EdgeInsets.symmetric(vertical: 15),
                       child: Text(foundNonRecurring[index]["task"]))),
                   DataCell(Center(
                     child: Text(
@@ -1274,7 +1274,7 @@ class _TaskState extends State<Task> {
                   )),
                   DataCell(foundNonRecurring[index]["status"] == '100'
                       ? foundNonRecurring[index]["checked"] == "-"
-                          ? Text("No Review Needed")
+                          ? const Text("No Review Needed")
                           : Row(
                               children: [
                                 Text(foundNonRecurring[index]["checked"]),
@@ -1285,7 +1285,7 @@ class _TaskState extends State<Task> {
                                           "Checked"
                                       ? true
                                       : false,
-                                  shape: CircleBorder(),
+                                  shape: const CircleBorder(),
                                   onChanged: (value) {
                                     setState(() {
                                       // isChecked = value!;
@@ -1322,8 +1322,8 @@ class _TaskState extends State<Task> {
                           child: Center(
                               child: dayLeft.isNegative
                                   ? Text(
-                                      dayLeft.abs().toString() + " DAYS LATE",
-                                      style: TextStyle(
+                                      "${dayLeft.abs()} DAYS LATE",
+                                      style: const TextStyle(
                                           color: Color(0xFFf43a2c),
                                           fontWeight: FontWeight.bold),
                                     )
@@ -1343,15 +1343,10 @@ class _TaskState extends State<Task> {
                             .format(
                                 DateTime.parse(foundNonRecurring[index]["due"]))
                             .toString()
-                        : "( " +
-                            DateFormat('dd/MM/yyyy')
-                                .format(DateTime.parse(
-                                    foundNonRecurring[index]["due"]))
-                                .toString() +
-                            " )"),
+                        : "( ${DateFormat('dd/MM/yyyy').format(DateTime.parse(foundNonRecurring[index]["due"]))} )"),
                   )),
                   DataCell(Container(
-                    margin: EdgeInsets.symmetric(vertical: 15),
+                    margin: const EdgeInsets.symmetric(vertical: 15),
                     child: Text(
                       foundNonRecurring[index]["remark"],
                     ),
@@ -1387,9 +1382,9 @@ class _TaskState extends State<Task> {
                                 foundNonRecurring[index]["nonRecurringId"]);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("No Internet !"),
+                              content: const Text("No Internet !"),
                               behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(20),
+                              margin: const EdgeInsets.all(20),
                               action: SnackBarAction(
                                 label: 'Dismiss',
                                 disabledTextColor: Colors.white,

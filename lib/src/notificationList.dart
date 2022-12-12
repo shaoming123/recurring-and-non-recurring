@@ -23,17 +23,19 @@ class _notificationListState extends State<notificationList> {
   }
 
   Future<void> removeNotification(int id) async {
-    var url = 'http://192.168.1.111/testdb/delete.php';
+    var url =
+        'https://ipsolutiontesting.000webhostapp.com/ipsolution/delete.php';
     await dbHelper.deleteNotification(id);
     final response = await http.post(Uri.parse(url), body: {
       "dataTable": "notification",
       "id": id.toString(),
     });
     if (response.statusCode == 200) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Successfully deleted!'),
+        content: const Text('Successfully deleted!'),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         action: SnackBarAction(
           label: 'Dismiss',
           disabledTextColor: Colors.white,
@@ -52,10 +54,11 @@ class _notificationListState extends State<notificationList> {
             builder: (context) => notificationList(notification: notification)),
       );
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Delete Unsuccessful !"),
+        content: const Text("Delete Unsuccessful !"),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         action: SnackBarAction(
           label: 'Dismiss',
           disabledTextColor: Colors.white,
@@ -81,7 +84,7 @@ class _notificationListState extends State<notificationList> {
         title: Text("Notifications", style: Styles.subtitle),
       ),
       body: ListView.separated(
-          physics: ClampingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           padding: EdgeInsets.zero,
           itemCount: notification.length,
           itemBuilder: (context, index) {
@@ -95,8 +98,7 @@ class _notificationListState extends State<notificationList> {
                           : Icons.check_circle_outline),
                   title: Text(
                       notification[index].type == "Checking"
-                          ? notification[index].assigner +
-                              " request for checking"
+                          ? "${notification[index].assigner} request for checking"
                           : notification[index].type,
                       style: TextStyle(
                           color: Styles.textColor,
@@ -152,9 +154,9 @@ class _notificationListState extends State<notificationList> {
                           await removeNotification(notification[index].id);
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text("No Internet !"),
+                            content: const Text("No Internet !"),
                             behavior: SnackBarBehavior.floating,
-                            margin: EdgeInsets.all(20),
+                            margin: const EdgeInsets.all(20),
                             action: SnackBarAction(
                               label: 'Dismiss',
                               disabledTextColor: Colors.white,
@@ -167,13 +169,13 @@ class _notificationListState extends State<notificationList> {
                         }
                       });
                     },
-                    icon: Icon(Icons.cancel_rounded),
+                    icon: const Icon(Icons.cancel_rounded),
                     iconSize: 30,
                   )),
             );
           },
           separatorBuilder: (context, index) {
-            return Divider(
+            return const Divider(
               thickness: 5,
             );
           }),

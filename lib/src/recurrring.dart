@@ -1,17 +1,14 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/model/event.dart';
-import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/src/appbar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-
 import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
 import '../provider/event_provider.dart';
@@ -51,7 +48,10 @@ class _RecurringState extends State<Recurring> {
   Future<void> _refreshEvent() async {
     await Internet.isInternet().then((connection) async {
       if (connection) {
-        EasyLoading.show(status: 'Fetching Data...');
+        EasyLoading.show(
+          status: 'Fetching Data...',
+          maskType: EasyLoadingMaskType.black,
+        );
         await Controller().addRecurringToSqlite();
         EasyLoading.showSuccess('Successfully');
       }
@@ -127,7 +127,7 @@ class _RecurringState extends State<Recurring> {
           }
         } else {
           functionList = functionData;
-          print(positionList);
+
           for (int i = 0; i < positionList.length; i++) {
             for (int x = 0; x < functionData.length; x++) {
               if (positionList[i] == functionData[x] &&
@@ -217,9 +217,9 @@ class _RecurringState extends State<Recurring> {
     var uniqueIDs = items
         .map((e) => e.recurringId)
         .toSet(); //list if UniqueID to remove duplicates
-    uniqueIDs.forEach((e) {
+    for (var e in uniqueIDs) {
       uniqueItems.add(items.firstWhere((i) => i.recurringId == e));
-    });
+    }
     return uniqueItems;
   }
 
@@ -358,7 +358,7 @@ class _RecurringState extends State<Recurring> {
                               isExpanded: true,
                               value: _selectedUser == '' ? null : _selectedUser,
                               selectedItemHighlightColor: Colors.grey,
-                              hint: Text(
+                              hint: const Text(
                                 'User',
                                 style: TextStyle(fontSize: 12),
                               ),
@@ -370,7 +370,7 @@ class _RecurringState extends State<Recurring> {
                                       value: e,
                                       child: Text(
                                         e,
-                                        style: TextStyle(fontSize: 12),
+                                        style: const TextStyle(fontSize: 12),
                                       ),
                                     ),
                                   )
@@ -411,7 +411,7 @@ class _RecurringState extends State<Recurring> {
                                     ? null
                                     : _selectedFunction,
                                 selectedItemHighlightColor: Colors.grey,
-                                hint: Text(
+                                hint: const Text(
                                   'Function',
                                   style: TextStyle(fontSize: 12),
                                 ),
@@ -422,7 +422,7 @@ class _RecurringState extends State<Recurring> {
                                         value: e,
                                         child: Text(
                                           e,
-                                          style: TextStyle(fontSize: 12),
+                                          style: const TextStyle(fontSize: 12),
                                         ),
                                       ),
                                     )
@@ -456,7 +456,7 @@ class _RecurringState extends State<Recurring> {
                                 dropdownMaxHeight: 300,
                                 iconSize: 25,
                                 isExpanded: true,
-                                hint: Text(
+                                hint: const Text(
                                   'Site',
                                   style: TextStyle(fontSize: 12),
                                 ),
@@ -469,7 +469,7 @@ class _RecurringState extends State<Recurring> {
                                         value: e,
                                         child: Text(
                                           e,
-                                          style: TextStyle(fontSize: 12),
+                                          style: const TextStyle(fontSize: 12),
                                         ),
                                       ),
                                     )
@@ -515,7 +515,7 @@ class _RecurringState extends State<Recurring> {
                       monthViewSettings: MonthViewSettings(
                         showAgenda: true,
                         agendaItemHeight: height / 5,
-                        monthCellStyle: MonthCellStyle(
+                        monthCellStyle: const MonthCellStyle(
                             textStyle: TextStyle(
                                 fontStyle: FontStyle.normal,
                                 fontSize: 10,
@@ -545,15 +545,15 @@ class _RecurringState extends State<Recurring> {
                         shape: BoxShape.rectangle,
                       ),
                       appointmentBuilder: appointBuilder,
-                      onLongPress: (details) {
-                        final provider =
-                            Provider.of<EventProvider>(context, listen: false);
+                      // onLongPress: (details) {
+                      //   final provider =
+                      //       Provider.of<EventProvider>(context, listen: false);
 
-                        provider.setDate(details.date!);
+                      //   provider.setDate(details.date!);
 
-                        // showModalBottomSheet(
-                        //     context: context, builder: (context) => RecurringEvent());
-                      },
+                      //   // showModalBottomSheet(
+                      //   //     context: context, builder: (context) => RecurringEvent());
+                      // },
                     ),
                   )
                 ])),
@@ -668,9 +668,9 @@ class _RecurringState extends State<Recurring> {
     if (event.status == "Done") {
       cardColor = Colors.grey;
     } else if (event.color == "lightcoral") {
-      cardColor = Color(0xFFf08080);
+      cardColor = const Color(0xFFf08080);
     } else if (event.color == "palegoldenrod") {
-      cardColor = Color(0xFFeee8aa);
+      cardColor = const Color(0xFFeee8aa);
     } else {
       cardColor = Colors.lightGreen;
     }
@@ -695,7 +695,7 @@ class _RecurringState extends State<Recurring> {
               width: 4.0,
               style: BorderStyle.solid),
           color: cardColor,
-          borderRadius: BorderRadius.all(
+          borderRadius: const BorderRadius.all(
             Radius.circular(10),
           ),
           boxShadow: [
@@ -718,16 +718,13 @@ class _RecurringState extends State<Recurring> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("(" + event.status + ")",
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 14,
                             color: Color(0xFF5b5b5c),
                             fontWeight: FontWeight.w700,
                             fontStyle: FontStyle.italic)),
                     Text(
-                        DateFormat('d/M/y').format(DateTime.parse(event.from)) +
-                            ' - ' +
-                            DateFormat('d/M/y')
-                                .format(DateTime.parse(event.to)),
+                        '${DateFormat('d/M/y').format(DateTime.parse(event.from))} - ${DateFormat('d/M/y').format(DateTime.parse(event.to))}',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -743,9 +740,7 @@ class _RecurringState extends State<Recurring> {
               child: Padding(
                 padding: const EdgeInsets.all(2.0),
                 child: Text(
-                    DateFormat('hh:mm a').format(DateTime.parse(event.from)) +
-                        ' - ' +
-                        DateFormat('hh:mm a').format(DateTime.parse(event.to)),
+                    '${DateFormat('hh:mm a').format(DateTime.parse(event.from))} - ${DateFormat('hh:mm a').format(DateTime.parse(event.to))}',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

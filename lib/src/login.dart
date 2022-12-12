@@ -2,11 +2,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/dashboard.dart';
-import 'package:ipsolution/src/dialogBox/addMember.dart';
-import 'package:ipsolution/src/signup.dart';
+
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:ipsolution/util/conMysql.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,19 +22,17 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   final userController = TextEditingController();
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  var dbHelper;
-
+  DbHelper dbHelper = DbHelper();
   late String username;
   late String password;
 
   @override
   void initState() {
     super.initState();
-    DbHelper dbHelper = DbHelper();
   }
 
   Future loginForm() async {
@@ -42,44 +40,79 @@ class _LoginState extends State<Login> {
       username = userController.text;
       password = passwordController.text;
 
-      var url = 'http://192.168.1.111/testdb/login.php';
+      var url =
+          'https://ipsolutiontesting.000webhostapp.com/ipsolution/login.php';
       var response = await http.post(Uri.parse(url), body: {
         "username": username,
         "password": password,
       });
-      final data = json.decode(response.body);
+      if (response.statusCode == 200) {
+        // print(json.decode(response.body));
+        final data = json.decode(response.body);
 
-      if (data != null && data != "Error") {
-        final dataModel = UserModel(
-          user_id: int.parse(data[0]["id"]),
-          user_name: data[0]["username"],
-          password: data[0]["password"],
-          email: data[0]["email"],
-          role: data[0]["role"],
-          position: data[0]["position"],
-          leadFunc: data[0]["leadFunc"],
-          site: data[0]["site"],
-          phone: data[0]["phone"],
-          active: data[0]["active"],
-          siteLead: data[0]["siteLead"],
-        );
-        if (dataModel.active == "Active") {
-          // final dataModel = UserModel.fromMap(data);
+        if (data != null && data != "Error") {
+          final dataModel = UserModel(
+            user_id: int.parse(data[0]["id"]),
+            user_name: data[0]["username"],
+            password: data[0]["password"],
+            email: data[0]["email"],
+            role: data[0]["role"],
+            position: data[0]["position"],
+            leadFunc: data[0]["leadFunc"],
+            site: data[0]["site"],
+            phone: data[0]["phone"],
+            active: data[0]["active"],
+            siteLead: data[0]["siteLead"],
+            filepath: data[0]["filepath"],
+          );
+          if (dataModel.active == "Active") {
+            // final dataModel = UserModel.fromMap(data);
 
-          setSP(dataModel).whenComplete(() async {
-            await Controller().addDataToSqlite();
-            await Controller().addNotificationDateToSqlite();
-            // await Controller().addRecurringToSqlite();
-            // await Controller().addNonRecurringToSqlite();
-            Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => Dashboard()),
-                (Route<dynamic> route) => false);
+            setSP(dataModel).whenComplete(() async {
+              // await Controller().addRecurringToSqlite();
+              // await Controller().addNonRecurringToSqlite();
+              if (!mounted) return;
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const Dashboard()),
+                  (Route<dynamic> route) => false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text("Login Successfully"),
+                  behavior: SnackBarBehavior.floating,
+                  margin: const EdgeInsets.all(20),
+                  action: SnackBarAction(
+                    label: 'Dismiss',
+                    disabledTextColor: Colors.white,
+                    textColor: Colors.blue,
+                    onPressed: () {
+                      //Do whatever you want
+                    },
+                  ),
+                ),
+              );
+
+              await Internet.isInternet().then((connection) async {
+                if (connection) {
+                  EasyLoading.show(
+                    status: 'Loading...',
+                    maskType: EasyLoadingMaskType.black,
+                  );
+                  await Controller().addDataToSqlite();
+                  await Controller().addNotificationDateToSqlite();
+                  // await Controller().addRecurringToSqlite();
+                  // await Controller().addNonRecurringToSqlite();
+                  EasyLoading.showSuccess('Done');
+                }
+              });
+            });
+          } else {
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text("Login Successfully"),
+                content: const Text("Deactive User!"),
                 behavior: SnackBarBehavior.floating,
-                margin: EdgeInsets.all(20),
+                margin: const EdgeInsets.all(20),
                 action: SnackBarAction(
                   label: 'Dismiss',
                   disabledTextColor: Colors.white,
@@ -90,13 +123,14 @@ class _LoginState extends State<Login> {
                 ),
               ),
             );
-          });
+          }
         } else {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("Deactive User!"),
+              content: const Text("Username and Password Incorrect!"),
               behavior: SnackBarBehavior.floating,
-              margin: EdgeInsets.all(20),
+              margin: const EdgeInsets.all(20),
               action: SnackBarAction(
                 label: 'Dismiss',
                 disabledTextColor: Colors.white,
@@ -108,53 +142,37 @@ class _LoginState extends State<Login> {
             ),
           );
         }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Username and Password Incorrect!"),
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
-            action: SnackBarAction(
-              label: 'Dismiss',
-              disabledTextColor: Colors.white,
-              textColor: Colors.blue,
-              onPressed: () {
-                //Do whatever you want
-              },
-            ),
-          ),
-        );
+        // await dbHelper.getLoginUser(username, password).then((userData) {
+        //   if (userData != null && userData.active == 'Active') {
+        //     setSP(userData).whenComplete(() {
+        //       Navigator.pushAndRemoveUntil(
+        //           context,
+        //           MaterialPageRoute(builder: (_) => Dashboard()),
+        //           (Route<dynamic> route) => false);
+
+        //       ScaffoldMessenger.of(context).showSnackBar(
+        //         const SnackBar(
+        //           content: Text("Login Successfully"),
+        //         ),
+        //       );
+        //     });
+        //   } else {
+        //     ScaffoldMessenger.of(context).showSnackBar(
+        //       const SnackBar(
+        //         content: Text("Username and Password Incorrect!"),
+        //       ),
+        //     );
+        //   }
+        // }).catchError((error) {
+        //   print(error);
+
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     const SnackBar(
+        //       content: Text("Username and Password Incorrect!"),
+        //     ),
+        //   );
+        // });
       }
-      // await dbHelper.getLoginUser(username, password).then((userData) {
-      //   if (userData != null && userData.active == 'Active') {
-      //     setSP(userData).whenComplete(() {
-      //       Navigator.pushAndRemoveUntil(
-      //           context,
-      //           MaterialPageRoute(builder: (_) => Dashboard()),
-      //           (Route<dynamic> route) => false);
-
-      //       ScaffoldMessenger.of(context).showSnackBar(
-      //         const SnackBar(
-      //           content: Text("Login Successfully"),
-      //         ),
-      //       );
-      //     });
-      //   } else {
-      //     ScaffoldMessenger.of(context).showSnackBar(
-      //       const SnackBar(
-      //         content: Text("Username and Password Incorrect!"),
-      //       ),
-      //     );
-      //   }
-      // }).catchError((error) {
-      //   print(error);
-
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     const SnackBar(
-      //       content: Text("Username and Password Incorrect!"),
-      //     ),
-      //   );
-      // });
     }
   }
 
@@ -173,6 +191,7 @@ class _LoginState extends State<Login> {
     sp.setString("siteLead", user.siteLead!);
     sp.setString("phone", user.phone!);
     sp.setString("active", user.active);
+    sp.setString("filepath", user.filepath!);
     // sp.setString("photoName", user.photoName!);
   }
 
@@ -336,9 +355,9 @@ class _LoginState extends State<Login> {
                             } else {
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
-                                content: Text("No Internet !"),
+                                content: const Text("No Internet !"),
                                 behavior: SnackBarBehavior.floating,
-                                margin: EdgeInsets.all(20),
+                                margin: const EdgeInsets.all(20),
                                 action: SnackBarAction(
                                   label: 'Dismiss',
                                   disabledTextColor: Colors.white,

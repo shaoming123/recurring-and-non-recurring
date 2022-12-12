@@ -1,6 +1,4 @@
-import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:ipsolution/model/event.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 

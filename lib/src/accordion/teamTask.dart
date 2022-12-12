@@ -1,19 +1,13 @@
-import 'dart:convert';
-
 import 'package:badges/badges.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
-import 'package:ipsolution/src/dialogBox/eventAdd.dart';
-import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../../model/eventDataSource.dart';
-import '../../model/manageUser.dart';
 import '../../util/checkInternet.dart';
 import '../../util/conMysql.dart';
 import '../dialogBox/nonRecurringAdd.dart';
@@ -33,7 +27,7 @@ class _TeamTaskState extends State<TeamTask> {
   TextEditingController? textcontroller;
   String _selectedPosition = "";
   String _selectedUser = "";
-  bool _showContent = false;
+  // bool _showContent = false;
   String currentUserPosition = '';
   String currentUserSite = '';
   List<String> combineType = <String>[];
@@ -256,9 +250,16 @@ class _TeamTaskState extends State<TeamTask> {
       full_foundTeamNonRecurring = foundTeamNonRecurring;
 
       checkNum = 0;
-      for (var item in foundTeamNonRecurring)
-        if (item["checked"] == "Pending Review" &&
-            item["personCheck"] == currentUsername) checkNum = checkNum + 1;
+      for (var item in foundTeamNonRecurring) {
+        if (item["checked"] == "Pending Review") {
+          List person = item["personCheck"].split(',');
+          for (var check in person) {
+            if (check == currentUsername) {
+              checkNum = checkNum + 1;
+            }
+          }
+        }
+      }
     });
   }
 
@@ -277,11 +278,12 @@ class _TeamTaskState extends State<TeamTask> {
         .switchToggle(checked, id.toString(), tableName, "checked");
 
     if (response.statusCode == 200) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Updated Successfully!"),
+          content: const Text("Updated Successfully!"),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           action: SnackBarAction(
             label: 'Dismiss',
             disabledTextColor: Colors.white,
@@ -300,16 +302,18 @@ class _TeamTaskState extends State<TeamTask> {
   }
 
   Future<void> removeTeamNonRecurring(int id) async {
-    var url = 'http://192.168.1.111/testdb/delete.php';
+    var url =
+        'https://ipsolutiontesting.000webhostapp.com/ipsolution/delete.php';
     final response = await http.post(Uri.parse(url), body: {
       "dataTable": "nonrecurring",
       "id": id.toString(),
     });
     if (response.statusCode == 200) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Successfully deleted!'),
+        content: const Text('Successfully deleted!'),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         action: SnackBarAction(
           label: 'Dismiss',
           disabledTextColor: Colors.white,
@@ -319,15 +323,17 @@ class _TeamTaskState extends State<TeamTask> {
           },
         ),
       ));
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const NonRecurring()),
       );
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Delete Unsuccessful !"),
+        content: const Text("Delete Unsuccessful !"),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         action: SnackBarAction(
           label: 'Dismiss',
           disabledTextColor: Colors.white,
@@ -714,7 +720,7 @@ class _TeamTaskState extends State<TeamTask> {
               child: DropdownButton2(
                 iconSize: 30,
                 isExpanded: true,
-                hint: Text('Choose item'),
+                hint: const Text('Choose item'),
                 value: _selectedPosition == '' ? null : _selectedPosition,
                 selectedItemHighlightColor: Colors.grey,
                 items: combineType
@@ -759,7 +765,7 @@ class _TeamTaskState extends State<TeamTask> {
                 child: DropdownButton2(
                     iconSize: 30.0,
                     isExpanded: true,
-                    hint: Text('Choose item'),
+                    hint: const Text('Choose item'),
                     value: _selectedUser == '' ? null : _selectedUser,
                     selectedItemHighlightColor: Colors.grey,
                     items: List.generate(
@@ -781,7 +787,7 @@ class _TeamTaskState extends State<TeamTask> {
                     },
                     icon: Visibility(
                         visible: _animatedHeight != 0.0 ? true : false,
-                        child: Icon(
+                        child: const Icon(
                           Icons.arrow_drop_down,
                           color: Colors.black,
                         ))),
@@ -794,8 +800,8 @@ class _TeamTaskState extends State<TeamTask> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         checkNum > 0
-                            ? Padding(
-                                padding: const EdgeInsets.only(
+                            ? const Padding(
+                                padding: EdgeInsets.only(
                                     left: 8.0, bottom: 20, top: 0),
                                 child: Text(
                                   "***Request Checking*** ",
@@ -812,18 +818,18 @@ class _TeamTaskState extends State<TeamTask> {
                             child: Column(
                               children: <Widget>[
                                 TabBar(
-                                  indicatorColor: Styles.primaryColor,
+                                  indicatorColor: const Color(0xFF88a4d4),
                                   indicatorWeight: 3,
                                   padding: EdgeInsets.zero,
                                   indicatorPadding: EdgeInsets.zero,
                                   labelPadding: EdgeInsets.zero,
                                   labelStyle: const TextStyle(
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.bold),
-                                  unselectedLabelStyle: const TextStyle(
                                       fontSize: 14.0,
                                       fontWeight: FontWeight.bold),
-                                  labelColor: Styles.primaryColor,
+                                  unselectedLabelStyle: const TextStyle(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.bold),
+                                  labelColor: const Color(0xFF88a4d4),
                                   unselectedLabelColor: Colors.black,
                                   tabs: <Widget>[
                                     Tab(
@@ -837,7 +843,7 @@ class _TeamTaskState extends State<TeamTask> {
                                         badgeContent: Text(
                                           LateTeamnonRecurring.length
                                               .toString(),
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold),
@@ -856,7 +862,7 @@ class _TeamTaskState extends State<TeamTask> {
                                         badgeContent: Text(
                                           ActiveTeamnonRecurring.length
                                               .toString(),
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold),
@@ -875,7 +881,7 @@ class _TeamTaskState extends State<TeamTask> {
                                         badgeContent: Text(
                                           CompletedTeamnonRecurring.length
                                               .toString(),
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold),
@@ -894,7 +900,7 @@ class _TeamTaskState extends State<TeamTask> {
                                         badgeContent: Text(
                                           foundTeamNonRecurring.length
                                               .toString(),
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold),
@@ -1018,7 +1024,7 @@ class _TeamTaskState extends State<TeamTask> {
                 cells: [
                   DataCell(Text((index + 1).toString())),
                   DataCell(Container(
-                    margin: EdgeInsets.symmetric(vertical: 15),
+                    margin: const EdgeInsets.symmetric(vertical: 15),
                     child: Text(
                       LateTeamnonRecurring[index]["task"],
                     ),
@@ -1067,7 +1073,7 @@ class _TeamTaskState extends State<TeamTask> {
                       child: Center(
                           child: Text(
                         "${dayLeft.abs()} DAYS LATE",
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: Color(0xFFf43a2c),
                             fontWeight: FontWeight.bold),
                       )))),
@@ -1111,9 +1117,9 @@ class _TeamTaskState extends State<TeamTask> {
                                 LateTeamnonRecurring[index]["nonRecurringId"]);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("No Internet !"),
+                              content: const Text("No Internet !"),
                               behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(20),
+                              margin: const EdgeInsets.all(20),
                               action: SnackBarAction(
                                 label: 'Dismiss',
                                 disabledTextColor: Colors.white,
@@ -1229,7 +1235,7 @@ class _TeamTaskState extends State<TeamTask> {
                 cells: [
                   DataCell(Text((index + 1).toString())),
                   DataCell(Container(
-                      margin: EdgeInsets.symmetric(vertical: 15),
+                      margin: const EdgeInsets.symmetric(vertical: 15),
                       child: Text(ActiveTeamnonRecurring[index]["task"]))),
                   DataCell(Center(
                     child: Text(
@@ -1277,7 +1283,7 @@ class _TeamTaskState extends State<TeamTask> {
                       child: Center(
                           child: dayLeft.isNegative
                               ? Text(
-                                  dayLeft.abs().toString() + " DAYS LATE",
+                                  "${dayLeft.abs()} DAYS LATE",
                                   style: Styles.dayLeftLate,
                                 )
                               : Text(
@@ -1327,9 +1333,9 @@ class _TeamTaskState extends State<TeamTask> {
                                     ["nonRecurringId"]);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("No Internet !"),
+                              content: const Text("No Internet !"),
                               behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(20),
+                              margin: const EdgeInsets.all(20),
                               action: SnackBarAction(
                                 label: 'Dismiss',
                                 disabledTextColor: Colors.white,
@@ -1445,7 +1451,7 @@ class _TeamTaskState extends State<TeamTask> {
                 cells: [
                   DataCell(Text((index + 1).toString())),
                   DataCell(Container(
-                      margin: EdgeInsets.symmetric(vertical: 15),
+                      margin: const EdgeInsets.symmetric(vertical: 15),
                       child: Text(CompletedTeamnonRecurring[index]["task"]))),
                   DataCell(Center(
                     child: Text(
@@ -1481,7 +1487,7 @@ class _TeamTaskState extends State<TeamTask> {
                                         'Checked'
                                     ? true
                                     : false,
-                                shape: CircleBorder(),
+                                shape: const CircleBorder(),
                                 onChanged: (value) async {
                                   await Internet.isInternet()
                                       .then((connection) async {
@@ -1497,9 +1503,9 @@ class _TeamTaskState extends State<TeamTask> {
                                     } else {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(SnackBar(
-                                        content: Text("No Internet !"),
+                                        content: const Text("No Internet !"),
                                         behavior: SnackBarBehavior.floating,
-                                        margin: EdgeInsets.all(20),
+                                        margin: const EdgeInsets.all(20),
                                         action: SnackBarAction(
                                           label: 'Dismiss',
                                           disabledTextColor: Colors.white,
@@ -1516,7 +1522,7 @@ class _TeamTaskState extends State<TeamTask> {
                             ],
                           ),
                         )
-                      : Text("No Review Needed")),
+                      : const Text("No Review Needed")),
                   DataCell(Center(
                       child: Text(
                           CompletedTeamnonRecurring[index]["personCheck"]))),
@@ -1563,9 +1569,9 @@ class _TeamTaskState extends State<TeamTask> {
                                     ["nonRecurringId"]);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("No Internet !"),
+                              content: const Text("No Internet !"),
                               behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(20),
+                              margin: const EdgeInsets.all(20),
                               action: SnackBarAction(
                                 label: 'Dismiss',
                                 disabledTextColor: Colors.white,
@@ -1681,7 +1687,7 @@ class _TeamTaskState extends State<TeamTask> {
                 cells: [
                   DataCell(Text((index + 1).toString())),
                   DataCell(Container(
-                      margin: EdgeInsets.symmetric(vertical: 15),
+                      margin: const EdgeInsets.symmetric(vertical: 15),
                       child: Text(foundTeamNonRecurring[index]["task"]))),
                   DataCell(Center(
                     child: Text(
@@ -1705,7 +1711,7 @@ class _TeamTaskState extends State<TeamTask> {
                   )),
                   DataCell(foundTeamNonRecurring[index]["status"] == '100'
                       ? foundTeamNonRecurring[index]["checked"] == "-"
-                          ? Text("No Review Needed")
+                          ? const Text("No Review Needed")
                           : Row(
                               children: [
                                 Text(foundTeamNonRecurring[index]["checked"]),
@@ -1717,7 +1723,7 @@ class _TeamTaskState extends State<TeamTask> {
                                           'Checked'
                                       ? true
                                       : false,
-                                  shape: CircleBorder(),
+                                  shape: const CircleBorder(),
                                   onChanged: (value) async {
                                     await Internet.isInternet()
                                         .then((connection) async {
@@ -1733,9 +1739,9 @@ class _TeamTaskState extends State<TeamTask> {
                                       } else {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(SnackBar(
-                                          content: Text("No Internet !"),
+                                          content: const Text("No Internet !"),
                                           behavior: SnackBarBehavior.floating,
-                                          margin: EdgeInsets.all(20),
+                                          margin: const EdgeInsets.all(20),
                                           action: SnackBarAction(
                                             label: 'Dismiss',
                                             disabledTextColor: Colors.white,
@@ -1779,8 +1785,8 @@ class _TeamTaskState extends State<TeamTask> {
                           child: Center(
                               child: dayLeft.isNegative
                                   ? Text(
-                                      dayLeft.abs().toString() + " DAYS LATE",
-                                      style: TextStyle(
+                                      "${dayLeft.abs()} DAYS LATE",
+                                      style: const TextStyle(
                                           color: Color(0xFFf43a2c),
                                           fontWeight: FontWeight.bold),
                                     )
@@ -1835,9 +1841,9 @@ class _TeamTaskState extends State<TeamTask> {
                                 foundTeamNonRecurring[index]["nonRecurringId"]);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("No Internet !"),
+                              content: const Text("No Internet !"),
                               behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.all(20),
+                              margin: const EdgeInsets.all(20),
                               action: SnackBarAction(
                                 label: 'Dismiss',
                                 disabledTextColor: Colors.white,

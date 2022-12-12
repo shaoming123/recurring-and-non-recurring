@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ipsolution/provider/event_provider.dart';
-import 'package:ipsolution/src/dashboard.dart';
 import 'package:ipsolution/src/login.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,17 +46,14 @@ class MyApp extends StatelessWidget {
     //   }
     // }
 
-    return ChangeNotifierProvider(
-      create: (context) => EventProvider(),
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        debugShowCheckedModeBanner: false,
-        home: const Login(),
-        builder: EasyLoading.init(),
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      debugShowCheckedModeBanner: false,
+      home: const Login(),
+      builder: EasyLoading.init(),
     );
   }
 }

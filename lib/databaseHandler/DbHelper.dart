@@ -1,18 +1,10 @@
-import 'dart:convert';
-
-import 'package:flutter/animation.dart';
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/user.dart';
-
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:io' as io;
-
 import '../model/nonRecurring.dart';
-import '../model/notification.dart';
-import '../provider/event_provider.dart';
 
 class DbHelper {
   static Database? _db;
@@ -37,6 +29,7 @@ class DbHelper {
   String C_SiteLead = 'siteLead';
   String C_Phone = 'phone';
   String C_Active = 'active';
+  String C_File = 'filepath';
 
   //event
   String recurringId = 'recurringId';
@@ -120,6 +113,7 @@ class DbHelper {
         " $C_Site TEXT, "
         " $C_SiteLead TEXT, "
         " $C_Phone TEXT, "
+        " $C_File TEXT, "
         " $C_Active TEXT "
         ")");
     await db.execute("CREATE TABLE $Table_Event ("
@@ -335,13 +329,13 @@ class DbHelper {
 
   Future addNotification(List item) async {
     var dbClient = await db;
-    item.forEach((element) async {
+    for (var element in item) {
       await dbClient.insert(
         Table_Notification,
         element, //toMap() function from MemoModel
         conflictAlgorithm: ConflictAlgorithm.ignore,
       ); //ignores conflicts due to duplicate entries
-    });
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchAllNotification() async {

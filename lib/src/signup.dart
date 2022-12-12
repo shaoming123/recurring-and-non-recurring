@@ -1,12 +1,9 @@
 // ignore: file_names
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/Login.dart';
-import 'package:ipsolution/src/dashboard.dart';
-import 'package:ipsolution/src/dialogBox/addMember.dart';
 import 'package:ipsolution/util/app_styles.dart';
 
 import '../util/fade_animation.dart';
@@ -27,12 +24,11 @@ class _SignUpState extends State<SignUp> {
   late String password;
   late int userQuantity = 0;
 
-  var dbHelper;
+  var dbHelper = DbHelper();
 
   @override
   void initState() {
     super.initState();
-    dbHelper = DbHelper();
   }
 
   void signupForm() async {
@@ -54,13 +50,13 @@ class _SignUpState extends State<SignUp> {
           active: 'Active');
       await dbHelper.saveData(user_model).then((userData) {
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => Login()));
+            context, MaterialPageRoute(builder: (context) => const Login()));
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Register account Successfully!"),
+            content: const Text("Register account Successfully!"),
             behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
+            margin: const EdgeInsets.all(20),
             action: SnackBarAction(
               label: 'Dismiss',
               disabledTextColor: Colors.white,
@@ -72,13 +68,11 @@ class _SignUpState extends State<SignUp> {
           ),
         );
       }).catchError((error) {
-        print(error);
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Error: Data Save Fail"),
+            content: const Text("Error: Data Save Fail"),
             behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
+            margin: const EdgeInsets.all(20),
             action: SnackBarAction(
               label: 'Dismiss',
               disabledTextColor: Colors.white,

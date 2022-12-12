@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:math';
-
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -20,7 +18,7 @@ import 'package:http/http.dart' as http;
 class EventEdit extends StatefulWidget {
   final String id;
   final List<String> user_list;
-  EventEdit({Key? key, required this.id, required this.user_list})
+  const EventEdit({Key? key, required this.id, required this.user_list})
       : super(key: key);
 
   @override
@@ -28,25 +26,20 @@ class EventEdit extends StatefulWidget {
 }
 
 final _formkey = GlobalKey<FormState>();
-late DateTime fromDate = DateTime.now();
-late DateTime toDate = DateTime.now();
+DateTime fromDate = DateTime.now();
+DateTime toDate = DateTime.now();
 DateTime? recurringDate;
 DateTime? completeDate;
 TextEditingController taskController = TextEditingController();
 TextEditingController durationController = TextEditingController();
 TextEditingController recurringController = TextEditingController();
 final remarkController = TextEditingController();
-String _selectedVal = '';
-String _selectedPriority = '';
-String _selectedStatus = '';
-String _selectedRecurring = '';
-String _selectedSite = '';
+
 List<Map<String, dynamic>> event_edit = [];
 
 List<String> siteList = <String>[];
 List<String> priorityList = <String>['Low', 'Moderate', 'High'];
 List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
-List<String> _selectedUser = <String>[];
 
 class _EventEditState extends State<EventEdit> {
   DbHelper dbHelper = DbHelper();
@@ -58,20 +51,19 @@ class _EventEditState extends State<EventEdit> {
   final _formkey = GlobalKey<FormState>();
   late DateTime fromDate = DateTime.now();
   late DateTime toDate = DateTime.now();
-  var rng = new Random();
+  var rng = Random();
   TextEditingController taskController = TextEditingController();
   TextEditingController durationController = TextEditingController();
   TextEditingController recurringController = TextEditingController();
   final remarkController = TextEditingController();
-  String _selectedVal = '';
-  String _selectedPriority = '';
 
+  String _selectedPriority = '';
+  bool isTapped = false;
   String _selectedRecurring = '';
   String _selectedSite = '';
   List<Map<String, dynamic>> event_edit = [];
   List<Map<String, dynamic>> event_data = [];
   List<Event> event_recurring = [];
-
   List<String> siteList = <String>[];
   List<String> priorityList = <String>['Low', 'Moderate', 'High'];
   List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
@@ -80,86 +72,79 @@ class _EventEditState extends State<EventEdit> {
   var selectedOption = ''.obs;
   List<String> userList = <String>[];
   bool checkUser = false;
-
+  bool internet = false;
   String _selectedType = '';
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   List categoryData = [];
   List<TypeSelect> typeList = <TypeSelect>[];
   TypeSelect? typeselect;
   dynamic _selectedCategory;
   String? _selectedSubCategory;
-  List _selectedData = [];
+  List<String> _selectedData = [];
   @override
   void initState() {
+    getEditData(int.parse(widget.id));
+
     Future.delayed(Duration.zero, () async {
-      await getUserData();
-      await getData(int.parse(widget.id));
-      final SharedPreferences sp = await _pref;
-      List functionAccess = sp.getString("position")!.split(",");
-      String userRole = sp.getString("role")!;
-      final typeOptions =
-          await Selection().typeSelection(functionAccess, userRole);
-      categoryData =
-          await Selection().categorySelection(functionAccess, userRole);
+      await Internet.isInternet().then((connection) async {
+        setState(() {
+          internet = connection;
+        });
+        if (connection) {
+          await getData();
+          final SharedPreferences sp = await _pref;
+          List functionAccess = sp.getString("position")!.split(",");
+          String userRole = sp.getString("role")!;
+          final typeOptions =
+              await Selection().typeSelection(functionAccess, userRole);
+          categoryData =
+              await Selection().categorySelection(functionAccess, userRole);
 
-      //type selection
-      setState(() {
-        List typeDate = [];
-        typeDate = typeOptions;
-        for (int i = 0; i < typeDate.length; i++) {
-          typeList.add(TypeSelect(
-              id: typeDate[i]['id'],
-              value: typeDate[i]['value'],
-              bold: typeDate[i]['bold']));
-        }
+          //type selection
+          setState(() {
+            List typeDate = [];
+            typeDate = typeOptions;
+            for (int i = 0; i < typeDate.length; i++) {
+              typeList.add(TypeSelect(
+                  id: typeDate[i]['id'],
+                  value: typeDate[i]['value'],
+                  bold: typeDate[i]['bold']));
+            }
 
-        for (final val in typeList) {
-          if (val.value == _selectedType) {
-            setState(() {
-              typeselect = val;
-            });
+            for (final val in typeList) {
+              if (val.value == _selectedType) {
+                setState(() {
+                  typeselect = val;
+                });
 
-            break;
-          }
-        }
-        print(_selectedData);
-        for (final item in categoryData) {
-          // print(item['value']);
-          if (item['bold'] == false &&
-              item['value']['department'] == _selectedData[1] &&
-              item['value']['variables'] == _selectedData[0]) {
-            _selectedCategory = item['value'];
-          }
+                break;
+              }
+            }
+
+            for (final item in categoryData) {
+              // print(item['value']);
+              if (item['bold'] == false &&
+                  item['value']['department'] == _selectedData[1] &&
+                  item['value']['variables'] == _selectedData[0]) {
+                _selectedCategory = item['value'];
+              }
+            }
+          });
         }
       });
     });
     super.initState();
   }
 
-  Future<void> getUserData() async {
+  Future<void> getEditData(int id) async {
     final userData = await dbHelper.getItems();
-    userList = [];
-    final siteOptions = await Selection().siteSelection();
-
-    setState(() {
-      for (final val in siteOptions) {
-        siteList = val["options"];
-      }
-
-      userList = widget.user_list..removeWhere((item) => item == 'All');
-      //
-      // for (int i = 0; i < userData.length; i++) {
-      //   userList.add(userData[i]["user_name"]);
-      // }
-      //
-    });
-  }
-
-  Future<void> getData(int id) async {
     event_edit = await dbHelper.fetchAEvent(id);
     event_data = await dbHelper.fetchAllEvent();
+    userList = [];
 
     setState(() {
+      userList = widget.user_list..removeWhere((item) => item == 'All');
+
       recurringId = event_edit[0]['recurringId'];
       fromDate = DateTime.parse(event_edit[0]['fromD']);
       toDate = DateTime.parse(event_edit[0]['toD']);
@@ -194,6 +179,15 @@ class _EventEditState extends State<EventEdit> {
         event_recurring.add(Event.fromMap(item));
       }
     }
+  }
+
+  Future<void> getData() async {
+    final siteOptions = await Selection().siteSelection();
+    setState(() {
+      for (final val in siteOptions) {
+        siteList = val["options"];
+      }
+    });
   }
 
   Future pickCompleteDate() async {
@@ -319,7 +313,8 @@ class _EventEditState extends State<EventEdit> {
         color = "lightcoral";
       }
 
-      var url = 'http://192.168.1.111/testdb/edit.php';
+      var url =
+          'https://ipsolutiontesting.000webhostapp.com/ipsolution/edit.php';
       int dependent_code = rng.nextInt(900000000) + 100000000;
       // edit same recurring
       if (event_recurring.isNotEmpty) {
@@ -411,9 +406,9 @@ class _EventEditState extends State<EventEdit> {
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Updated Successfully!"),
+          content: const Text("Updated Successfully!"),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           action: SnackBarAction(
             label: 'Dismiss',
             disabledTextColor: Colors.white,
@@ -426,11 +421,12 @@ class _EventEditState extends State<EventEdit> {
       );
 
       if (response.statusCode == 200) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Updated Successfully!"),
+            content: const Text("Updated Successfully!"),
             behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
+            margin: const EdgeInsets.all(20),
             action: SnackBarAction(
               label: 'Dismiss',
               disabledTextColor: Colors.white,
@@ -444,13 +440,14 @@ class _EventEditState extends State<EventEdit> {
         Navigator.pop(context);
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Recurring()),
+          MaterialPageRoute(builder: (context) => const Recurring()),
         );
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Updated Unsuccessful !"),
+          content: const Text("Updated Unsuccessful !"),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           action: SnackBarAction(
             label: 'Dismiss',
             disabledTextColor: Colors.white,
@@ -465,7 +462,8 @@ class _EventEditState extends State<EventEdit> {
   }
 
   Future<void> removeEvent(int recurring_Id) async {
-    var url = 'http://192.168.1.111/testdb/delete.php';
+    var url =
+        'https://ipsolutiontesting.000webhostapp.com/ipsolution/delete.php';
 
     var response;
 
@@ -485,10 +483,11 @@ class _EventEditState extends State<EventEdit> {
       "id": recurring_Id.toString(),
     });
     if (response.statusCode == 200) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Successfully deleted!'),
+        content: const Text('Successfully deleted!'),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         action: SnackBarAction(
           label: 'Dismiss',
           disabledTextColor: Colors.white,
@@ -503,10 +502,11 @@ class _EventEditState extends State<EventEdit> {
         MaterialPageRoute(builder: (context) => const Recurring()),
       );
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Delete Unsuccessful !"),
+        content: const Text("Delete Unsuccessful !"),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         action: SnackBarAction(
           label: 'Dismiss',
           disabledTextColor: Colors.white,
@@ -546,7 +546,9 @@ class _EventEditState extends State<EventEdit> {
           child: DropdownButtonFormField2<dynamic>(
             iconSize: 30,
             isExpanded: true,
-            hint: const Text("Choose item"),
+            hint: Text(_selectedData.isNotEmpty
+                ? _selectedData[0].toString()
+                : "Choose item"),
             value: _selectedCategory,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
@@ -593,7 +595,7 @@ class _EventEditState extends State<EventEdit> {
           child: DropdownButtonFormField2<String>(
             iconSize: 30,
             isExpanded: true,
-            hint: const Text("Choose item"),
+            hint: Text(internet ? '' : _selectedSubCategory.toString()),
             value: _selectedCategory != null
                 ? _selectedCategory['options'].contains(_selectedSubCategory)
                     ? _selectedSubCategory
@@ -630,12 +632,12 @@ class _EventEditState extends State<EventEdit> {
         decoration: BoxDecoration(
             border: Border.all(color: Colors.white, width: 1),
             borderRadius: BorderRadius.circular(12),
-            color: Color(0xFFd4dce4)),
+            color: const Color(0xFFd4dce4)),
         child: DropdownButtonHideUnderline(
           child: DropdownButtonFormField2<TypeSelect>(
             iconSize: 30,
             isExpanded: true,
-            hint: Text("Choose item"),
+            hint: Text(internet ? "" : _selectedType),
             value: typeselect,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
@@ -647,7 +649,7 @@ class _EventEditState extends State<EventEdit> {
                       enabled: false,
                       child: Text(
                         e.value,
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     )
                   : DropdownMenuItem<TypeSelect>(
@@ -686,7 +688,7 @@ class _EventEditState extends State<EventEdit> {
           child: DropdownButtonFormField2<String>(
             iconSize: 30,
             isExpanded: true,
-            hint: const Text("Choose item"),
+            hint: Text(internet ? "" : _selectedSite),
             value: _selectedSite == '' ? null : _selectedSite,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
@@ -926,10 +928,10 @@ class _EventEditState extends State<EventEdit> {
                     _selectedUser = value;
                     selectedOption.value = "";
 
-                    _selectedUser.forEach((element) {
+                    for (var element in _selectedUser) {
                       selectedOption.value =
-                          selectedOption.value + "  " + element;
-                    });
+                          "${selectedOption.value}  $element";
+                    }
                   });
                 },
                 selectedValues: _selectedUser,
@@ -1041,113 +1043,123 @@ class _EventEditState extends State<EventEdit> {
             Center(
               child: Theme(
                 data: Theme.of(context).copyWith(dividerColor: Colors.white),
-                child: DataTable(
-                    horizontalMargin: 0,
-                    dividerThickness: 2,
-                    columns: const <DataColumn>[
-                      DataColumn(
-                        label: Text(
-                          'No.',
-                          style: TextStyle(
-                              color: Color(0xFFd4dce4),
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Text(
-                            'Date',
+                child: FittedBox(
+                  child: DataTable(
+                      horizontalMargin: 0,
+                      dividerThickness: 2,
+                      columns: const <DataColumn>[
+                        DataColumn(
+                          label: Text(
+                            'No.',
                             style: TextStyle(
                                 color: Color(0xFFd4dce4),
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Update/Delete',
-                          style: TextStyle(
-                              color: Color(0xFFd4dce4),
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold),
+                        DataColumn(
+                          label: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20.0),
+                            child: Text(
+                              'Date',
+                              style: TextStyle(
+                                  color: Color(0xFFd4dce4),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                    rows: event_recurring.length > 0
-                        ? List.generate(
-                            event_recurring.length,
-                            (index) => DataRow(cells: [
-                                  DataCell(
-                                    Center(
+                        DataColumn(
+                          label: Text(
+                            'Update/Delete',
+                            style: TextStyle(
+                                color: Color(0xFFd4dce4),
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                      rows: event_recurring.length > 0
+                          ? List.generate(
+                              event_recurring.length,
+                              (index) => DataRow(cells: [
+                                    DataCell(
+                                      Center(
+                                        child: Text(
+                                          (index + 1).toString(),
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14),
+                                        ),
+                                      ),
+                                    ),
+                                    DataCell(Center(
                                       child: Text(
-                                        (index + 1).toString(),
-                                        style: TextStyle(
+                                        event_recurring[index].date,
+                                        style: const TextStyle(
                                             color: Colors.white, fontSize: 14),
                                       ),
-                                    ),
-                                  ),
-                                  DataCell(Center(
-                                    child: Text(
-                                      event_recurring[index].date,
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 14),
-                                    ),
-                                  )),
-                                  DataCell(
-                                    Center(
-                                      child: Checkbox(
-                                        value: event_recurring[index]
-                                                    .checkRecurring ==
-                                                "false"
-                                            ? false
-                                            : true,
-                                        onChanged: (newValue) {
-                                          setState(() {
-                                            event_recurring[index]
-                                                    .checkRecurring =
-                                                newValue!.toString();
-                                          });
-                                        },
+                                    )),
+                                    DataCell(
+                                      Center(
+                                        child: Theme(
+                                          data: ThemeData(
+                                            primarySwatch: Colors.blue,
+                                            unselectedWidgetColor:
+                                                Colors.white, // Your color
+                                          ),
+                                          child: Checkbox(
+                                            value: event_recurring[index]
+                                                        .checkRecurring ==
+                                                    "false"
+                                                ? false
+                                                : true,
+                                            onChanged: (newValue) {
+                                              setState(() {
+                                                event_recurring[index]
+                                                        .checkRecurring =
+                                                    newValue!.toString();
+                                              });
+                                            },
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ]))
-                        : const <DataRow>[
-                            DataRow(
-                              cells: <DataCell>[
-                                DataCell(Text('')),
-                                DataCell(Text('')),
-                                DataCell(Text('')),
-                              ],
-                            ),
-                          ]
-                    // List.generate(checkListItems.length, (index) {
-                    //   return DataRow(cells: [
-                    //     DataCell(Text(checkListItems[index]["id"].toString())),
-                    //     DataCell(Text(checkListItems[index]["title"])),
-                    //     DataCell(
-                    //       Checkbox(
-                    //         value: checkListItems[index]["value"],
-                    //         onChanged: (newValue) {
-                    //           setState(() {
-                    //             checkListItems[index]["value"] = newValue!;
-                    //           });
-                    //         },
-                    //       ),
-                    //     ),
-                    //     DataCell(Text(checkListItems[index]["title"]))
-                    //   ]);
-                    // }
-                    // ),
-                    ),
+                                  ]))
+                          : const <DataRow>[
+                              DataRow(
+                                cells: <DataCell>[
+                                  DataCell(Text('')),
+                                  DataCell(Text('')),
+                                  DataCell(Text('')),
+                                ],
+                              ),
+                            ]
+                      // List.generate(checkListItems.length, (index) {
+                      //   return DataRow(cells: [
+                      //     DataCell(Text(checkListItems[index]["id"].toString())),
+                      //     DataCell(Text(checkListItems[index]["title"])),
+                      //     DataCell(
+                      //       Checkbox(
+                      //         value: checkListItems[index]["value"],
+                      //         onChanged: (newValue) {
+                      //           setState(() {
+                      //             checkListItems[index]["value"] = newValue!;
+                      //           });
+                      //         },
+                      //       ),
+                      //     ),
+                      //     DataCell(Text(checkListItems[index]["title"]))
+                      //   ]);
+                      // }
+                      // ),
+                      ),
+                ),
               ),
             ),
             event_recurring.isEmpty
                 ? Column(
-                    children: [
+                    children: const [
                       Text("The associate events have been altered.",
                           style: TextStyle(
                               color: Colors.white,
@@ -1161,8 +1173,11 @@ class _EventEditState extends State<EventEdit> {
       );
     }
 
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return Stack(children: <Widget>[
       Container(
+          width: width,
           padding: const EdgeInsets.all(20),
           margin: const EdgeInsets.only(top: 45),
           decoration: BoxDecoration(
@@ -1264,10 +1279,11 @@ class _EventEditState extends State<EventEdit> {
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                     Container(
-                      margin: EdgeInsets.only(top: 5),
+                      margin: const EdgeInsets.only(top: 5),
                       child: Text(
                         "*****$_selectedRecurring*****",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                     ),
                     recurringDataTable(),
@@ -1313,10 +1329,11 @@ class _EventEditState extends State<EventEdit> {
                         if (connection) {
                           await removeEvent(recurringId);
                         } else {
+                          Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text("No Internet !"),
+                            content: const Text("No Internet !"),
                             behavior: SnackBarBehavior.floating,
-                            margin: EdgeInsets.all(20),
+                            margin: const EdgeInsets.all(20),
                             action: SnackBarAction(
                               label: 'Dismiss',
                               disabledTextColor: Colors.white,
@@ -1332,7 +1349,7 @@ class _EventEditState extends State<EventEdit> {
                     child: const Text(
                       "Delete",
                       style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           color: Color(0xFFd4dce4),
                           fontWeight: FontWeight.w700),
                     )),
@@ -1356,7 +1373,7 @@ class _EventEditState extends State<EventEdit> {
                           child: const Text(
                             "Cancel",
                             style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: Color(0xFF60b4b4),
                                 fontWeight: FontWeight.w700),
                           )),
@@ -1375,14 +1392,17 @@ class _EventEditState extends State<EventEdit> {
                         onPressed: () async {
                           await Internet.isInternet().then((connection) async {
                             if (connection) {
-                              await updateEvent(recurringId);
-                              ;
+                              if (!isTapped) {
+                                isTapped = true;
+                                await updateEvent(recurringId);
+                              }
                             } else {
+                              Navigator.of(context).pop();
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
-                                content: Text("No Internet !"),
+                                content: const Text("No Internet !"),
                                 behavior: SnackBarBehavior.floating,
-                                margin: EdgeInsets.all(20),
+                                margin: const EdgeInsets.all(20),
                                 action: SnackBarAction(
                                   label: 'Dismiss',
                                   disabledTextColor: Colors.white,
@@ -1398,7 +1418,7 @@ class _EventEditState extends State<EventEdit> {
                         child: const Text(
                           "Update",
                           style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               color: Color(0xFFd4dce4),
                               fontWeight: FontWeight.w700),
                         )),

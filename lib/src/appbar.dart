@@ -4,8 +4,6 @@ import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'Login.dart';
-import 'navbar.dart';
 import '../util/app_styles.dart';
 import 'notificationList.dart';
 
@@ -19,7 +17,7 @@ class Appbar extends StatefulWidget {
 }
 
 class _AppbarState extends State<Appbar> {
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   List<NotificationModel> notification = [];
   DbHelper dbHelper = DbHelper();
   @override
@@ -58,7 +56,7 @@ class _AppbarState extends State<Appbar> {
           ),
           Text(widget.title, style: Styles.title),
           Container(
-            margin: EdgeInsets.only(right: 10),
+            margin: const EdgeInsets.only(right: 10),
             child: GestureDetector(
               onTap: () => Navigator.push(
                 context,
@@ -74,12 +72,12 @@ class _AppbarState extends State<Appbar> {
                 padding: const EdgeInsets.all(5),
                 badgeContent: Text(
                   notification.length.toString(),
-                  style: TextStyle(
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.bold),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.notifications_none,
                   size: 25,
                 ),

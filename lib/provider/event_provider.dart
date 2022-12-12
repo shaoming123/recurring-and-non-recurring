@@ -1,34 +1,34 @@
-import 'package:flutter/cupertino.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
-import 'package:ipsolution/model/event.dart';
-import 'package:ipsolution/model/manageUser.dart';
+// import 'package:flutter/cupertino.dart';
+// import 'package:ipsolution/databaseHandler/DbHelper.dart';
+// import 'package:ipsolution/model/event.dart';
 
-class EventProvider extends ChangeNotifier {
-  final List<Event> _events = <Event>[];
 
-  List<Event> get events => _events;
+// class EventProvider extends ChangeNotifier {
+//   final List<Event> _events = <Event>[];
 
-  // select the lastly clicked date
-  DateTime _selectedDate = DateTime.now();
+//   List<Event> get events => _events;
 
-  DateTime get selectedDate => _selectedDate;
+//   // select the lastly clicked date
+//   DateTime _selectedDate = DateTime.now();
 
-  void setDate(DateTime date) => _selectedDate = date;
+//   DateTime get selectedDate => _selectedDate;
 
-  List<Event> get eventsOfSelectedDate => _events;
+//   void setDate(DateTime date) => _selectedDate = date;
 
-  void addEvent(Event event) async {
-    DbHelper dbHelper = DbHelper();
+//   List<Event> get eventsOfSelectedDate => _events;
 
-    // await dbHelper.addEvent(event);
+//   void addEvent(Event event) async {
+//     DbHelper dbHelper = DbHelper();
 
-    notifyListeners();
-  }
+//     // await dbHelper.addEvent(event);
 
-  void editEvent(Event newEvent, Event oldEvent) {
-    final index = _events.indexOf(oldEvent);
-    _events[index] = newEvent;
+//     notifyListeners();
+//   }
 
-    notifyListeners();
-  }
-}
+//   void editEvent(Event newEvent, Event oldEvent) {
+//     final index = _events.indexOf(oldEvent);
+//     _events[index] = newEvent;
+
+//     notifyListeners();
+//   }
+// }

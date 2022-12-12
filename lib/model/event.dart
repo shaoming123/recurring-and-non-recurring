@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Event {
   late String category;
   late String? uniqueNumber;

@@ -20,13 +20,13 @@ class Member extends StatefulWidget {
 }
 
 class _MemberState extends State<Member> {
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   List<Map<String, dynamic>> allUsers = [];
   List<Map<String, dynamic>> _foundUsers = [];
-  int _currentSortColumn = 0;
+  final int _currentSortColumn = 0;
 
-  bool _isAscending = true;
+  final bool _isAscending = true;
 
   bool selected = false;
   String userRole = '';
@@ -109,11 +109,12 @@ class _MemberState extends State<Member> {
         .switchToggle(active, id.toString(), tableName, "active");
 
     if (response.statusCode == 200) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Updated Successfully!"),
+          content: const Text("Updated Successfully!"),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           action: SnackBarAction(
             label: 'Dismiss',
             disabledTextColor: Colors.white,
@@ -216,297 +217,287 @@ class _MemberState extends State<Member> {
                                       builder:
                                           (context, AsyncSnapshot snapshot) {
                                         return snapshot.hasData
-                                            ? DataTable(
-                                                showCheckboxColumn: false,
-                                                sortColumnIndex:
-                                                    _currentSortColumn,
-                                                sortAscending: _isAscending,
-                                                headingRowColor:
-                                                    MaterialStateProperty.all(
-                                                  Color(0xFF88a4d4),
-                                                ),
-                                                columns: [
-                                                  DataColumn(
-                                                    label: Text(
-                                                      'User',
-                                                      style: TextStyle(
-                                                          color:
-                                                              Styles.textColor,
-                                                          fontWeight:
-                                                              FontWeight.w700),
+                                            ? FittedBox(
+                                                child: DataTable(
+                                                    showCheckboxColumn: false,
+                                                    sortColumnIndex:
+                                                        _currentSortColumn,
+                                                    sortAscending: _isAscending,
+                                                    headingRowColor:
+                                                        MaterialStateProperty
+                                                            .all(
+                                                      const Color(0xFF88a4d4),
                                                     ),
+                                                    columns: [
+                                                      DataColumn(
+                                                        label: Text(
+                                                          'User',
+                                                          style: TextStyle(
+                                                              color: Styles
+                                                                  .textColor,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700),
+                                                        ),
 
-                                                    // Sorting function
-                                                    // onSort: (columnIndex, _) {
-                                                    //   setState(() {
-                                                    //     _currentSortColumn = columnIndex;
-                                                    //     if (_isAscending == true) {
-                                                    //       _isAscending = false;
-                                                    //       // sort the product list in Ascending, order by Price
-                                                    //       _products.sort((productA,
-                                                    //               productB) =>
-                                                    //           productB['id'].compareTo(
-                                                    //               productA['id']));
-                                                    //     } else {
-                                                    //       _isAscending = true;
-                                                    //       // sort the product list in Descending, order by Price
-                                                    //       _products.sort((productA,
-                                                    //               productB) =>
-                                                    //           productA['id'].compareTo(
-                                                    //               productB['id']));
-                                                    //     }
-                                                    //   });
-                                                    // }
-                                                  ),
-                                                  DataColumn(
-                                                    label: Expanded(
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(8.0),
-                                                        child: Text(
-                                                          'Username',
-                                                          style: TextStyle(
-                                                              color: Styles
-                                                                  .textColor,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700),
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                        ),
+                                                        // Sorting function
+                                                        // onSort: (columnIndex, _) {
+                                                        //   setState(() {
+                                                        //     _currentSortColumn = columnIndex;
+                                                        //     if (_isAscending == true) {
+                                                        //       _isAscending = false;
+                                                        //       // sort the product list in Ascending, order by Price
+                                                        //       _products.sort((productA,
+                                                        //               productB) =>
+                                                        //           productB['id'].compareTo(
+                                                        //               productA['id']));
+                                                        //     } else {
+                                                        //       _isAscending = true;
+                                                        //       // sort the product list in Descending, order by Price
+                                                        //       _products.sort((productA,
+                                                        //               productB) =>
+                                                        //           productA['id'].compareTo(
+                                                        //               productB['id']));
+                                                        //     }
+                                                        //   });
+                                                        // }
                                                       ),
-                                                    ),
-                                                    // Sorting function
-                                                    // onSort: (columnIndex, _) {
-                                                    //   setState(() {
-                                                    //     _currentSortColumn = columnIndex;
-                                                    //     if (_isAscending == true) {
-                                                    //       _isAscending = false;
-                                                    //       // sort the product list in Ascending, order by Price
-                                                    //       _products.sort((productA,
-                                                    //               productB) =>
-                                                    //           productB['name'].compareTo(
-                                                    //               productA['name']));
-                                                    //     } else {
-                                                    //       _isAscending = true;
-                                                    //       // sort the product list in Descending, order by Price
-                                                    //       _products.sort((productA,
-                                                    //               productB) =>
-                                                    //           productA['name'].compareTo(
-                                                    //               productB['name']));
-                                                    //     }
-                                                    //   });
-                                                    // }
-                                                  ),
-                                                  DataColumn(
-                                                    label: Expanded(
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(8.0),
-                                                        child: Text(
-                                                          'Password',
-                                                          style: TextStyle(
-                                                              color: Styles
-                                                                  .textColor,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700),
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    // Sorting function
-                                                    // onSort: (columnIndex, _) {
-                                                    //   setState(() {
-                                                    //     _currentSortColumn = columnIndex;
-                                                    //     if (_isAscending == true) {
-                                                    //       _isAscending = false;
-                                                    //       // sort the product list in Ascending, order by Price
-                                                    //       _products.sort((productA,
-                                                    //               productB) =>
-                                                    //           productB['role'].compareTo(
-                                                    //               productA['role']));
-                                                    //     } else {
-                                                    //       _isAscending = true;
-                                                    //       // sort the product list in Descending, order by Price
-                                                    //       _products.sort((productA,
-                                                    //               productB) =>
-                                                    //           productA['role'].compareTo(
-                                                    //               productB['role']));
-                                                    //     }
-                                                    //   }
-                                                    //   );
-                                                    // }
-                                                  ),
-                                                  DataColumn(
-                                                    label: Text(
-                                                      'Action',
-                                                      style: TextStyle(
-                                                          color:
-                                                              Styles.textColor,
-                                                          fontWeight:
-                                                              FontWeight.w700),
-                                                    ),
-                                                    // Sorting function
-                                                  )
-                                                ],
-                                                rows: List.generate(
-                                                    _foundUsers.length,
-                                                    (index) {
-                                                  return DataRow(
-                                                      cells: [
-                                                        DataCell(Center(
-                                                            child: Text((index +
-                                                                    1)
-                                                                .toString()))),
-                                                        DataCell(Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Center(
+                                                      DataColumn(
+                                                        label: Expanded(
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
                                                             child: Text(
-                                                                _foundUsers[
-                                                                        index][
-                                                                    "user_name"]),
-                                                          ),
-                                                        )),
-                                                        DataCell(Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Center(
-                                                            child: Text(
-                                                              _foundUsers[index]
-                                                                  ["password"],
+                                                              'Username',
+                                                              style: TextStyle(
+                                                                  color: Styles
+                                                                      .textColor,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
                                                             ),
                                                           ),
-                                                        )),
-                                                        userRole != 'Staff'
-                                                            ? DataCell(Row(
-                                                                children: [
-                                                                  IconButton(
-                                                                    icon: Icon(
-                                                                        Icons
-                                                                            .edit),
-                                                                    onPressed:
-                                                                        () {
-                                                                      showDialog(
-                                                                          context:
-                                                                              context,
-                                                                          builder:
-                                                                              (BuildContext context) {
-                                                                            return DialogBox(
-                                                                                id: _foundUsers[index]["user_id"].toString(),
-                                                                                isEditing: true);
-                                                                          });
-                                                                    },
-                                                                  ),
-                                                                  IconButton(
-                                                                      icon: Icon(
-                                                                          Icons
+                                                        ),
+                                                        // Sorting function
+                                                        // onSort: (columnIndex, _) {
+                                                        //   setState(() {
+                                                        //     _currentSortColumn = columnIndex;
+                                                        //     if (_isAscending == true) {
+                                                        //       _isAscending = false;
+                                                        //       // sort the product list in Ascending, order by Price
+                                                        //       _products.sort((productA,
+                                                        //               productB) =>
+                                                        //           productB['name'].compareTo(
+                                                        //               productA['name']));
+                                                        //     } else {
+                                                        //       _isAscending = true;
+                                                        //       // sort the product list in Descending, order by Price
+                                                        //       _products.sort((productA,
+                                                        //               productB) =>
+                                                        //           productA['name'].compareTo(
+                                                        //               productB['name']));
+                                                        //     }
+                                                        //   });
+                                                        // }
+                                                      ),
+                                                      DataColumn(
+                                                        label: Expanded(
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: Text(
+                                                              'Password',
+                                                              style: TextStyle(
+                                                                  color: Styles
+                                                                      .textColor,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        // Sorting function
+                                                        // onSort: (columnIndex, _) {
+                                                        //   setState(() {
+                                                        //     _currentSortColumn = columnIndex;
+                                                        //     if (_isAscending == true) {
+                                                        //       _isAscending = false;
+                                                        //       // sort the product list in Ascending, order by Price
+                                                        //       _products.sort((productA,
+                                                        //               productB) =>
+                                                        //           productB['role'].compareTo(
+                                                        //               productA['role']));
+                                                        //     } else {
+                                                        //       _isAscending = true;
+                                                        //       // sort the product list in Descending, order by Price
+                                                        //       _products.sort((productA,
+                                                        //               productB) =>
+                                                        //           productA['role'].compareTo(
+                                                        //               productB['role']));
+                                                        //     }
+                                                        //   }
+                                                        //   );
+                                                        // }
+                                                      ),
+                                                      DataColumn(
+                                                        label: Text(
+                                                          'Action',
+                                                          style: TextStyle(
+                                                              color: Styles
+                                                                  .textColor,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700),
+                                                        ),
+                                                        // Sorting function
+                                                      )
+                                                    ],
+                                                    rows: List.generate(
+                                                        _foundUsers.length,
+                                                        (index) {
+                                                      return DataRow(
+                                                          cells: [
+                                                            DataCell(Center(
+                                                                child: Text(
+                                                                    (index + 1)
+                                                                        .toString()))),
+                                                            DataCell(Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8.0),
+                                                              child: Center(
+                                                                child: Text(
+                                                                    _foundUsers[
+                                                                            index]
+                                                                        [
+                                                                        "user_name"]),
+                                                              ),
+                                                            )),
+                                                            DataCell(Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8.0),
+                                                              child: Center(
+                                                                child: Text(
+                                                                  _foundUsers[
+                                                                          index]
+                                                                      [
+                                                                      "password"],
+                                                                ),
+                                                              ),
+                                                            )),
+                                                            userRole != 'Staff'
+                                                                ? DataCell(Row(
+                                                                    children: [
+                                                                      IconButton(
+                                                                        icon: const Icon(
+                                                                            Icons.edit),
+                                                                        onPressed:
+                                                                            () {
+                                                                          showDialog(
+                                                                              context: context,
+                                                                              builder: (BuildContext context) {
+                                                                                return DialogBox(id: _foundUsers[index]["user_id"].toString(), isEditing: true);
+                                                                              });
+                                                                        },
+                                                                      ),
+                                                                      IconButton(
+                                                                          icon: const Icon(Icons
                                                                               .delete),
-                                                                      onPressed:
-                                                                          () async {
-                                                                        await Internet.isInternet()
-                                                                            .then((connection) async {
-                                                                          if (connection) {
-                                                                            await removeUser(_foundUsers[index]["user_id"],
-                                                                                context);
-                                                                          } else {
-                                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                                              content: Text("No Internet !"),
-                                                                              behavior: SnackBarBehavior.floating,
-                                                                              margin: EdgeInsets.all(20),
-                                                                              action: SnackBarAction(
-                                                                                label: 'Dismiss',
-                                                                                disabledTextColor: Colors.white,
-                                                                                textColor: Colors.blue,
-                                                                                onPressed: () {
-                                                                                  //Do whatever you want
-                                                                                },
-                                                                              ),
-                                                                            ));
-                                                                          }
-                                                                        });
-                                                                      }),
-                                                                  Switch(
-                                                                    value: _foundUsers[index]["active"] ==
-                                                                            'Active'
-                                                                        ? true
-                                                                        : false,
-                                                                    onChanged:
-                                                                        ((value) async {
-                                                                      await Internet
-                                                                              .isInternet()
-                                                                          .then(
-                                                                              (connection) async {
-                                                                        if (connection) {
-                                                                          await toggleSwitch(
-                                                                              value,
-                                                                              _foundUsers[index]["user_id"]);
-                                                                        } else {
-                                                                          ScaffoldMessenger.of(context)
-                                                                              .showSnackBar(SnackBar(
-                                                                            content:
-                                                                                Text("No Internet !"),
-                                                                            behavior:
-                                                                                SnackBarBehavior.floating,
-                                                                            margin:
-                                                                                EdgeInsets.all(20),
-                                                                            action:
-                                                                                SnackBarAction(
-                                                                              label: 'Dismiss',
-                                                                              disabledTextColor: Colors.white,
-                                                                              textColor: Colors.blue,
-                                                                              onPressed: () {
-                                                                                //Do whatever you want
-                                                                              },
-                                                                            ),
-                                                                          ));
-                                                                        }
-                                                                      });
-                                                                    }),
-                                                                    activeColor:
-                                                                        Colors
-                                                                            .white,
-                                                                    activeTrackColor:
-                                                                        Colors
-                                                                            .blue,
-                                                                    inactiveThumbColor:
-                                                                        Colors
-                                                                            .white,
-                                                                    inactiveTrackColor:
-                                                                        Colors
-                                                                            .grey,
-                                                                  )
-                                                                ],
-                                                              ))
-                                                            : DataCell(Text(""))
-                                                      ],
-                                                      onSelectChanged: (e) {
-                                                        showDialog(
-                                                            context: context,
-                                                            builder:
-                                                                (BuildContext
-                                                                    context) {
-                                                              return DialogBox(
-                                                                  id: _foundUsers[
-                                                                              index]
-                                                                          [
-                                                                          "user_id"]
-                                                                      .toString(),
-                                                                  isEditing:
-                                                                      false);
-                                                            });
-                                                      });
-                                                }))
+                                                                          onPressed:
+                                                                              () async {
+                                                                            await Internet.isInternet().then((connection) async {
+                                                                              if (connection) {
+                                                                                await removeUser(_foundUsers[index]["user_id"], context);
+                                                                              } else {
+                                                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                                                  content: const Text("No Internet !"),
+                                                                                  behavior: SnackBarBehavior.floating,
+                                                                                  margin: const EdgeInsets.all(20),
+                                                                                  action: SnackBarAction(
+                                                                                    label: 'Dismiss',
+                                                                                    disabledTextColor: Colors.white,
+                                                                                    textColor: Colors.blue,
+                                                                                    onPressed: () {
+                                                                                      //Do whatever you want
+                                                                                    },
+                                                                                  ),
+                                                                                ));
+                                                                              }
+                                                                            });
+                                                                          }),
+                                                                      Switch(
+                                                                        value: _foundUsers[index]["active"] ==
+                                                                                'Active'
+                                                                            ? true
+                                                                            : false,
+                                                                        onChanged:
+                                                                            ((value) async {
+                                                                          await Internet.isInternet()
+                                                                              .then((connection) async {
+                                                                            if (connection) {
+                                                                              await toggleSwitch(value, _foundUsers[index]["user_id"]);
+                                                                            } else {
+                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                                                content: const Text("No Internet !"),
+                                                                                behavior: SnackBarBehavior.floating,
+                                                                                margin: const EdgeInsets.all(20),
+                                                                                action: SnackBarAction(
+                                                                                  label: 'Dismiss',
+                                                                                  disabledTextColor: Colors.white,
+                                                                                  textColor: Colors.blue,
+                                                                                  onPressed: () {
+                                                                                    //Do whatever you want
+                                                                                  },
+                                                                                ),
+                                                                              ));
+                                                                            }
+                                                                          });
+                                                                        }),
+                                                                        activeColor:
+                                                                            Colors.white,
+                                                                        activeTrackColor:
+                                                                            Colors.blue,
+                                                                        inactiveThumbColor:
+                                                                            Colors.white,
+                                                                        inactiveTrackColor:
+                                                                            Colors.grey,
+                                                                      )
+                                                                    ],
+                                                                  ))
+                                                                : const DataCell(
+                                                                    Text(""))
+                                                          ],
+                                                          onSelectChanged: (e) {
+                                                            showDialog(
+                                                                context:
+                                                                    context,
+                                                                builder:
+                                                                    (BuildContext
+                                                                        context) {
+                                                                  return DialogBox(
+                                                                      id: _foundUsers[index]
+                                                                              [
+                                                                              "user_id"]
+                                                                          .toString(),
+                                                                      isEditing:
+                                                                          false);
+                                                                });
+                                                          });
+                                                    })),
+                                              )
                                             : DataTable(
                                                 headingRowColor:
                                                     MaterialStateProperty.all(
-                                                  Color(0xFF88a4d4),
+                                                  const Color(0xFF88a4d4),
                                                 ),
                                                 columns: [
                                                   DataColumn(
@@ -572,21 +563,19 @@ class _MemberState extends State<Member> {
                       ),
               ])),
         ),
-        floatingActionButton: userRole != "Staff"
-            ? FloatingActionButton(
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.black,
-                ),
-                backgroundColor: Styles.buttonColor,
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return const AddMember();
-                      });
-                },
-              )
-            : Container());
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Styles.buttonColor,
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return const AddMember();
+                });
+          },
+          child: const Icon(
+            Icons.add,
+            color: Colors.black,
+          ),
+        ));
   }
 }

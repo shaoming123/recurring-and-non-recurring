@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -8,11 +9,8 @@ import 'package:ipsolution/src/accordion/task.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
-
 import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
-import '../model/manageUser.dart';
 import 'appbar.dart';
 import '../util/checkInternet.dart';
 import '../util/conMysql.dart';
@@ -27,7 +25,7 @@ class NonRecurring extends StatefulWidget {
 
 class _NonRecurringState extends State<NonRecurring> {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   String completedTask = '0';
   String totalTasks = '0';
   String overdueTasks = '0';
@@ -44,7 +42,7 @@ class _NonRecurringState extends State<NonRecurring> {
   List<Map<String, dynamic>> ActivenonRecurring = [];
   List<Map<String, dynamic>> CompletednonRecurring = [];
   String userRole = '';
-  bool _isExpanded = true;
+  // bool _isExpanded = true;
   @override
   void initState() {
     super.initState();
@@ -55,7 +53,10 @@ class _NonRecurringState extends State<NonRecurring> {
   Future<void> _refresh() async {
     await Internet.isInternet().then((connection) async {
       if (connection) {
-        EasyLoading.show(status: 'Fetching Data...');
+        EasyLoading.show(
+          status: 'Fetching Data...',
+          maskType: EasyLoadingMaskType.black,
+        );
         await Controller().addNonRecurringToSqlite();
         EasyLoading.showSuccess('Successfully');
       }
@@ -157,7 +158,7 @@ class _NonRecurringState extends State<NonRecurring> {
                                 color: Styles.textColor, fontSize: 14)),
                         const Gap(5),
                         Text(totalTasks,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 25,
                                 fontWeight: FontWeight.w700)),
@@ -170,8 +171,8 @@ class _NonRecurringState extends State<NonRecurring> {
                             style: TextStyle(
                                 color: Styles.textColor, fontSize: 14)),
                         const Gap(5),
-                        Text(completedTasksPer + "%",
-                            style: TextStyle(
+                        Text("$completedTasksPer%",
+                            style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 25,
                                 fontWeight: FontWeight.w700)),
@@ -185,7 +186,7 @@ class _NonRecurringState extends State<NonRecurring> {
                                 color: Styles.textColor, fontSize: 14)),
                         const Gap(5),
                         Text(overdueTasks,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 25,
                                 fontWeight: FontWeight.w700)),
@@ -199,13 +200,14 @@ class _NonRecurringState extends State<NonRecurring> {
                                 color: Styles.textColor, fontSize: 14)),
                         const Gap(5),
                         Text(pendingReviewNumber,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 25,
                                 fontWeight: FontWeight.w700)),
                       ]),
-                      userRole != 'Staff'
-                          ? Column(children: [
+                      userRole == 'Staff'
+                          ? Container()
+                          : Column(children: [
                               Text("Request",
                                   style: TextStyle(
                                       color: Styles.textColor, fontSize: 14)),
@@ -214,12 +216,11 @@ class _NonRecurringState extends State<NonRecurring> {
                                       color: Styles.textColor, fontSize: 14)),
                               const Gap(5),
                               Text(requestReviewNumber,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       color: Colors.black,
                                       fontSize: 25,
                                       fontWeight: FontWeight.w700)),
                             ])
-                          : Container()
                     ],
                   ),
                 ),
@@ -229,9 +230,9 @@ class _NonRecurringState extends State<NonRecurring> {
                     child: Column(
                       children: [
                         Container(
-                          margin: EdgeInsets.all(10),
+                          margin: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Color(0xFF88a4d4),
+                            color: const Color(0xFF88a4d4),
                             borderRadius: BorderRadius.circular(10),
                             boxShadow: [
                               BoxShadow(
@@ -239,15 +240,15 @@ class _NonRecurringState extends State<NonRecurring> {
                                 spreadRadius: 1,
                                 blurRadius: 3,
                                 // ignore: prefer_const_constructors
-                                offset:
-                                    Offset(0, 2), // changes position of shadow
+                                offset: const Offset(
+                                    0, 2), // changes position of shadow
                               ),
                             ],
                           ),
                           child: Column(
                             children: [
                               ExpansionTile(
-                                title: Text("Task Overview",
+                                title: const Text("Task Overview",
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold)),
                                 // key: PageStorageKey<Task>(Task),
@@ -270,9 +271,9 @@ class _NonRecurringState extends State<NonRecurring> {
                         const Gap(20),
                         userRole != 'Staff'
                             ? Container(
-                                margin: EdgeInsets.all(10),
+                                margin: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: Color(0xFF88a4d4),
+                                  color: const Color(0xFF88a4d4),
                                   borderRadius: BorderRadius.circular(10),
                                   boxShadow: [
                                     BoxShadow(
@@ -286,7 +287,7 @@ class _NonRecurringState extends State<NonRecurring> {
                                   ],
                                 ),
                                 child: Column(
-                                  children: [
+                                  children: const [
                                     ExpansionTile(
                                         maintainState: true,
                                         title: Text(

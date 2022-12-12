@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:ipsolution/model/manageUser.dart';
-import 'package:ipsolution/src/dialogBox/addMember.dart';
+
 import 'package:ipsolution/src/member.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:http/http.dart' as http;
-import '../../model/user.dart';
-import '../../util/app_styles.dart';
+
 import '../../util/checkInternet.dart';
 import '../../util/constant.dart';
 
@@ -107,7 +106,8 @@ class _DialogBoxState extends State<DialogBox> {
       String _selectedPos = userPosition.join(",");
       String _selectedSite = userSite.join(",");
       String _selectedSiteLead = userSiteLead.join(",");
-      var url = 'http://192.168.1.111/testdb/edit.php';
+      var url =
+          'https://ipsolutiontesting.000webhostapp.com/ipsolution/edit.php';
 
       // await dbHelper.updateUser(UserModel(
       //     user_id: id,
@@ -134,11 +134,12 @@ class _DialogBoxState extends State<DialogBox> {
 
       final response = await http.post(Uri.parse(url), body: data);
       if (response.statusCode == 200) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Updated Successfully!"),
+            content: const Text("Updated Successfully!"),
             behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
+            margin: const EdgeInsets.all(20),
             action: SnackBarAction(
               label: 'Dismiss',
               disabledTextColor: Colors.white,
@@ -153,10 +154,11 @@ class _DialogBoxState extends State<DialogBox> {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => const Member()));
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Updated Unsuccessful !"),
+          content: const Text("Updated Unsuccessful !"),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           action: SnackBarAction(
             label: 'Dismiss',
             disabledTextColor: Colors.white,
@@ -193,7 +195,7 @@ class _DialogBoxState extends State<DialogBox> {
         children: [
           Text(
             labelText,
-            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
           const Gap(10),
           Container(
@@ -227,7 +229,7 @@ class _DialogBoxState extends State<DialogBox> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Role',
             style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
@@ -285,7 +287,7 @@ class _DialogBoxState extends State<DialogBox> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Function Access',
             style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
@@ -298,7 +300,7 @@ class _DialogBoxState extends State<DialogBox> {
                 borderRadius: BorderRadius.circular(12),
                 color: const Color(0xFFd4dce4)),
             child: DropDownMultiSelect(
-              decoration: InputDecoration(border: InputBorder.none),
+              decoration: const InputDecoration(border: InputBorder.none),
               enabled: widget.isEditing == true ? true : false,
               options: positiondropdownList,
               // whenEmpty: 'Select position',
@@ -307,10 +309,10 @@ class _DialogBoxState extends State<DialogBox> {
                   userPosition = value;
                   selectedOption.value = "";
 
-                  userPosition.forEach((element) {
+                  for (var element in userPosition) {
                     selectedOption.value =
-                        selectedOption.value + "  " + element;
-                  });
+                        "${selectedOption.value}  $element";
+                  }
                 });
               },
               selectedValues: userPosition,
@@ -325,7 +327,7 @@ class _DialogBoxState extends State<DialogBox> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Site In-Charge',
             style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
@@ -339,7 +341,7 @@ class _DialogBoxState extends State<DialogBox> {
                 color: const Color(0xFFd4dce4)),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
-                decoration: InputDecoration(border: InputBorder.none),
+                decoration: const InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
@@ -351,10 +353,10 @@ class _DialogBoxState extends State<DialogBox> {
                   userSite = value;
                   selectedSiteOption.value = "";
 
-                  userSite.forEach((element) {
+                  for (var element in userSite) {
                     selectedSiteOption.value =
-                        selectedSiteOption.value + "  " + element;
-                  });
+                        "${selectedSiteOption.value}  $element";
+                  }
                 },
                 selectedValues: userSite,
               ),
@@ -369,7 +371,7 @@ class _DialogBoxState extends State<DialogBox> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Does this user hold any leadership role on the Site?',
             style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
@@ -383,7 +385,7 @@ class _DialogBoxState extends State<DialogBox> {
                 color: const Color(0xFFd4dce4)),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
-                decoration: InputDecoration(border: InputBorder.none),
+                decoration: const InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
@@ -395,10 +397,10 @@ class _DialogBoxState extends State<DialogBox> {
                   userSiteLead = value;
                   selectedSiteLeadOption.value = "";
 
-                  userSiteLead.forEach((element) {
+                  for (var element in userSiteLead) {
                     selectedSiteLeadOption.value =
-                        selectedSiteLeadOption.value + "  " + element;
-                  });
+                        "${selectedSiteLeadOption.value}  $element";
+                  }
                 },
                 selectedValues: userSiteLead,
               ),
@@ -416,8 +418,8 @@ class _DialogBoxState extends State<DialogBox> {
               shape: BoxShape.rectangle,
               color: const Color(0xFF384464),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                const BoxShadow(
+              boxShadow: const [
+                BoxShadow(
                     color: Colors.black, offset: Offset(0, 10), blurRadius: 10),
               ]),
           child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
@@ -425,7 +427,7 @@ class _DialogBoxState extends State<DialogBox> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(widget.isEditing ? "Edit Member" : "Member Details",
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Color(0xFFd4dce4),
                         fontSize: 26,
                         fontWeight: FontWeight.w700)),
@@ -476,9 +478,9 @@ class _DialogBoxState extends State<DialogBox> {
                             } else {
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
-                                content: Text("No Internet !"),
+                                content: const Text("No Internet !"),
                                 behavior: SnackBarBehavior.floating,
-                                margin: EdgeInsets.all(20),
+                                margin: const EdgeInsets.all(20),
                                 action: SnackBarAction(
                                   label: 'Dismiss',
                                   disabledTextColor: Colors.white,

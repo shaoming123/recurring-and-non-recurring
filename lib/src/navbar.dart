@@ -9,12 +9,12 @@ import 'package:ipsolution/src/dashboard.dart';
 import 'package:ipsolution/src/member.dart';
 import 'package:ipsolution/src/non_recurring.dart';
 import 'package:ipsolution/src/recurrring.dart';
-import 'package:ipsolution/src/report.dart';
+
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../databaseHandler/DbHelper.dart';
-import '../util/checkInternet.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 
 class Navbar extends StatefulWidget {
@@ -25,11 +25,12 @@ class Navbar extends StatefulWidget {
 }
 
 class _NavbarState extends State<Navbar> {
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   late DbHelper dbHelper;
   String username = "";
   String email = "";
   String? userRole = "";
+  String? filepath;
   int? userid;
   List userData = [];
 
@@ -63,26 +64,29 @@ class _NavbarState extends State<Navbar> {
 
   Future<void> getUserData() async {
     final SharedPreferences sp = await _pref;
-    await Internet.isInternet().then((connection) async {
-      if (connection) {
-        await getImage();
-      }
-    });
+    // await Internet.isInternet().then((connection) async {
+    //   if (connection) {
+    //     await getImage();
+    //   }
+    // });
     setState(() {
       userid = sp.getInt("user_id")!;
       username = sp.getString("user_name")!;
       userRole = sp.getString("role")!;
       email = sp.getString("email")!;
+      filepath = sp.getString("filepath")!;
     });
   }
 
   Future getImage() async {
-    var url = "http://192.168.1.111/testdb/getProfileImage.php";
+    var url =
+        "https://ipsolutiontesting.000webhostapp.com/ipsolution/getProfileImage.php";
     var response = await http.post(Uri.parse(url),
         body: {"tableName": "user_details", "user_id": userid.toString()});
     List user = json.decode(response.body);
-
-    userData = user;
+    setState(() {
+      userData = user;
+    });
   }
 
   void websitelaunch() async {
@@ -114,52 +118,42 @@ class _NavbarState extends State<Navbar> {
             ),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.transparent,
-              child: Container(
-                child: ClipOval(
-                  child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            width: 4,
-                            color: Theme.of(context).scaffoldBackgroundColor),
-                        borderRadius: BorderRadius.circular(50),
-                        boxShadow: [
-                          BoxShadow(
-                              spreadRadius: 2,
-                              blurRadius: 10,
-                              color: Colors.black.withOpacity(0.1),
-                              offset: const Offset(0, 10))
-                        ],
-                      ),
-                      child:
-                          //  Image.network(
-                          //   'https://invenioptl.com/wp-content/uploads/2022/07/logoip.png',
-                          //   fit: BoxFit.cover,
-                          //   width: 90,
-                          //   height: 90,
-                          // ),
+              child: ClipOval(
+                child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          width: 4,
+                          color: Theme.of(context).scaffoldBackgroundColor),
+                      borderRadius: BorderRadius.circular(50),
+                      boxShadow: [
+                        BoxShadow(
+                            spreadRadius: 2,
+                            blurRadius: 10,
+                            color: Colors.black.withOpacity(0.1),
+                            offset: const Offset(0, 10))
+                      ],
+                    ),
+                    child:
+                        //  Image.network(
+                        //   'https://invenioptl.com/wp-content/uploads/2022/07/logoip.png',
+                        //   fit: BoxFit.cover,
+                        //   width: 90,
+                        //   height: 90,
+                        // ),
 
-                          userData.length > 0
-                              ? userData[0]['filepath'].isNotEmpty &&
-                                      userData[0]['filepath'] != null
-                                  ? Image.network(
-                                      "http://192.168.1.111/testdb/uploads/${userData[0]['filepath']}",
-                                      fit: BoxFit.cover,
-                                      width: 90,
-                                      height: 90,
-                                    )
-                                  : Image.asset(
-                                      'assets/logo.png',
-                                      fit: BoxFit.cover,
-                                      width: 90,
-                                      height: 90,
-                                    )
-                              : Image.asset(
-                                  'assets/logo.png',
-                                  fit: BoxFit.cover,
-                                  width: 90,
-                                  height: 90,
-                                )),
-                ),
+                        filepath != null
+                            ? Image.network(
+                                "https://ipsolutiontesting.000webhostapp.com/ipsolution/uploads/$filepath",
+                                fit: BoxFit.cover,
+                                width: 90,
+                                height: 90,
+                              )
+                            : Image.asset(
+                                'assets/logo.png',
+                                fit: BoxFit.cover,
+                                width: 90,
+                                height: 90,
+                              )),
               ),
             ),
             decoration: BoxDecoration(
@@ -172,8 +166,8 @@ class _NavbarState extends State<Navbar> {
           ListTile(
             leading: const Icon(Icons.dashboard),
             title: const Text('Dashboard'),
-            onTap: () => Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => Dashboard())),
+            onTap: () => Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => const Dashboard())),
           ),
           ListTile(
             leading: const Icon(Icons.event_repeat),
@@ -185,8 +179,10 @@ class _NavbarState extends State<Navbar> {
             leading: const Icon(Icons.low_priority),
             title: const Text('Non-Recurring'),
             onTap: () {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => NonRecurring()));
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const NonRecurring()));
             },
           ),
           ListTile(
@@ -215,7 +211,7 @@ class _NavbarState extends State<Navbar> {
                                     text: 'here',
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () => websitelaunch(),
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         color: Colors.blue, fontSize: 16)),
                                 const TextSpan(
                                     text: ' to visit the web version. '),
@@ -225,7 +221,7 @@ class _NavbarState extends State<Navbar> {
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -250,15 +246,15 @@ class _NavbarState extends State<Navbar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           RichText(
-                            text: TextSpan(
+                            text: const TextSpan(
                               text: 'Coming Soon',
-                              style: const TextStyle(color: Colors.black87),
+                              style: TextStyle(color: Colors.black87),
                             ),
                           )
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -283,15 +279,15 @@ class _NavbarState extends State<Navbar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           RichText(
-                            text: TextSpan(
+                            text: const TextSpan(
                               text: 'Coming Soon',
-                              style: const TextStyle(color: Colors.black87),
+                              style: TextStyle(color: Colors.black87),
                             ),
                           )
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -316,15 +312,15 @@ class _NavbarState extends State<Navbar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           RichText(
-                            text: TextSpan(
+                            text: const TextSpan(
                               text: 'Coming Soon',
-                              style: const TextStyle(color: Colors.black87),
+                              style: TextStyle(color: Colors.black87),
                             ),
                           )
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -349,15 +345,15 @@ class _NavbarState extends State<Navbar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           RichText(
-                            text: TextSpan(
+                            text: const TextSpan(
                               text: 'Coming Soon',
-                              style: const TextStyle(color: Colors.black87),
+                              style: TextStyle(color: Colors.black87),
                             ),
                           )
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -382,15 +378,15 @@ class _NavbarState extends State<Navbar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           RichText(
-                            text: TextSpan(
+                            text: const TextSpan(
                               text: 'Coming Soon',
-                              style: const TextStyle(color: Colors.black87),
+                              style: TextStyle(color: Colors.black87),
                             ),
                           )
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -414,7 +410,7 @@ class _NavbarState extends State<Navbar> {
                   leading: const Icon(Icons.supervisor_account),
                   title: const Text('Member'),
                   onTap: () => Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => Member())),
+                      MaterialPageRoute(builder: (context) => const Member())),
                 )
               : Container(),
           const Divider(),
@@ -425,6 +421,7 @@ class _NavbarState extends State<Navbar> {
               onTap: () async {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 prefs.clear();
+                if (!mounted) return;
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) => const Login()));
               }),

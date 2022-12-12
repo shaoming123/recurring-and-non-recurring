@@ -1,5 +1,4 @@
 // ignore: file_names
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -9,19 +8,16 @@ import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/src/recurrring.dart';
-import 'package:ipsolution/util/app_styles.dart';
+
 import 'package:ipsolution/util/recurringTasks.dart';
 import 'package:multiselect/multiselect.dart';
-import 'package:provider/provider.dart';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
-import '../../model/eventDataSource.dart';
-import '../../model/manageUser.dart';
 import '../../model/selection.dart';
-import '../../provider/event_provider.dart';
+
 import '../../util/checkInternet.dart';
 import '../../util/datetime.dart';
 import 'package:http/http.dart' as http;
@@ -52,12 +48,11 @@ class _EventAddState extends State<EventAdd> {
 
   bool checkDuration = true;
   List<String> _selectedUser = [];
-  String _selectedVal = '';
   String _selectedPriority = '';
   String _selectedStatus = 'Upcoming';
   String _selectedRecurring = '';
   String _selectedSite = '';
-  var rng = new Random();
+  var rng = Random();
   List<String> siteList = <String>[];
   List<Map<String, dynamic>> category = [];
   List<String> priorityList = <String>['Low', 'Moderate', 'High'];
@@ -73,14 +68,14 @@ class _EventAddState extends State<EventAdd> {
   bool checkUser = false;
   DbHelper dbHelper = DbHelper();
   var selectedOption = ''.obs;
-
+  bool isTapped = false;
   List categoryData = [];
   String userPosition = '';
 
   TypeSelect? typeselect;
   List<TypeSelect> typeList = <TypeSelect>[];
 
-  dynamic? _selectedCategory;
+  dynamic _selectedCategory;
   String? _selectedSubCategory;
   @override
   void initState() {
@@ -285,12 +280,12 @@ class _EventAddState extends State<EventAdd> {
   }
 
   Future saveEvent() async {
-    var url = 'http://192.168.1.111/testdb/add.php';
+    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/add.php';
     final isValid = _formkey.currentState!.validate();
     final SharedPreferences sp = await _pref;
     String currentUsername = sp.getString("user_name")!;
     String? color;
-    String? _recurrenceRule;
+
     if (isValid) {
       String selectedUser = _selectedUser.join(",");
 
@@ -381,7 +376,8 @@ class _EventAddState extends State<EventAdd> {
       // Navigator.pushReplacement(
       //     context, MaterialPageRoute(builder: (context) => const Recurring()));
 
-      var url_add = 'http://192.168.1.111/testdb/add.php';
+      var url_add =
+          'https://ipsolutiontesting.000webhostapp.com/ipsolution/add.php';
       int dependent_code = rng.nextInt(900000000) + 100000000;
 
       const availableChars =
@@ -438,22 +434,35 @@ class _EventAddState extends State<EventAdd> {
           "status": _selectedStatus,
         };
 
-        print(data);
-
         response = await http.post(Uri.parse(url_add), body: data);
       }
       if (response.statusCode == 200) {
+        if (!mounted) return;
         Navigator.pop(context);
 
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text("Event has been added."),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(20),
+          action: SnackBarAction(
+            label: 'Dismiss',
+            disabledTextColor: Colors.white,
+            textColor: Colors.blue,
+            onPressed: () {
+              //Do whatever you want
+            },
+          ),
+        ));
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const Recurring()),
         );
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Adding Unsuccessful !"),
+          content: const Text("Adding Unsuccessful !"),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           action: SnackBarAction(
             label: 'Dismiss',
             disabledTextColor: Colors.white,
@@ -580,12 +589,12 @@ class _EventAddState extends State<EventAdd> {
         decoration: BoxDecoration(
             border: Border.all(color: Colors.white, width: 1),
             borderRadius: BorderRadius.circular(12),
-            color: Color(0xFFd4dce4)),
+            color: const Color(0xFFd4dce4)),
         child: DropdownButtonHideUnderline(
           child: DropdownButtonFormField2<TypeSelect>(
             iconSize: 30,
             isExpanded: true,
-            hint: Text("Choose item"),
+            hint: const Text("Choose item"),
             value: typeselect,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
@@ -597,7 +606,7 @@ class _EventAddState extends State<EventAdd> {
                       enabled: false,
                       child: Text(
                         e.value,
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     )
                   : DropdownMenuItem<TypeSelect>(
@@ -651,10 +660,10 @@ class _EventAddState extends State<EventAdd> {
                     _selectedUser = value;
                     selectedOption.value = "";
 
-                    _selectedUser.forEach((element) {
+                    for (var element in _selectedUser) {
                       selectedOption.value =
-                          selectedOption.value + "  " + element;
-                    });
+                          "${selectedOption.value}  $element";
+                    }
                   });
                 },
                 selectedValues: _selectedUser,
@@ -1287,13 +1296,16 @@ class _EventAddState extends State<EventAdd> {
                   onPressed: () async {
                     await Internet.isInternet().then((connection) async {
                       if (connection) {
-                        await saveEvent();
-                        ;
+                        if (!isTapped) {
+                          isTapped = true;
+                          await saveEvent();
+                        }
                       } else {
+                        Navigator.of(context).pop();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text("No Internet !"),
+                          content: const Text("No Internet !"),
                           behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.all(20),
+                          margin: const EdgeInsets.all(20),
                           action: SnackBarAction(
                             label: 'Dismiss',
                             disabledTextColor: Colors.white,
