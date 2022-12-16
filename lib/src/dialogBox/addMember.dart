@@ -368,10 +368,10 @@ class _AddMemberState extends State<AddMember> {
                       selectedPosition = value;
                       selectedOption.value = "";
 
-                      selectedPosition.forEach((element) {
+                      for (var element in selectedPosition) {
                         selectedOption.value =
-                            selectedOption.value + "  " + element;
-                      });
+                            "${selectedOption.value}  $element";
+                      }
 
                       // if (selectedPosition.isNotEmpty) {
                       //   checkFunctionAccess = true;
@@ -449,10 +449,10 @@ class _AddMemberState extends State<AddMember> {
                     selectedSite = value;
                     selectedSiteOption.value = "";
 
-                    selectedSite.forEach((element) {
+                    for (var element in selectedSite) {
                       selectedSiteOption.value =
-                          selectedSiteOption.value + "  " + element;
-                    });
+                          "${selectedSiteOption.value}  $element";
+                    }
                   },
                   selectedValues: selectedSite,
                 ),

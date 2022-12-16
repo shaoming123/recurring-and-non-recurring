@@ -58,31 +58,35 @@ class _AppbarState extends State<Appbar> {
           Container(
             margin: const EdgeInsets.only(right: 10),
             child: GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        notificationList(notification: notification)),
-              ),
-              child: Badge(
-                badgeColor: Colors.red,
-                shape: BadgeShape.circle,
-                // borderRadius: BorderRadius.circular(5),
-                position: BadgePosition.topEnd(top: -15, end: -5),
-                padding: const EdgeInsets.all(5),
-                badgeContent: Text(
-                  notification.length.toString(),
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold),
-                ),
-                child: const Icon(
-                  Icons.notifications_none,
-                  size: 25,
-                ),
-              ),
-            ),
+                onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              notificationList(notification: notification)),
+                    ),
+                child: notification.isNotEmpty
+                    ? Badge(
+                        badgeColor: Colors.red,
+                        shape: BadgeShape.circle,
+                        // borderRadius: BorderRadius.circular(5),
+                        position: BadgePosition.topEnd(top: -15, end: -5),
+                        padding: const EdgeInsets.all(5),
+                        badgeContent: Text(
+                          notification.length.toString(),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        child: const Icon(
+                          Icons.notifications_none,
+                          size: 25,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.notifications_none,
+                        size: 25,
+                      )),
           ),
           // IconButton(
           //   icon: const Icon(

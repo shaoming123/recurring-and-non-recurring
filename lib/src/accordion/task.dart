@@ -517,6 +517,11 @@ class _TaskState extends State<Task> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
+
+            // columnSpacing: 12,
+            // horizontalMargin: 12,
+            // minWidth: 600,
+            // // fixedTopRows: 1,
             headingRowColor: MaterialStateProperty.all(const Color(0xFF88a4d4)),
             showCheckboxColumn: false,
             columns: const [
@@ -969,7 +974,7 @@ class _TaskState extends State<Task> {
               DataColumn(
                   label: Expanded(
                       child: Text(
-                'Catehory',
+                'Category',
                 textAlign: TextAlign.center,
               ))),
               DataColumn(

@@ -71,9 +71,15 @@ class _DashboardState extends State<Dashboard> {
                     DateFormat.yMd().format(dateEnd);
 
             if ((dateEnd.isAfter(startDate!) ||
-                    dateEnd.compareTo(startDate!) == 0) &&
+                    DateFormat.yMd()
+                            .format(dateEnd)
+                            .compareTo(DateFormat.yMd().format(startDate!)) ==
+                        0) &&
                 (dateEnd.isBefore(endDate!) ||
-                    dateEnd.compareTo(endDate!) == 0)) {
+                    DateFormat.yMd()
+                            .format(dateEnd)
+                            .compareTo(DateFormat.yMd().format(endDate!)) ==
+                        0)) {
               if (taskData[x]["status"] == "Done") {
                 completed.add(taskData[x]);
               } else if (isValidDate == false) {
@@ -96,9 +102,15 @@ class _DashboardState extends State<Dashboard> {
               DateFormat.yMd().format(dateStart) ==
                   DateFormat.yMd().format(dateEnd); // YOUR DATE GOES HERE
           if ((dateEnd.isAfter(startDate!) ||
-                  dateEnd.compareTo(startDate!) == 0) &&
+                  DateFormat.yMd()
+                          .format(dateEnd)
+                          .compareTo(DateFormat.yMd().format(startDate!)) ==
+                      0) &&
               (dateEnd.isBefore(endDate!) ||
-                  dateEnd.compareTo(endDate!) == 0)) {
+                  DateFormat.yMd()
+                          .format(dateEnd)
+                          .compareTo(DateFormat.yMd().format(endDate!)) ==
+                      0)) {
             if (nonRecurringData[x]["status"] == "100") {
               completedNon.add(nonRecurringData[x]);
             } else if (isValidDate == false) {

@@ -9,22 +9,20 @@ import '../src/member.dart';
 DbHelper dbHelper = DbHelper();
 Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
-Future updateSP(UserModel? user, bool add) async {
+Future updateSP(UserModel user) async {
   final SharedPreferences sp = await _pref;
 
-  if (add) {
-    sp.setInt("user_id", user!.user_id!);
-    sp.setString("user_name", user.user_name);
-    sp.setString("password", user.password);
-    sp.setString("email", user.email);
-    sp.setString("role", user.role);
-    sp.setString("position", user.position);
-    sp.setString("leadFunc", user.leadFunc!);
-    sp.setString("site", user.site!);
-    sp.setString("siteLead", user.siteLead!);
-    sp.setString("phone", user.phone!);
-    sp.setString("active", user.active);
-  }
+  sp.setInt("user_id", user.user_id!);
+  sp.setString("phone", user.phone!);
+  sp.setString("user_name", user.user_name);
+  sp.setString("password", user.password);
+  sp.setString("email", user.email);
+  sp.setString("role", user.role);
+  sp.setString("position", user.position);
+  sp.setString("leadFunc", user.leadFunc!);
+  sp.setString("site", user.site!);
+  sp.setString("siteLead", user.siteLead!);
+  sp.setString("active", user.active);
 }
 
 Future updateAccount(UserModel user, context) async {
@@ -61,7 +59,7 @@ Future updateAccount(UserModel user, context) async {
         ),
       ),
     );
-    updateSP(user, true).whenComplete(() {
+    updateSP(user).whenComplete(() {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => const Account()));
     });

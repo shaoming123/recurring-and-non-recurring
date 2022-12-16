@@ -78,6 +78,7 @@ class _TeamTaskState extends State<TeamTask> {
       siteType = currentUserSite.split(",");
       if (userRole == "Manager" || userRole == "Super Admin") {
         combineType = [...positionType, ...siteType];
+        combineType.insert(0, "Manager");
       } else if (userRole == "Leader" && currentUserSiteLead != "-") {
         combineType = [
           "Community Management",
@@ -102,7 +103,7 @@ class _TeamTaskState extends State<TeamTask> {
 
     final SharedPreferences sp = await _pref;
     final data = await dbHelper.getItems();
-    List userSite = currentUserSite.split(',');
+    // List userSite = currentUserSite.split(',');
     // String userID = sp.getInt("user_id").toString();
 
     userList = [];
@@ -112,27 +113,38 @@ class _TeamTaskState extends State<TeamTask> {
         List siteList = data[x]["site"].split(",");
 
         if (userRole == "Manager" || userRole == "Super Admin") {
-          for (int i = 0; i < positionList.length; i++) {
-            if (positionList[i] == _selectedPosition &&
-                data[x]["user_id"] != sp.getInt("user_id")) {
-              userList.add({
-                'userId': data[x]["user_id"],
-                'username': data[x]["user_name"],
-                'position': data[x]["position"]
-              });
+          if (_selectedPosition == "Manager" && data[x]["role"] == "Manager") {
+            userList.add({
+              'userId': data[x]["user_id"],
+              'username': data[x]["user_name"],
+              'position': data[x]["position"]
+            });
+          } else {
+            for (int i = 0; i < positionList.length; i++) {
+              if (positionList[i] == _selectedPosition &&
+                  data[x]["user_id"] != sp.getInt("user_id") &&
+                  data[x]["role"] != "Manager") {
+                userList.add({
+                  'userId': data[x]["user_id"],
+                  'username': data[x]["user_name"],
+                  'position': data[x]["position"]
+                });
+              }
+            }
+
+            for (int y = 0; y < siteList.length; y++) {
+              if (siteList[y] == _selectedPosition &&
+                  data[x]["user_id"] != sp.getInt("user_id") &&
+                  data[x]["role"] != "Manager") {
+                userList.add({
+                  'userId': data[x]["user_id"],
+                  'username': data[x]["user_name"],
+                  'position': data[x]["position"]
+                });
+              }
             }
           }
 
-          for (int y = 0; y < siteList.length; y++) {
-            if (siteList[y] == _selectedPosition &&
-                data[x]["user_id"] != sp.getInt("user_id")) {
-              userList.add({
-                'userId': data[x]["user_id"],
-                'username': data[x]["user_name"],
-                'position': data[x]["position"]
-              });
-            }
-          }
           // }
           // else if (userRole == "Leader" && currentUserLeadFunc != '-') {
           //   for (int i = 0; i < positionList.length; i++) {
@@ -720,7 +732,7 @@ class _TeamTaskState extends State<TeamTask> {
               child: DropdownButton2(
                 iconSize: 30,
                 isExpanded: true,
-                hint: const Text('Choose item'),
+                hint: const Text('Function/Site'),
                 value: _selectedPosition == '' ? null : _selectedPosition,
                 selectedItemHighlightColor: Colors.grey,
                 items: combineType
@@ -765,7 +777,7 @@ class _TeamTaskState extends State<TeamTask> {
                 child: DropdownButton2(
                     iconSize: 30.0,
                     isExpanded: true,
-                    hint: const Text('Choose item'),
+                    hint: const Text('User'),
                     value: _selectedUser == '' ? null : _selectedUser,
                     selectedItemHighlightColor: Colors.grey,
                     items: List.generate(

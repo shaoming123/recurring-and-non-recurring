@@ -117,7 +117,7 @@ class _NavbarState extends State<Navbar> {
               ),
             ),
             currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.transparent,
+              backgroundColor: Colors.white,
               child: ClipOval(
                 child: Container(
                     decoration: BoxDecoration(
@@ -141,7 +141,7 @@ class _NavbarState extends State<Navbar> {
                         //   height: 90,
                         // ),
 
-                        filepath != null
+                        filepath!.isNotEmpty
                             ? Image.network(
                                 "https://ipsolutiontesting.000webhostapp.com/ipsolution/uploads/$filepath",
                                 fit: BoxFit.cover,
@@ -195,7 +195,10 @@ class _NavbarState extends State<Navbar> {
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      title: const Text('Report Function is Not Supported.'),
+                      title: const Text(
+                        'Report Function is Not Supported.',
+                        style: TextStyle(fontSize: 18),
+                      ),
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,7 +1,8 @@
+import 'package:flutter/material.dart';
+
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
@@ -17,7 +18,7 @@ import '../util/conMysql.dart';
 import 'accordion/teamTask.dart';
 
 class NonRecurring extends StatefulWidget {
-  const NonRecurring({super.key});
+  const NonRecurring({Key? key}) : super(key: key);
 
   @override
   State<NonRecurring> createState() => _NonRecurringState();
@@ -42,6 +43,7 @@ class _NonRecurringState extends State<NonRecurring> {
   List<Map<String, dynamic>> ActivenonRecurring = [];
   List<Map<String, dynamic>> CompletednonRecurring = [];
   String userRole = '';
+
   // bool _isExpanded = true;
   @override
   void initState() {
@@ -57,6 +59,7 @@ class _NonRecurringState extends State<NonRecurring> {
           status: 'Fetching Data...',
           maskType: EasyLoadingMaskType.black,
         );
+        // await Controller().syncdata();
         await Controller().addNonRecurringToSqlite();
         EasyLoading.showSuccess('Successfully');
       }
@@ -289,13 +292,14 @@ class _NonRecurringState extends State<NonRecurring> {
                                 child: Column(
                                   children: const [
                                     ExpansionTile(
-                                        maintainState: true,
-                                        title: Text(
-                                          "Team Status Overview",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        children: [TeamTask()]),
+                                      maintainState: true,
+                                      title: Text(
+                                        "Team Status Overview",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      children: [TeamTask()],
+                                    ),
                                   ],
                                 ),
                               )

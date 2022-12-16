@@ -1,58 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:ipsolution/provider/event_provider.dart';
+import 'package:ipsolution/src/dashboard.dart';
 import 'package:ipsolution/src/login.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  runApp(const MyApp());
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+  const MyApp({super.key, required this.isLoggedIn});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    // var status;
-    // @override
-    // void initState() async {
-    //   final SharedPreferences sp = await SharedPreferences.getInstance();
-    //   status = sp.getBool('isLoggedIn') ?? false;
-    //   if (status != "true") {
-    //     int userid = sp.getInt("user_id")!;
-    //     String username = sp.getString("user_name")!;
-    //     String password = sp.getString("password")!;
-    //     String email = sp.getString("email")!;
-    //     String userRole = sp.getString("role")!;
-    //     String function = sp.getString("position")!;
-    //     String site = sp.getString("site")!;
-    //     String siteLead = sp.getString("siteLead")!;
-    //     String active = sp.getString("active")!;
-    //     String phone = sp.getString("phone")!;
-
-    //     sp.setInt("user_id", userid);
-    //     sp.setString("user_name", username);
-    //     sp.setString("password", password);
-    //     sp.setString("email", email);
-    //     sp.setString("role", userRole);
-    //     sp.setString("position", function);
-    //     sp.setString("site", site);
-    //     sp.setString("siteLead", siteLead);
-    //     sp.setString("phone", phone);
-    //     sp.setString("active", active);
-    //   }
-    // }
-
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      home: const Login(),
+      home: isLoggedIn ? const Dashboard() : const Login(),
       builder: EasyLoading.init(),
     );
   }

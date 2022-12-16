@@ -8,7 +8,7 @@ class UserModel {
   late String position;
   late String? site;
   late String? siteLead;
-  late String? phone;
+  String? phone;
   late String active;
   String? filepath;
   // late String? photoName =

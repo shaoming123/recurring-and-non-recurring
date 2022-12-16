@@ -43,6 +43,7 @@ class _MemberState extends State<Member> {
   @override
   void initState() {
     super.initState();
+    // Controller().syncdata();
     _future = _refreshUsers();
   }
 

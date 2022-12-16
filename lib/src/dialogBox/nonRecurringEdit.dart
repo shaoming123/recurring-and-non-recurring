@@ -85,7 +85,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
           // selection
           final siteOptions = await Selection().siteSelection();
 
-          setState(() async {
+          setState(() {
             user = userData;
 
             /////

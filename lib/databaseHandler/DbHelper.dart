@@ -359,4 +359,58 @@ class DbHelper {
     return res;
   }
   /*end notification*/
+
+  Future saveData123(nonRecurring data) async {
+    var dbClient = await db;
+
+    // Loop through the rows
+
+    // Check if the row exists in the SQLite database
+    final list1 = await dbClient.query(Table_NonRecurring,
+        where: '$nonRecurringId=?', whereArgs: [data.nonRecurringId]);
+
+    // If the row exists in the SQLite database, update it
+    if (list1.isNotEmpty) {
+      await dbClient.update(
+          Table_NonRecurring,
+          {
+            'category': data.category,
+            'subCategory': data.subCategory,
+            'type': data.type,
+            'site': data.site,
+            'task': data.task,
+            'owner': data.owner,
+            'startDate': data.startDate,
+            'due': data.due,
+            'modify': data.modify,
+            'remark': data.remark,
+            'completeDate': data.completeDate,
+            'status': data.status,
+            'checked': data.checked,
+            'personCheck': data.personCheck,
+          },
+          where: '$nonRecurringId = ?',
+          whereArgs: [data.nonRecurringId]);
+    }
+    // If the row does not exist in the SQLite database, insert it
+    else {
+      await dbClient.insert(Table_NonRecurring, {
+        'nonRecurringId': data.nonRecurringId,
+        'category': data.category,
+        'subCategory': data.subCategory,
+        'type': data.type,
+        'site': data.site,
+        'task': data.task,
+        'owner': data.owner,
+        'startDate': data.startDate,
+        'due': data.due,
+        'modify': data.modify,
+        'remark': data.remark,
+        'completeDate': data.completeDate,
+        'status': data.status,
+        'checked': data.checked,
+        'personCheck': data.personCheck
+      });
+    }
+  }
 }

@@ -91,11 +91,14 @@ class _notificationListState extends State<notificationList> {
             return Padding(
               padding: const EdgeInsets.only(top: 10.0),
               child: ListTile(
-                  leading: Icon(notification[index].type == "Recurring"
-                      ? Icons.event_repeat
-                      : notification[index].type == "Non-recurring"
-                          ? Icons.low_priority
-                          : Icons.check_circle_outline),
+                  leading: Icon(
+                    notification[index].type == "Recurring"
+                        ? Icons.event_repeat
+                        : notification[index].type == "Non-recurring"
+                            ? Icons.low_priority
+                            : Icons.check_circle_outline,
+                    color: Colors.black,
+                  ),
                   title: Text(
                       notification[index].type == "Checking"
                           ? "${notification[index].assigner} request for checking"
@@ -112,11 +115,14 @@ class _notificationListState extends State<notificationList> {
                       children: [
                         Row(
                           children: [
-                            Text("Task : ",
-                                style: TextStyle(
-                                    color: Styles.textColor,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold)),
+                            Container(
+                              margin: const EdgeInsets.only(top: 5),
+                              child: Text("New Task : ",
+                                  style: TextStyle(
+                                      color: Styles.textColor,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
+                            ),
                           ],
                         ),
                         Text(notification[index].task,
@@ -169,7 +175,10 @@ class _notificationListState extends State<notificationList> {
                         }
                       });
                     },
-                    icon: const Icon(Icons.cancel_rounded),
+                    icon: const Icon(
+                      Icons.cancel_rounded,
+                      color: Colors.black,
+                    ),
                     iconSize: 30,
                   )),
             );

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/user.dart';
+import 'package:mysql1/mysql1.dart';
 
 import '../databaseHandler/DbHelper.dart';
 import '../model/nonRecurring.dart';
@@ -32,6 +33,34 @@ class Controller {
           filepath: userData[i]["filepath"]);
 
       await dbHelper.saveData(data);
+    }
+  }
+
+  Future syncdata() async {
+     var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
+    var response =
+        await http.post(Uri.parse(url), body: {"tableName": "nonrecurring"});
+    List nonrecurringData = json.decode(response.body);
+
+    for (int i = 0; i < nonrecurringData.length; i++) {
+      final datanonRecurring = nonRecurring(
+          nonRecurringId: int.parse(nonrecurringData[i]["id"]),
+          category: nonrecurringData[i]["category"],
+          subCategory: nonrecurringData[i]["subcategory"],
+          type: nonrecurringData[i]["type"],
+          site: nonrecurringData[i]["site"],
+          task: nonrecurringData[i]["task"],
+          owner: nonrecurringData[i]["owner"],
+          startDate: nonrecurringData[i]["createdDate"].toString(),
+          due: nonrecurringData[i]["deadline"].toString(),
+          status: nonrecurringData[i]["status"],
+          remark: nonrecurringData[i]["remarks"],
+          modify: nonrecurringData[i]["lastMod"].toString(),
+          completeDate: nonrecurringData[i]["completedDate"].toString(),
+          checked: nonrecurringData[i]["checked"],
+          personCheck: nonrecurringData[i]["personCheck"]);
+
+      await dbHelper.saveData123(datanonRecurring);
     }
   }
 

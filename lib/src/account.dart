@@ -29,7 +29,7 @@ class _AccountState extends State<Account> {
   File? image;
 
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-  late DbHelper dbHelper;
+  DbHelper dbHelper = DbHelper();
 
   final username = TextEditingController();
   final password = TextEditingController();
@@ -47,16 +47,6 @@ class _AccountState extends State<Account> {
   void initState() {
     super.initState();
     getUserData();
-
-    // .whenComplete(() async {
-    //   await Internet.isInternet().then((connection) async {
-    //     if (connection) {
-    //       await getImage();
-    //     }
-    //   });
-    // });
-
-    dbHelper = DbHelper();
   }
 
   Future<void> getUserData() async {
@@ -67,12 +57,13 @@ class _AccountState extends State<Account> {
       username.text = sp.getString("user_name")!;
       password.text = sp.getString("password")!;
       email.text = sp.getString("email")!;
+      phone.text = sp.getString("phone")!;
       userRole.text = sp.getString("role")!;
       function.text = sp.getString("position")!;
       site.text = sp.getString("site")!;
       siteLead.text = sp.getString("siteLead")!;
       active = sp.getString("active")!;
-      phone.text = sp.getString("phone")!;
+
       filepath = sp.getString("filepath")!;
     });
   }
@@ -143,7 +134,6 @@ class _AccountState extends State<Account> {
           ),
         ));
       }
-      setState(() {});
     } on PlatformException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -236,7 +226,7 @@ class _AccountState extends State<Account> {
                                     shape: BoxShape.circle,
                                     image: DecorationImage(
                                       fit: BoxFit.cover,
-                                      image: filepath != null
+                                      image: filepath!.isNotEmpty
                                           ? NetworkImage(
                                                   "https://ipsolutiontesting.000webhostapp.com/ipsolution/uploads/$filepath")
                                               as ImageProvider
@@ -393,13 +383,15 @@ class _AccountState extends State<Account> {
             floatingLabelBehavior: FloatingLabelBehavior.always,
             hintText: placeholder,
             isDense: true),
-        validator: (text) {
-          if (text == null || text.isEmpty) {
-            return 'Can\'t be empty';
-          }
+        validator: controllerText != phone
+            ? (text) {
+                if (text == null || text.isEmpty) {
+                  return 'Can\'t be empty';
+                }
 
-          return null;
-        },
+                return null;
+              }
+            : null,
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
@@ -409,31 +401,31 @@ class _AccountState extends State<Account> {
     );
   }
 
-  Widget phoneTextField(
-      String labelText,
-      String placeholder,
-      bool isPasswordTextField,
-      bool editable,
-      TextEditingController? controllerText) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 30.0),
-      child: TextFormField(
-        controller: controllerText,
-        enabled: editable,
-        minLines: 1,
-        obscureText: isPasswordTextField ? showPassword : false,
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.only(bottom: 3),
-          labelText: labelText,
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          // hintText: placeholder,
-        ),
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
-        ),
-      ),
-    );
-  }
+  // Widget phoneTextField(
+  //     String labelText,
+  //     String placeholder,
+  //     bool isPasswordTextField,
+  //     bool editable,
+  //     TextEditingController? controllerText) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(bottom: 30.0),
+  //     child: TextFormField(
+  //       controller: controllerText,
+  //       enabled: editable,
+  //       minLines: 1,
+  //       obscureText: isPasswordTextField ? showPassword : false,
+  //       decoration: InputDecoration(
+  //         contentPadding: const EdgeInsets.only(bottom: 3),
+  //         labelText: labelText,
+  //         floatingLabelBehavior: FloatingLabelBehavior.always,
+  //         // hintText: placeholder,
+  //       ),
+  //       style: const TextStyle(
+  //         fontSize: 16,
+  //         fontWeight: FontWeight.bold,
+  //         color: Colors.black,
+  //       ),
+  //     ),
+  //   );
+  // }
 }
