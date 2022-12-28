@@ -1,6 +1,7 @@
 import 'package:badges/badges.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/util/app_styles.dart';
@@ -79,6 +80,7 @@ class _TeamTaskState extends State<TeamTask> {
       if (userRole == "Manager" || userRole == "Super Admin") {
         combineType = [...positionType, ...siteType];
         combineType.insert(0, "Manager");
+        combineType.remove("-");
       } else if (userRole == "Leader" && currentUserSiteLead != "-") {
         combineType = [
           "Community Management",
@@ -192,6 +194,7 @@ class _TeamTaskState extends State<TeamTask> {
 
   void getTeamData() async {
     final data = await dbHelper.fetchAllNonRecurring();
+
     foundTeamNonRecurring = [];
     CompletedTeamnonRecurring = [];
     LateTeamnonRecurring = [];
@@ -212,7 +215,9 @@ class _TeamTaskState extends State<TeamTask> {
               } else if (dayLeft > 0) {
                 ActiveTeamnonRecurring.add(data[x]);
               }
-            } else if (positionType.contains(_selectedPosition)) {
+            } else if (positionType.contains(_selectedPosition) ||
+                _selectedPosition == "Manager") {
+              print(data[x]);
               foundTeamNonRecurring.add(data[x]);
               if (data[x]["status"] == '100') {
                 CompletedTeamnonRecurring.add(data[x]);
@@ -290,56 +295,76 @@ class _TeamTaskState extends State<TeamTask> {
         .switchToggle(checked, id.toString(), tableName, "checked");
 
     if (response.statusCode == 200) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text("Updated Successfully!"),
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(20),
-          action: SnackBarAction(
-            label: 'Dismiss',
-            disabledTextColor: Colors.white,
-            textColor: Colors.blue,
-            onPressed: () {
-              //Do whatever you want
-            },
-          ),
-        ),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const NonRecurring()),
-      );
+      await Internet.isInternet().then((connection) async {
+        if (connection) {
+          EasyLoading.show(
+            status: 'Updating and Loading Data...',
+            maskType: EasyLoadingMaskType.black,
+          );
+          await Controller().addNonRecurringToSqlite();
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const NonRecurring()),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text("Updated Successfully!"),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(20),
+              action: SnackBarAction(
+                label: 'Dismiss',
+                disabledTextColor: Colors.white,
+                textColor: Colors.blue,
+                onPressed: () {
+                  //Do whatever you want
+                },
+              ),
+            ),
+          );
+
+          EasyLoading.showSuccess('Successfully');
+        }
+      });
     }
   }
 
   Future<void> removeTeamNonRecurring(int id) async {
     var url =
-        'https://ipsolutiontesting.000webhostapp.com/ipsolution/delete.php';
+        'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
     final response = await http.post(Uri.parse(url), body: {
       "dataTable": "nonrecurring",
       "id": id.toString(),
     });
     if (response.statusCode == 200) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Successfully deleted!'),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(20),
-        action: SnackBarAction(
-          label: 'Dismiss',
-          disabledTextColor: Colors.white,
-          textColor: Colors.blue,
-          onPressed: () {
-            //Do whatever you want
-          },
-        ),
-      ));
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const NonRecurring()),
-      );
+      await Internet.isInternet().then((connection) async {
+        if (connection) {
+          EasyLoading.show(
+            status: 'Deleting and Loading Data...',
+            maskType: EasyLoadingMaskType.black,
+          );
+          await Controller().addNonRecurringToSqlite();
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const NonRecurring()),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text('Successfully deleted!'),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
+          ));
+          EasyLoading.showSuccess('Successfully');
+        }
+      });
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -1033,130 +1058,143 @@ class _TeamTaskState extends State<TeamTask> {
                   DateTime.parse(LateTeamnonRecurring[index]["due"]));
 
               return DataRow(
-                cells: [
-                  DataCell(Text((index + 1).toString())),
-                  DataCell(Container(
-                    margin: const EdgeInsets.symmetric(vertical: 15),
-                    child: Text(
-                      LateTeamnonRecurring[index]["task"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      LateTeamnonRecurring[index]["category"].split("|")[0],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      LateTeamnonRecurring[index]["subCategory"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      LateTeamnonRecurring[index]["type"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      LateTeamnonRecurring[index]["site"],
-                    ),
-                  )),
-                  DataCell(LinearPercentIndicator(
-                      barRadius: const Radius.circular(5),
-                      width: 100.0,
-                      lineHeight: 20.0,
-                      percent:
-                          double.parse(LateTeamnonRecurring[index]["status"]) /
-                              100,
-                      backgroundColor: Colors.grey,
-                      progressColor: Colors.blue,
-                      center: Text(
-                        LateTeamnonRecurring[index]["status"],
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ))),
-                  DataCell(Container(
-                      width: 100,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: Styles.lateColor,
+                  cells: [
+                    DataCell(Text((index + 1).toString())),
+                    DataCell(Container(
+                      margin: const EdgeInsets.symmetric(vertical: 15),
+                      child: Text(
+                        LateTeamnonRecurring[index]["task"],
                       ),
-                      child: Center(
-                          child: Text(
-                        "${dayLeft.abs()} DAYS LATE",
-                        style: const TextStyle(
-                            color: Color(0xFFf43a2c),
-                            fontWeight: FontWeight.bold),
-                      )))),
-                  DataCell(Text(
-                    DateFormat('dd/MM/yyyy')
-                        .format(
-                            DateTime.parse(LateTeamnonRecurring[index]["due"]))
-                        .toString(),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      LateTeamnonRecurring[index]["remark"],
-                    ),
-                  )),
-                  DataCell(Text(LateTeamnonRecurring[index]["modify"] != null &&
-                          LateTeamnonRecurring[index]["modify"].isNotEmpty
-                      ? DateFormat('dd/MM/yyyy')
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        LateTeamnonRecurring[index]["category"].split("|")[0],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        LateTeamnonRecurring[index]["subCategory"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        LateTeamnonRecurring[index]["type"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        LateTeamnonRecurring[index]["site"],
+                      ),
+                    )),
+                    DataCell(LinearPercentIndicator(
+                        barRadius: const Radius.circular(5),
+                        width: 100.0,
+                        lineHeight: 20.0,
+                        percent: double.parse(
+                                LateTeamnonRecurring[index]["status"]) /
+                            100,
+                        backgroundColor: Colors.grey,
+                        progressColor: Colors.blue,
+                        center: Text(
+                          LateTeamnonRecurring[index]["status"],
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ))),
+                    DataCell(Container(
+                        width: 100,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: Styles.lateColor,
+                        ),
+                        child: Center(
+                            child: Text(
+                          "${dayLeft.abs()} DAYS LATE",
+                          style: const TextStyle(
+                              color: Color(0xFFf43a2c),
+                              fontWeight: FontWeight.bold),
+                        )))),
+                    DataCell(Text(
+                      DateFormat('dd/MM/yyyy')
                           .format(DateTime.parse(
-                              LateTeamnonRecurring[index]["modify"]))
-                          .toString()
-                      : "")),
-                  DataCell(IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return editNonRecurring(
-                              id: LateTeamnonRecurring[index]["nonRecurringId"]
-                                  .toString(),
-                            );
+                              LateTeamnonRecurring[index]["due"]))
+                          .toString(),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        LateTeamnonRecurring[index]["remark"],
+                      ),
+                    )),
+                    DataCell(Text(
+                        LateTeamnonRecurring[index]["modify"] != null &&
+                                LateTeamnonRecurring[index]["modify"].isNotEmpty
+                            ? DateFormat('dd/MM/yyyy')
+                                .format(DateTime.parse(
+                                    LateTeamnonRecurring[index]["modify"]))
+                                .toString()
+                            : "")),
+                    DataCell(IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return editNonRecurring(
+                                id: LateTeamnonRecurring[index]
+                                        ["nonRecurringId"]
+                                    .toString(),
+                              );
+                            });
+                      },
+                    )),
+                    DataCell(IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () async {
+                          await Internet.isInternet().then((connection) async {
+                            if (connection) {
+                              await removeTeamNonRecurring(
+                                  LateTeamnonRecurring[index]
+                                      ["nonRecurringId"]);
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: const Text("No Internet !"),
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.all(20),
+                                action: SnackBarAction(
+                                  label: 'Dismiss',
+                                  disabledTextColor: Colors.white,
+                                  textColor: Colors.blue,
+                                  onPressed: () {
+                                    //Do whatever you want
+                                  },
+                                ),
+                              ));
+                            }
                           });
-                    },
-                  )),
-                  DataCell(IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        await Internet.isInternet().then((connection) async {
-                          if (connection) {
-                            await removeTeamNonRecurring(
-                                LateTeamnonRecurring[index]["nonRecurringId"]);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: const Text("No Internet !"),
-                              behavior: SnackBarBehavior.floating,
-                              margin: const EdgeInsets.all(20),
-                              action: SnackBarAction(
-                                label: 'Dismiss',
-                                disabledTextColor: Colors.white,
-                                textColor: Colors.blue,
-                                onPressed: () {
-                                  //Do whatever you want
-                                },
-                              ),
-                            ));
-                          }
+                        })),
+                  ],
+                  // onSelectChanged: (e) {
+                  //   showDialog(
+                  //       context: context,
+                  //       builder: (BuildContext context) {
+                  //         return DialogBox(
+                  //             id: foundTeamNonRecurring[index]["user_id"].toString(),
+                  //             name: foundTeamNonRecurring[index]['user_name'],
+                  //             password: foundTeamNonRecurring[index]['password'],
+                  //             isEditing: false);
+                  //       });
+                  // }
+                  onSelectChanged: (e) {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return editNonRecurring(
+                            id: LateTeamnonRecurring[index]["nonRecurringId"]
+                                .toString(),
+                          );
                         });
-                      })),
-                ],
-                // onSelectChanged: (e) {
-                //   showDialog(
-                //       context: context,
-                //       builder: (BuildContext context) {
-                //         return DialogBox(
-                //             id: foundTeamNonRecurring[index]["user_id"].toString(),
-                //             name: foundTeamNonRecurring[index]['user_name'],
-                //             password: foundTeamNonRecurring[index]['password'],
-                //             isEditing: false);
-                //       });
-                // }
-              );
+                  });
             })),
       ),
     );
@@ -1244,135 +1282,145 @@ class _TeamTaskState extends State<TeamTask> {
               final dayLeft = daysBetween(DateTime.now(),
                   DateTime.parse(ActiveTeamnonRecurring[index]["due"]));
               return DataRow(
-                cells: [
-                  DataCell(Text((index + 1).toString())),
-                  DataCell(Container(
-                      margin: const EdgeInsets.symmetric(vertical: 15),
-                      child: Text(ActiveTeamnonRecurring[index]["task"]))),
-                  DataCell(Center(
-                    child: Text(
-                      ActiveTeamnonRecurring[index]["category"].split("|")[0],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      ActiveTeamnonRecurring[index]["subCategory"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      ActiveTeamnonRecurring[index]["type"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      ActiveTeamnonRecurring[index]["site"],
-                    ),
-                  )),
-                  DataCell(LinearPercentIndicator(
-                      barRadius: const Radius.circular(5),
-                      width: 100.0,
-                      lineHeight: 20.0,
-                      percent: double.parse(
-                              ActiveTeamnonRecurring[index]["status"]) /
-                          100,
-                      backgroundColor: Colors.grey,
-                      progressColor: Colors.blue,
-                      center: Text(
-                        ActiveTeamnonRecurring[index]["status"],
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ))),
-                  DataCell(Container(
-                      width: 100,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: dayLeft.isNegative
-                            ? Styles.lateColor
-                            : Styles.activeColor,
+                  cells: [
+                    DataCell(Text((index + 1).toString())),
+                    DataCell(Container(
+                        margin: const EdgeInsets.symmetric(vertical: 15),
+                        child: Text(ActiveTeamnonRecurring[index]["task"]))),
+                    DataCell(Center(
+                      child: Text(
+                        ActiveTeamnonRecurring[index]["category"].split("|")[0],
                       ),
-                      child: Center(
-                          child: dayLeft.isNegative
-                              ? Text(
-                                  "${dayLeft.abs()} DAYS LATE",
-                                  style: Styles.dayLeftLate,
-                                )
-                              : Text(
-                                  "$dayLeft DAYS LEFT",
-                                  style: Styles.dayLeftActive,
-                                )))),
-                  DataCell(Text(
-                    DateFormat('dd/MM/yyyy')
-                        .format(DateTime.parse(
-                            ActiveTeamnonRecurring[index]["due"]))
-                        .toString(),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      ActiveTeamnonRecurring[index]["remark"],
-                    ),
-                  )),
-                  DataCell(Text(
-                      ActiveTeamnonRecurring[index]["modify"] != null &&
-                              ActiveTeamnonRecurring[index]["modify"].isNotEmpty
-                          ? DateFormat('dd/MM/yyyy')
-                              .format(DateTime.parse(
-                                  ActiveTeamnonRecurring[index]["modify"]))
-                              .toString()
-                          : "")),
-                  DataCell(IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return editNonRecurring(
-                              id: ActiveTeamnonRecurring[index]
-                                      ["nonRecurringId"]
-                                  .toString(),
-                            );
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        ActiveTeamnonRecurring[index]["subCategory"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        ActiveTeamnonRecurring[index]["type"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        ActiveTeamnonRecurring[index]["site"],
+                      ),
+                    )),
+                    DataCell(LinearPercentIndicator(
+                        barRadius: const Radius.circular(5),
+                        width: 100.0,
+                        lineHeight: 20.0,
+                        percent: double.parse(
+                                ActiveTeamnonRecurring[index]["status"]) /
+                            100,
+                        backgroundColor: Colors.grey,
+                        progressColor: Colors.blue,
+                        center: Text(
+                          ActiveTeamnonRecurring[index]["status"],
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ))),
+                    DataCell(Container(
+                        width: 100,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: dayLeft.isNegative
+                              ? Styles.lateColor
+                              : Styles.activeColor,
+                        ),
+                        child: Center(
+                            child: dayLeft.isNegative
+                                ? Text(
+                                    "${dayLeft.abs()} DAYS LATE",
+                                    style: Styles.dayLeftLate,
+                                  )
+                                : Text(
+                                    "$dayLeft DAYS LEFT",
+                                    style: Styles.dayLeftActive,
+                                  )))),
+                    DataCell(Text(
+                      DateFormat('dd/MM/yyyy')
+                          .format(DateTime.parse(
+                              ActiveTeamnonRecurring[index]["due"]))
+                          .toString(),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        ActiveTeamnonRecurring[index]["remark"],
+                      ),
+                    )),
+                    DataCell(Text(ActiveTeamnonRecurring[index]["modify"] !=
+                                null &&
+                            ActiveTeamnonRecurring[index]["modify"].isNotEmpty
+                        ? DateFormat('dd/MM/yyyy')
+                            .format(DateTime.parse(
+                                ActiveTeamnonRecurring[index]["modify"]))
+                            .toString()
+                        : "")),
+                    DataCell(IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return editNonRecurring(
+                                id: ActiveTeamnonRecurring[index]
+                                        ["nonRecurringId"]
+                                    .toString(),
+                              );
+                            });
+                      },
+                    )),
+                    DataCell(IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () async {
+                          await Internet.isInternet().then((connection) async {
+                            if (connection) {
+                              await removeTeamNonRecurring(
+                                  ActiveTeamnonRecurring[index]
+                                      ["nonRecurringId"]);
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: const Text("No Internet !"),
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.all(20),
+                                action: SnackBarAction(
+                                  label: 'Dismiss',
+                                  disabledTextColor: Colors.white,
+                                  textColor: Colors.blue,
+                                  onPressed: () {
+                                    //Do whatever you want
+                                  },
+                                ),
+                              ));
+                            }
                           });
-                    },
-                  )),
-                  DataCell(IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        await Internet.isInternet().then((connection) async {
-                          if (connection) {
-                            await removeTeamNonRecurring(
-                                ActiveTeamnonRecurring[index]
-                                    ["nonRecurringId"]);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: const Text("No Internet !"),
-                              behavior: SnackBarBehavior.floating,
-                              margin: const EdgeInsets.all(20),
-                              action: SnackBarAction(
-                                label: 'Dismiss',
-                                disabledTextColor: Colors.white,
-                                textColor: Colors.blue,
-                                onPressed: () {
-                                  //Do whatever you want
-                                },
-                              ),
-                            ));
-                          }
+                        })),
+                  ],
+                  // onSelectChanged: (e) {
+                  //   showDialog(
+                  //       context: context,
+                  //       builder: (BuildContext context) {
+                  //         return DialogBox(
+                  //             id: foundTeamNonRecurring[index]["user_id"].toString(),
+                  //             name: foundTeamNonRecurring[index]['user_name'],
+                  //             password: foundTeamNonRecurring[index]['password'],
+                  //             isEditing: false);
+                  //       });
+                  // }
+                  onSelectChanged: (e) {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return editNonRecurring(
+                            id: ActiveTeamnonRecurring[index]["nonRecurringId"]
+                                .toString(),
+                          );
                         });
-                      })),
-                ],
-                // onSelectChanged: (e) {
-                //   showDialog(
-                //       context: context,
-                //       builder: (BuildContext context) {
-                //         return DialogBox(
-                //             id: foundTeamNonRecurring[index]["user_id"].toString(),
-                //             name: foundTeamNonRecurring[index]['user_name'],
-                //             password: foundTeamNonRecurring[index]['password'],
-                //             isEditing: false);
-                //       });
-                // }
-              );
+                  });
             })),
       ),
     );
@@ -1460,155 +1508,168 @@ class _TeamTaskState extends State<TeamTask> {
               final dayLeft = daysBetween(DateTime.now(),
                   DateTime.parse(CompletedTeamnonRecurring[index]["due"]));
               return DataRow(
-                cells: [
-                  DataCell(Text((index + 1).toString())),
-                  DataCell(Container(
-                      margin: const EdgeInsets.symmetric(vertical: 15),
-                      child: Text(CompletedTeamnonRecurring[index]["task"]))),
-                  DataCell(Center(
-                    child: Text(
-                      CompletedTeamnonRecurring[index]["category"]
-                          .split("|")[0],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      CompletedTeamnonRecurring[index]["subCategory"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      CompletedTeamnonRecurring[index]["type"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      CompletedTeamnonRecurring[index]["site"],
-                    ),
-                  )),
-                  DataCell(CompletedTeamnonRecurring[index]["checked"] != '-'
-                      ? Center(
-                          child: Row(
-                            children: [
-                              Text(CompletedTeamnonRecurring[index]["checked"]),
-                              Checkbox(
-                                checkColor: Colors.white,
-                                activeColor: Colors.blue,
-                                value: CompletedTeamnonRecurring[index]
-                                            ["checked"] ==
-                                        'Checked'
-                                    ? true
-                                    : false,
-                                shape: const CircleBorder(),
-                                onChanged: (value) async {
-                                  await Internet.isInternet()
-                                      .then((connection) async {
-                                    if (connection) {
-                                      if (CompletedTeamnonRecurring[index]
-                                              ["personCheck"] ==
-                                          currentUsername) {
-                                        await toggleSwitch(
-                                            value,
-                                            CompletedTeamnonRecurring[index]
-                                                ["nonRecurringId"]);
-                                      }
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content: const Text("No Internet !"),
-                                        behavior: SnackBarBehavior.floating,
-                                        margin: const EdgeInsets.all(20),
-                                        action: SnackBarAction(
-                                          label: 'Dismiss',
-                                          disabledTextColor: Colors.white,
-                                          textColor: Colors.blue,
-                                          onPressed: () {
-                                            //Do whatever you want
-                                          },
-                                        ),
-                                      ));
-                                    }
-                                  });
-                                },
-                              )
-                            ],
-                          ),
-                        )
-                      : const Text("No Review Needed")),
-                  DataCell(Center(
+                  cells: [
+                    DataCell(Text((index + 1).toString())),
+                    DataCell(Container(
+                        margin: const EdgeInsets.symmetric(vertical: 15),
+                        child: Text(CompletedTeamnonRecurring[index]["task"]))),
+                    DataCell(Center(
                       child: Text(
-                          CompletedTeamnonRecurring[index]["personCheck"]))),
-                  DataCell(Text(
-                    DateFormat('dd/MM/yyyy')
-                        .format(DateTime.parse(
-                            CompletedTeamnonRecurring[index]["due"]))
-                        .toString(),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      CompletedTeamnonRecurring[index]["remark"],
-                    ),
-                  )),
-                  DataCell(Text(CompletedTeamnonRecurring[index]["modify"] !=
-                              null &&
-                          CompletedTeamnonRecurring[index]["modify"].isNotEmpty
-                      ? DateFormat('dd/MM/yyyy')
+                        CompletedTeamnonRecurring[index]["category"]
+                            .split("|")[0],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        CompletedTeamnonRecurring[index]["subCategory"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        CompletedTeamnonRecurring[index]["type"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        CompletedTeamnonRecurring[index]["site"],
+                      ),
+                    )),
+                    DataCell(CompletedTeamnonRecurring[index]["checked"] != '-'
+                        ? Center(
+                            child: Row(
+                              children: [
+                                Text(CompletedTeamnonRecurring[index]
+                                    ["checked"]),
+                                Checkbox(
+                                  checkColor: Colors.white,
+                                  activeColor: Colors.blue,
+                                  value: CompletedTeamnonRecurring[index]
+                                              ["checked"] ==
+                                          'Checked'
+                                      ? true
+                                      : false,
+                                  shape: const CircleBorder(),
+                                  onChanged: (value) async {
+                                    await Internet.isInternet()
+                                        .then((connection) async {
+                                      if (connection) {
+                                        if (CompletedTeamnonRecurring[index]
+                                                ["personCheck"] ==
+                                            currentUsername) {
+                                          await toggleSwitch(
+                                              value,
+                                              CompletedTeamnonRecurring[index]
+                                                  ["nonRecurringId"]);
+                                        }
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(
+                                          content: const Text("No Internet !"),
+                                          behavior: SnackBarBehavior.floating,
+                                          margin: const EdgeInsets.all(20),
+                                          action: SnackBarAction(
+                                            label: 'Dismiss',
+                                            disabledTextColor: Colors.white,
+                                            textColor: Colors.blue,
+                                            onPressed: () {
+                                              //Do whatever you want
+                                            },
+                                          ),
+                                        ));
+                                      }
+                                    });
+                                  },
+                                )
+                              ],
+                            ),
+                          )
+                        : const Text("No Review Needed")),
+                    DataCell(Center(
+                        child: Text(
+                            CompletedTeamnonRecurring[index]["personCheck"]))),
+                    DataCell(Text(
+                      DateFormat('dd/MM/yyyy')
                           .format(DateTime.parse(
-                              CompletedTeamnonRecurring[index]["modify"]))
-                          .toString()
-                      : "")),
-                  DataCell(IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return editNonRecurring(
-                              id: CompletedTeamnonRecurring[index]
-                                      ["nonRecurringId"]
-                                  .toString(),
-                            );
+                              CompletedTeamnonRecurring[index]["due"]))
+                          .toString(),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        CompletedTeamnonRecurring[index]["remark"],
+                      ),
+                    )),
+                    DataCell(Text(
+                        CompletedTeamnonRecurring[index]["modify"] != null &&
+                                CompletedTeamnonRecurring[index]["modify"]
+                                    .isNotEmpty
+                            ? DateFormat('dd/MM/yyyy')
+                                .format(DateTime.parse(
+                                    CompletedTeamnonRecurring[index]["modify"]))
+                                .toString()
+                            : "")),
+                    DataCell(IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return editNonRecurring(
+                                id: CompletedTeamnonRecurring[index]
+                                        ["nonRecurringId"]
+                                    .toString(),
+                              );
+                            });
+                      },
+                    )),
+                    DataCell(IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () async {
+                          await Internet.isInternet().then((connection) async {
+                            if (connection) {
+                              await removeTeamNonRecurring(
+                                  CompletedTeamnonRecurring[index]
+                                      ["nonRecurringId"]);
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: const Text("No Internet !"),
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.all(20),
+                                action: SnackBarAction(
+                                  label: 'Dismiss',
+                                  disabledTextColor: Colors.white,
+                                  textColor: Colors.blue,
+                                  onPressed: () {
+                                    //Do whatever you want
+                                  },
+                                ),
+                              ));
+                            }
                           });
-                    },
-                  )),
-                  DataCell(IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        await Internet.isInternet().then((connection) async {
-                          if (connection) {
-                            await removeTeamNonRecurring(
-                                CompletedTeamnonRecurring[index]
-                                    ["nonRecurringId"]);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: const Text("No Internet !"),
-                              behavior: SnackBarBehavior.floating,
-                              margin: const EdgeInsets.all(20),
-                              action: SnackBarAction(
-                                label: 'Dismiss',
-                                disabledTextColor: Colors.white,
-                                textColor: Colors.blue,
-                                onPressed: () {
-                                  //Do whatever you want
-                                },
-                              ),
-                            ));
-                          }
+                        })),
+                  ],
+                  // onSelectChanged: (e) {
+                  //   showDialog(
+                  //       context: context,
+                  //       builder: (BuildContext context) {
+                  //         return DialogBox(
+                  //             id: foundTeamNonRecurring[index]["user_id"].toString(),
+                  //             name: foundTeamNonRecurring[index]['user_name'],
+                  //             password: foundTeamNonRecurring[index]['password'],
+                  //             isEditing: false);
+                  //       });
+                  // }
+                  onSelectChanged: (e) {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return editNonRecurring(
+                            id: CompletedTeamnonRecurring[index]
+                                    ["nonRecurringId"]
+                                .toString(),
+                          );
                         });
-                      })),
-                ],
-                // onSelectChanged: (e) {
-                //   showDialog(
-                //       context: context,
-                //       builder: (BuildContext context) {
-                //         return DialogBox(
-                //             id: foundTeamNonRecurring[index]["user_id"].toString(),
-                //             name: foundTeamNonRecurring[index]['user_name'],
-                //             password: foundTeamNonRecurring[index]['password'],
-                //             isEditing: false);
-                //       });
-                // }
-              );
+                  });
             })),
       ),
     );
@@ -1696,191 +1757,204 @@ class _TeamTaskState extends State<TeamTask> {
               final dayLeft = daysBetween(DateTime.now(),
                   DateTime.parse(foundTeamNonRecurring[index]["due"]));
               return DataRow(
-                cells: [
-                  DataCell(Text((index + 1).toString())),
-                  DataCell(Container(
-                      margin: const EdgeInsets.symmetric(vertical: 15),
-                      child: Text(foundTeamNonRecurring[index]["task"]))),
-                  DataCell(Center(
-                    child: Text(
-                      foundTeamNonRecurring[index]["category"].split("|")[0],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      foundTeamNonRecurring[index]["subCategory"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      foundTeamNonRecurring[index]["type"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      foundTeamNonRecurring[index]["site"],
-                    ),
-                  )),
-                  DataCell(foundTeamNonRecurring[index]["status"] == '100'
-                      ? foundTeamNonRecurring[index]["checked"] == "-"
-                          ? const Text("No Review Needed")
-                          : Row(
-                              children: [
-                                Text(foundTeamNonRecurring[index]["checked"]),
-                                Checkbox(
-                                  checkColor: Colors.white,
-                                  activeColor: Colors.blue,
-                                  value: foundTeamNonRecurring[index]
-                                              ["checked"] ==
-                                          'Checked'
-                                      ? true
-                                      : false,
-                                  shape: const CircleBorder(),
-                                  onChanged: (value) async {
-                                    await Internet.isInternet()
-                                        .then((connection) async {
-                                      if (connection) {
-                                        if (foundTeamNonRecurring[index]
-                                                ["personCheck"] ==
-                                            currentUsername) {
-                                          await toggleSwitch(
-                                              value,
-                                              foundTeamNonRecurring[index]
-                                                  ["nonRecurringId"]);
+                  cells: [
+                    DataCell(Text((index + 1).toString())),
+                    DataCell(Container(
+                        margin: const EdgeInsets.symmetric(vertical: 15),
+                        child: Text(foundTeamNonRecurring[index]["task"]))),
+                    DataCell(Center(
+                      child: Text(
+                        foundTeamNonRecurring[index]["category"].split("|")[0],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        foundTeamNonRecurring[index]["subCategory"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        foundTeamNonRecurring[index]["type"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        foundTeamNonRecurring[index]["site"],
+                      ),
+                    )),
+                    DataCell(foundTeamNonRecurring[index]["status"] == '100'
+                        ? foundTeamNonRecurring[index]["checked"] == "-"
+                            ? const Text("No Review Needed")
+                            : Row(
+                                children: [
+                                  Text(foundTeamNonRecurring[index]["checked"]),
+                                  Checkbox(
+                                    checkColor: Colors.white,
+                                    activeColor: Colors.blue,
+                                    value: foundTeamNonRecurring[index]
+                                                ["checked"] ==
+                                            'Checked'
+                                        ? true
+                                        : false,
+                                    shape: const CircleBorder(),
+                                    onChanged: (value) async {
+                                      await Internet.isInternet()
+                                          .then((connection) async {
+                                        if (connection) {
+                                          if (foundTeamNonRecurring[index]
+                                                  ["personCheck"] ==
+                                              currentUsername) {
+                                            await toggleSwitch(
+                                                value,
+                                                foundTeamNonRecurring[index]
+                                                    ["nonRecurringId"]);
+                                          }
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content:
+                                                const Text("No Internet !"),
+                                            behavior: SnackBarBehavior.floating,
+                                            margin: const EdgeInsets.all(20),
+                                            action: SnackBarAction(
+                                              label: 'Dismiss',
+                                              disabledTextColor: Colors.white,
+                                              textColor: Colors.blue,
+                                              onPressed: () {
+                                                //Do whatever you want
+                                              },
+                                            ),
+                                          ));
                                         }
-                                      } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                          content: const Text("No Internet !"),
-                                          behavior: SnackBarBehavior.floating,
-                                          margin: const EdgeInsets.all(20),
-                                          action: SnackBarAction(
-                                            label: 'Dismiss',
-                                            disabledTextColor: Colors.white,
-                                            textColor: Colors.blue,
-                                            onPressed: () {
-                                              //Do whatever you want
-                                            },
-                                          ),
-                                        ));
-                                      }
-                                    });
+                                      });
+                                    },
+                                  )
+                                ],
+                              )
+                        : LinearPercentIndicator(
+                            barRadius: const Radius.circular(5),
+                            width: 100.0,
+                            lineHeight: 20.0,
+                            percent: double.parse(
+                                    foundTeamNonRecurring[index]["status"]) /
+                                100,
+                            backgroundColor: Colors.grey,
+                            progressColor: Colors.blue,
+                            center: Text(
+                              foundTeamNonRecurring[index]["status"],
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ))),
+                    DataCell(foundTeamNonRecurring[index]["status"] != '100'
+                        ? Container(
+                            width: 100,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: dayLeft.isNegative
+                                  ? Styles.lateColor
+                                  : Styles.activeColor,
+                            ),
+                            child: Center(
+                                child: dayLeft.isNegative
+                                    ? Text(
+                                        "${dayLeft.abs()} DAYS LATE",
+                                        style: const TextStyle(
+                                            color: Color(0xFFf43a2c),
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    : Text(
+                                        "$dayLeft DAYS LEFT",
+                                        style: Styles.dayLeftActive,
+                                      )))
+                        : Center(
+                            child: Text(
+                              foundTeamNonRecurring[index]["personCheck"],
+                              textAlign: TextAlign.center,
+                            ),
+                          )),
+                    DataCell(Text(
+                      DateFormat('dd/MM/yyyy')
+                          .format(DateTime.parse(
+                              foundTeamNonRecurring[index]["due"]))
+                          .toString(),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        foundTeamNonRecurring[index]["remark"],
+                      ),
+                    )),
+                    DataCell(Text(foundTeamNonRecurring[index]["modify"] !=
+                                null &&
+                            foundTeamNonRecurring[index]["modify"].isNotEmpty
+                        ? DateFormat('dd/MM/yyyy')
+                            .format(DateTime.parse(
+                                foundTeamNonRecurring[index]["modify"]))
+                            .toString()
+                        : "")),
+                    DataCell(IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return editNonRecurring(
+                                id: foundTeamNonRecurring[index]
+                                        ["nonRecurringId"]
+                                    .toString(),
+                              );
+                            });
+                      },
+                    )),
+                    DataCell(IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () async {
+                          await Internet.isInternet().then((connection) async {
+                            if (connection) {
+                              await removeTeamNonRecurring(
+                                  foundTeamNonRecurring[index]
+                                      ["nonRecurringId"]);
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: const Text("No Internet !"),
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.all(20),
+                                action: SnackBarAction(
+                                  label: 'Dismiss',
+                                  disabledTextColor: Colors.white,
+                                  textColor: Colors.blue,
+                                  onPressed: () {
+                                    //Do whatever you want
                                   },
-                                )
-                              ],
-                            )
-                      : LinearPercentIndicator(
-                          barRadius: const Radius.circular(5),
-                          width: 100.0,
-                          lineHeight: 20.0,
-                          percent: double.parse(
-                                  foundTeamNonRecurring[index]["status"]) /
-                              100,
-                          backgroundColor: Colors.grey,
-                          progressColor: Colors.blue,
-                          center: Text(
-                            foundTeamNonRecurring[index]["status"],
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ))),
-                  DataCell(foundTeamNonRecurring[index]["status"] != '100'
-                      ? Container(
-                          width: 100,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            color: dayLeft.isNegative
-                                ? Styles.lateColor
-                                : Styles.activeColor,
-                          ),
-                          child: Center(
-                              child: dayLeft.isNegative
-                                  ? Text(
-                                      "${dayLeft.abs()} DAYS LATE",
-                                      style: const TextStyle(
-                                          color: Color(0xFFf43a2c),
-                                          fontWeight: FontWeight.bold),
-                                    )
-                                  : Text(
-                                      "$dayLeft DAYS LEFT",
-                                      style: Styles.dayLeftActive,
-                                    )))
-                      : Center(
-                          child: Text(
-                            foundTeamNonRecurring[index]["personCheck"],
-                            textAlign: TextAlign.center,
-                          ),
-                        )),
-                  DataCell(Text(
-                    DateFormat('dd/MM/yyyy')
-                        .format(
-                            DateTime.parse(foundTeamNonRecurring[index]["due"]))
-                        .toString(),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      foundTeamNonRecurring[index]["remark"],
-                    ),
-                  )),
-                  DataCell(Text(
-                      foundTeamNonRecurring[index]["modify"] != null &&
-                              foundTeamNonRecurring[index]["modify"].isNotEmpty
-                          ? DateFormat('dd/MM/yyyy')
-                              .format(DateTime.parse(
-                                  foundTeamNonRecurring[index]["modify"]))
-                              .toString()
-                          : "")),
-                  DataCell(IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return editNonRecurring(
-                              id: foundTeamNonRecurring[index]["nonRecurringId"]
-                                  .toString(),
-                            );
+                                ),
+                              ));
+                            }
                           });
-                    },
-                  )),
-                  DataCell(IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        await Internet.isInternet().then((connection) async {
-                          if (connection) {
-                            await removeTeamNonRecurring(
-                                foundTeamNonRecurring[index]["nonRecurringId"]);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: const Text("No Internet !"),
-                              behavior: SnackBarBehavior.floating,
-                              margin: const EdgeInsets.all(20),
-                              action: SnackBarAction(
-                                label: 'Dismiss',
-                                disabledTextColor: Colors.white,
-                                textColor: Colors.blue,
-                                onPressed: () {
-                                  //Do whatever you want
-                                },
-                              ),
-                            ));
-                          }
+                        })),
+                  ],
+                  // onSelectChanged: (e) {
+                  //   showDialog(
+                  //       context: context,
+                  //       builder: (BuildContext context) {
+                  //         return DialogBox(
+                  //             id: foundTeamNonRecurring[index]["user_id"].toString(),
+                  //             name: foundTeamNonRecurring[index]['user_name'],
+                  //             password: foundTeamNonRecurring[index]['password'],
+                  //             isEditing: false);
+                  //       });
+                  // }
+                  onSelectChanged: (e) {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return editNonRecurring(
+                            id: foundTeamNonRecurring[index]["nonRecurringId"]
+                                .toString(),
+                          );
                         });
-                      })),
-                ],
-                // onSelectChanged: (e) {
-                //   showDialog(
-                //       context: context,
-                //       builder: (BuildContext context) {
-                //         return DialogBox(
-                //             id: foundTeamNonRecurring[index]["user_id"].toString(),
-                //             name: foundTeamNonRecurring[index]['user_name'],
-                //             password: foundTeamNonRecurring[index]['password'],
-                //             isEditing: false);
-                //       });
-                // }
-              );
+                  });
             })),
       ),
     );

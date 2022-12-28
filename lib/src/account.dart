@@ -70,7 +70,7 @@ class _AccountState extends State<Account> {
 
   Future<void> getImage() async {
     var url =
-        "https://ipsolutiontesting.000webhostapp.com/ipsolution/getProfileImage.php";
+        "https://ipsolutions4u.com/ipsolutions/recurringMobile/getProfileImage.php";
     var response = await http.post(Uri.parse(url),
         body: {"tableName": "user_details", "user_id": userid.toString()});
     List user = json.decode(response.body);
@@ -89,7 +89,7 @@ class _AccountState extends State<Account> {
       setState(() => this.image = imageTemp);
 
       final uri = Uri.parse(
-          "https://ipsolutiontesting.000webhostapp.com/ipsolution/uploadImage.php");
+          "https://ipsolutions4u.com/ipsolutions/recurringMobile/uploadImage.php");
       var request = http.MultipartRequest('POST', uri);
       request.fields['user_id'] = userid.toString();
       var pic = await http.MultipartFile.fromPath("image", image.path);
@@ -226,10 +226,13 @@ class _AccountState extends State<Account> {
                                     shape: BoxShape.circle,
                                     image: DecorationImage(
                                       fit: BoxFit.cover,
-                                      image: filepath!.isNotEmpty
-                                          ? NetworkImage(
-                                                  "https://ipsolutiontesting.000webhostapp.com/ipsolution/uploads/$filepath")
-                                              as ImageProvider
+                                      image: filepath != null
+                                          ? filepath!.isNotEmpty
+                                              ? NetworkImage(
+                                                      "https://ipsolutions4u.com/ipsolutions/recurring/upload/$filepath")
+                                                  as ImageProvider
+                                              : const AssetImage(
+                                                  'assets/logo.png')
                                           : const AssetImage('assets/logo.png'),
                                     ),
                                   ),

@@ -80,7 +80,7 @@ class _NavbarState extends State<Navbar> {
 
   Future getImage() async {
     var url =
-        "https://ipsolutiontesting.000webhostapp.com/ipsolution/getProfileImage.php";
+        "https://ipsolutions4u.com/ipsolutions/recurringMobile/getProfileImage.php";
     var response = await http.post(Uri.parse(url),
         body: {"tableName": "user_details", "user_id": userid.toString()});
     List user = json.decode(response.body);
@@ -116,44 +116,59 @@ class _NavbarState extends State<Navbar> {
                 color: Styles.textColor,
               ),
             ),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: ClipOval(
-                child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          width: 4,
-                          color: Theme.of(context).scaffoldBackgroundColor),
-                      borderRadius: BorderRadius.circular(50),
-                      boxShadow: [
-                        BoxShadow(
-                            spreadRadius: 2,
-                            blurRadius: 10,
-                            color: Colors.black.withOpacity(0.1),
-                            offset: const Offset(0, 10))
-                      ],
-                    ),
-                    child:
-                        //  Image.network(
-                        //   'https://invenioptl.com/wp-content/uploads/2022/07/logoip.png',
-                        //   fit: BoxFit.cover,
-                        //   width: 90,
-                        //   height: 90,
-                        // ),
-
-                        filepath!.isNotEmpty
-                            ? Image.network(
-                                "https://ipsolutiontesting.000webhostapp.com/ipsolution/uploads/$filepath",
-                                fit: BoxFit.cover,
-                                width: 90,
-                                height: 90,
-                              )
-                            : Image.asset(
-                                'assets/logo.png',
-                                fit: BoxFit.cover,
-                                width: 90,
-                                height: 90,
-                              )),
+            currentAccountPicture: GestureDetector(
+              onTap: () => Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const Account())),
+              child: CircleAvatar(
+                radius: 100,
+                backgroundColor: Colors.white,
+                child: ClipOval(
+                  child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            width: 4,
+                            color: Theme.of(context).scaffoldBackgroundColor),
+                        borderRadius: BorderRadius.circular(50),
+                        boxShadow: [
+                          BoxShadow(
+                              spreadRadius: 2,
+                              blurRadius: 10,
+                              color: Colors.black.withOpacity(0.1),
+                              offset: const Offset(0, 10))
+                        ],
+                      ),
+                      child:
+                          //  Image.network(
+                          //   'https://invenioptl.com/wp-content/uploads/2022/07/logoip.png',
+                          //   fit: BoxFit.cover,
+                          //   width: 90,
+                          //   height: 90,
+                          // ),
+                          filepath != null
+                              ? filepath!.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(100.0),
+                                      child: Image.network(
+                                        "https://ipsolutions4u.com/ipsolutions/recurring/upload/$filepath",
+                                        fit: BoxFit.cover,
+                                        width: 90,
+                                        height: 90,
+                                      ),
+                                    )
+                                  : Image.asset(
+                                      'assets/logo.png',
+                                      fit: BoxFit.cover,
+                                      width: 90,
+                                      height: 90,
+                                    )
+                              : Image.asset(
+                                  'assets/logo.png',
+                                  fit: BoxFit.cover,
+                                  width: 90,
+                                  height: 90,
+                                )),
+                ),
               ),
             ),
             decoration: BoxDecoration(

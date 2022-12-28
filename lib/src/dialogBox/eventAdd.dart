@@ -2,6 +2,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -19,6 +20,7 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../../model/selection.dart';
 
 import '../../util/checkInternet.dart';
+import '../../util/conMysql.dart';
 import '../../util/datetime.dart';
 import 'package:http/http.dart' as http;
 
@@ -56,7 +58,7 @@ class _EventAddState extends State<EventAdd> {
   List<String> siteList = <String>[];
   List<Map<String, dynamic>> category = [];
   List<String> priorityList = <String>['Low', 'Moderate', 'High'];
-  List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
+  List<String> statusList = <String>['Upcoming', 'In Progress', 'Done'];
   List<String> recurringOption = <String>[
     'Once',
     'Daily',
@@ -127,10 +129,11 @@ class _EventAddState extends State<EventAdd> {
     String user = sp.getString("user_name")!;
     String userRole = sp.getString("role")!;
     String currentUserSiteLead = sp.getString("siteLead")!;
-    userList = [];
+
     final siteOptions = await Selection().siteSelection();
 
     setState(() {
+      userList = [];
       for (final val in siteOptions) {
         siteList = val["options"];
       }
@@ -157,12 +160,16 @@ class _EventAddState extends State<EventAdd> {
             for (int x = 0; x < functionData.length; x++) {
               if (positionList[y] == functionData[x] &&
                   (data[i]["role"] == "Leader" || data[i]["role"] == "Staff")) {
-                userList.add(data[i]["user_name"]);
+                if (userList.contains(data[i]['user_name'])) {
+                } else {
+                  userList.add(data[i]["user_name"]);
+                }
               }
             }
           }
         }
       }
+
       //
     });
   }
@@ -280,7 +287,7 @@ class _EventAddState extends State<EventAdd> {
   }
 
   Future saveEvent() async {
-    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/add.php';
+    var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/add.php';
     final isValid = _formkey.currentState!.validate();
     final SharedPreferences sp = await _pref;
     String currentUsername = sp.getString("user_name")!;
@@ -377,7 +384,7 @@ class _EventAddState extends State<EventAdd> {
       //     context, MaterialPageRoute(builder: (context) => const Recurring()));
 
       var url_add =
-          'https://ipsolutiontesting.000webhostapp.com/ipsolution/add.php';
+          'https://ipsolutions4u.com/ipsolutions/recurringMobile/add.php';
       int dependent_code = rng.nextInt(900000000) + 100000000;
 
       const availableChars =
@@ -438,25 +445,37 @@ class _EventAddState extends State<EventAdd> {
       }
       if (response.statusCode == 200) {
         if (!mounted) return;
-        Navigator.pop(context);
 
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text("Event has been added."),
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(20),
-          action: SnackBarAction(
-            label: 'Dismiss',
-            disabledTextColor: Colors.white,
-            textColor: Colors.blue,
-            onPressed: () {
-              //Do whatever you want
-            },
-          ),
-        ));
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Recurring()),
-        );
+        FocusScope.of(context).requestFocus(FocusNode());
+        await Internet.isInternet().then((connection) async {
+          if (connection) {
+            EasyLoading.show(
+              status: 'Adding and Loading Data...',
+              maskType: EasyLoadingMaskType.black,
+            );
+            await Controller().addRecurringToSqlite();
+            if (!mounted) return;
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Recurring()),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text("Event has been added."),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(20),
+              action: SnackBarAction(
+                label: 'Dismiss',
+                disabledTextColor: Colors.white,
+                textColor: Colors.blue,
+                onPressed: () {
+                  //Do whatever you want
+                },
+              ),
+            ));
+            EasyLoading.showSuccess('Successfully');
+          }
+        });
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -1145,8 +1164,8 @@ class _EventAddState extends State<EventAdd> {
               shape: BoxShape.rectangle,
               color: const Color(0xFF384464),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                const BoxShadow(
+              boxShadow: const [
+                BoxShadow(
                     color: Colors.black, offset: Offset(0, 10), blurRadius: 10),
               ]),
           child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[

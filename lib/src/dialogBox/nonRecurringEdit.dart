@@ -2,17 +2,19 @@ import 'dart:convert';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/selection.dart';
 import 'package:ipsolution/util/selection.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../model/manageUser.dart';
 
 import '../../util/checkInternet.dart';
+import '../../util/conMysql.dart';
 import '../../util/datetime.dart';
 import '../non_recurring.dart';
 
@@ -56,10 +58,14 @@ class _editNonRecurringState extends State<editNonRecurring> {
   String? _selectedSubCategory;
   List _selectedData = [];
   String? userPosition;
+  DbHelper dbHelper = DbHelper();
+  Future? _future;
   @override
   void initState() {
-    getDataDetails(int.parse(widget.id));
-    Future.delayed(Duration.zero, () async {
+    super.initState();
+
+    _future = Future.delayed(Duration.zero, () async {
+      getDataDetails(int.parse(widget.id));
       await Internet.isInternet().then((connection) async {
         setState(() {
           internet = connection;
@@ -76,7 +82,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
 
           // user table
           var url =
-              'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
+              'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
           var response = await http
               .post(Uri.parse(url), body: {"tableName": "user_details"});
 
@@ -128,8 +134,12 @@ class _editNonRecurringState extends State<editNonRecurring> {
         }
       });
     });
+  }
 
-    super.initState();
+  @override
+  void dispose() {
+    _future!.then((_) => null); // Cancel the future
+    super.dispose();
   }
 
   Future<void> getDataDetails(int id) async {
@@ -234,7 +244,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
     }
   }
 
-  Future updateNonRecurring(int id) async {
+  Future<void> updateNonRecurring(int id) async {
     final SharedPreferences sp = await _pref;
     final isValid = _formkey.currentState!.validate();
 
@@ -246,9 +256,9 @@ class _editNonRecurringState extends State<editNonRecurring> {
 
     if (isValid) {
       var url =
-          'https://ipsolutiontesting.000webhostapp.com/ipsolution/edit.php';
+          'https://ipsolutions4u.com/ipsolutions/recurringMobile/edit.php';
       var url_noti =
-          'https://ipsolutiontesting.000webhostapp.com/ipsolution/add.php';
+          'https://ipsolutions4u.com/ipsolutions/recurringMobile/add.php';
 
       String currentUsername = sp.getString("user_name")!;
 
@@ -316,26 +326,43 @@ class _editNonRecurringState extends State<editNonRecurring> {
 
       if (response.statusCode == 200) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text("Updated Successfully!"),
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(20),
-            action: SnackBarAction(
-              label: 'Dismiss',
-              disabledTextColor: Colors.white,
-              textColor: Colors.blue,
-              onPressed: () {
-                //Do whatever you want
-              },
-            ),
-          ),
-        );
-        Navigator.pop(context);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const NonRecurring()),
-        );
+
+        FocusScope.of(context).requestFocus(FocusNode());
+        await Internet.isInternet().then((connection) async {
+          if (connection) {
+            EasyLoading.show(
+              status: 'Updating and Loading Data ...',
+              maskType: EasyLoadingMaskType.black,
+            );
+
+            // await Controller().syncdata();
+            await Controller().addNonRecurringToSqlite();
+            // if (!mounted) return;
+            if (!mounted) return;
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const NonRecurring()),
+            );
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text("Updated Successfully!"),
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.all(20),
+                action: SnackBarAction(
+                  label: 'Dismiss',
+                  disabledTextColor: Colors.white,
+                  textColor: Colors.blue,
+                  onPressed: () {
+                    //Do whatever you want
+                  },
+                ),
+              ),
+            );
+            EasyLoading.showSuccess('Successfully');
+          }
+        });
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -401,11 +428,19 @@ class _editNonRecurringState extends State<editNonRecurring> {
                 onFieldSubmitted: (_) {},
                 controller: controllerText,
                 validator: labelText != "Remark"
-                    ? (data) {
-                        return data != null && data.isEmpty
-                            ? 'Field cannot be empty'
-                            : null;
-                      }
+                    ? labelText == "Status"
+                        ? (data) {
+                            if (double.parse(data!) < 0.0 ||
+                                double.parse(data) > 100.0) {
+                              return 'Value must be between 0 and 100';
+                            }
+                            return null;
+                          }
+                        : (data) {
+                            return data != null && data.isEmpty
+                                ? 'Field cannot be empty'
+                                : null;
+                          }
                     : null),
           ),
         ],
@@ -959,29 +994,31 @@ class _editNonRecurringState extends State<editNonRecurring> {
                         borderRadius: BorderRadius.circular(10.0))),
                   ),
                   onPressed: () async {
-                    await Internet.isInternet().then((connection) async {
-                      if (connection) {
-                        if (!isTapped) {
-                          isTapped = true;
-                          await updateNonRecurring(int.parse(widget.id));
+                    if (mounted) {
+                      await Internet.isInternet().then((connection) async {
+                        if (connection) {
+                          if (!isTapped && mounted) {
+                            isTapped = true;
+                            await updateNonRecurring(int.parse(widget.id));
+                          }
+                        } else {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: const Text("No Internet !"),
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.all(20),
+                            action: SnackBarAction(
+                              label: 'Dismiss',
+                              disabledTextColor: Colors.white,
+                              textColor: Colors.blue,
+                              onPressed: () {
+                                //Do whatever you want
+                              },
+                            ),
+                          ));
                         }
-                      } else {
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: const Text("No Internet !"),
-                          behavior: SnackBarBehavior.floating,
-                          margin: const EdgeInsets.all(20),
-                          action: SnackBarAction(
-                            label: 'Dismiss',
-                            disabledTextColor: Colors.white,
-                            textColor: Colors.blue,
-                            onPressed: () {
-                              //Do whatever you want
-                            },
-                          ),
-                        ));
-                      }
-                    });
+                      });
+                    }
                   },
                   child: const Text(
                     "Update",

@@ -3,10 +3,10 @@
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
    <application
-        android:label="ipsolution"
+        android:label="Ipsolution"
         android:name="${applicationName}"
         android:requestLegacyExternalStorage="true"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/logo">
         
         <activity
             android:name=".MainActivity"

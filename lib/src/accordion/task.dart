@@ -1,7 +1,9 @@
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
+import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/src/dialogBox/nonRecurringAdd.dart';
 import 'package:ipsolution/src/dialogBox/nonRecurringEdit.dart';
 import 'package:ipsolution/src/non_recurring.dart';
@@ -11,6 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../util/checkInternet.dart';
 import 'package:http/http.dart' as http;
+
+import '../../util/conMysql.dart';
 
 class Task extends StatefulWidget {
   List<Map<String, dynamic>> allNonRecurring;
@@ -237,20 +241,30 @@ class _TaskState extends State<Task> {
 
   Future<void> removeNonRecurring(int id) async {
     var url =
-        'https://ipsolutiontesting.000webhostapp.com/ipsolution/delete.php';
+        'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
     final response = await http.post(Uri.parse(url), body: {
       "dataTable": "nonrecurring",
       "id": id.toString(),
     });
     if (response.statusCode == 200) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Successfully deleted!'),
-      ));
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const NonRecurring()),
-      );
+      await Internet.isInternet().then((connection) async {
+        if (connection) {
+          EasyLoading.show(
+            status: 'Deleting and Loading Data...',
+            maskType: EasyLoadingMaskType.black,
+          );
+          await Controller().addNonRecurringToSqlite();
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const NonRecurring()),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Successfully deleted!'),
+          ));
+          EasyLoading.showSuccess('Successfully');
+        }
+      });
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -600,138 +614,153 @@ class _TaskState extends State<Task> {
                   DateTime.parse(LatenonRecurring[index]["due"]));
 
               return DataRow(
-                cells: [
-                  DataCell(Text((index + 1).toString())),
-                  DataCell(Container(
-                    margin: const EdgeInsets.symmetric(vertical: 15),
-                    child: Text(
-                      LatenonRecurring[index]["task"],
-                      softWrap: true,
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      LatenonRecurring[index]["category"].split("|")[0],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      LatenonRecurring[index]["subCategory"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      LatenonRecurring[index]["type"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      LatenonRecurring[index]["site"],
-                    ),
-                  )),
-                  DataCell(LinearPercentIndicator(
-                      barRadius: const Radius.circular(5),
-                      width: 100.0,
-                      lineHeight: 20.0,
-                      percent:
-                          double.parse(LatenonRecurring[index]["status"]) / 100,
-                      backgroundColor: Colors.grey,
-                      progressColor: Colors.blue,
-                      center: Text(
-                        LatenonRecurring[index]["status"],
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ))),
-                  DataCell(Container(
-                      width: 100,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: Styles.lateColor,
-                      ),
-                      child: Center(
-                          child: Text(
-                        "${dayLeft.abs()} DAYS LATE",
-                        style: const TextStyle(
-                            color: Color(0xFFf43a2c),
-                            fontWeight: FontWeight.bold),
-                      )))),
-                  DataCell(Text(
-                    DateFormat('dd/MM/yyyy')
-                        .format(DateTime.parse(LatenonRecurring[index]["due"]))
-                        .toString(),
-                  )),
-                  DataCell(Center(
-                    child: Container(
+                  cells: [
+                    DataCell(Text((index + 1).toString())),
+                    DataCell(Container(
                       margin: const EdgeInsets.symmetric(vertical: 15),
                       child: Text(
-                        LatenonRecurring[index]["remark"],
+                        LatenonRecurring[index]["task"],
+                        softWrap: true,
                       ),
-                    ),
-                  )),
-                  DataCell(Text(LatenonRecurring[index]["modify"] != null &&
-                          LatenonRecurring[index]["modify"].isNotEmpty
-                      ? DateFormat('dd/MM/yyyy')
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        LatenonRecurring[index]["category"].split("|")[0],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        LatenonRecurring[index]["subCategory"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        LatenonRecurring[index]["type"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        LatenonRecurring[index]["site"],
+                      ),
+                    )),
+                    DataCell(LinearPercentIndicator(
+                        barRadius: const Radius.circular(5),
+                        width: 100.0,
+                        lineHeight: 20.0,
+                        percent:
+                            double.parse(LatenonRecurring[index]["status"]) /
+                                100,
+                        backgroundColor: Colors.grey,
+                        progressColor: Colors.blue,
+                        center: Text(
+                          LatenonRecurring[index]["status"],
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ))),
+                    DataCell(Container(
+                        width: 100,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: Styles.lateColor,
+                        ),
+                        child: Center(
+                            child: Text(
+                          "${dayLeft.abs()} DAYS LATE",
+                          style: const TextStyle(
+                              color: Color(0xFFf43a2c),
+                              fontWeight: FontWeight.bold),
+                        )))),
+                    DataCell(Text(
+                      DateFormat('dd/MM/yyyy')
                           .format(
-                              DateTime.parse(LatenonRecurring[index]["modify"]))
-                          .toString()
-                      : '')),
-                  DataCell(Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return editNonRecurring(
-                                  id: LatenonRecurring[index]["nonRecurringId"]
-                                      .toString(),
-                                );
-                              });
-                        },
+                              DateTime.parse(LatenonRecurring[index]["due"]))
+                          .toString(),
+                    )),
+                    DataCell(Center(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 15),
+                        child: Text(
+                          LatenonRecurring[index]["remark"],
+                        ),
                       ),
-                      IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () async {
-                            await Internet.isInternet()
-                                .then((connection) async {
-                              if (connection) {
-                                await removeNonRecurring(
-                                    LatenonRecurring[index]["nonRecurringId"]);
-                              } else {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  content: const Text("No Internet !"),
-                                  behavior: SnackBarBehavior.floating,
-                                  margin: const EdgeInsets.all(20),
-                                  action: SnackBarAction(
-                                    label: 'Dismiss',
-                                    disabledTextColor: Colors.white,
-                                    textColor: Colors.blue,
-                                    onPressed: () {
-                                      //Do whatever you want
-                                    },
-                                  ),
-                                ));
-                              }
-                            });
-                          })
-                    ],
-                  )),
-                ],
-                // onSelectChanged: (e) {
-                //   showDialog(
-                //       context: context,
-                //       builder: (BuildContext context) {
-                //         return DialogBox(
-                //             id: foundNonRecurring[index]["user_id"].toString(),
-                //             name: foundNonRecurring[index]['user_name'],
-                //             password: foundNonRecurring[index]['password'],
-                //             isEditing: false);
-                //       });
-                // }
-              );
+                    )),
+                    DataCell(Text(LatenonRecurring[index]["modify"] != null &&
+                            LatenonRecurring[index]["modify"].isNotEmpty
+                        ? DateFormat('dd/MM/yyyy')
+                            .format(DateTime.parse(
+                                LatenonRecurring[index]["modify"]))
+                            .toString()
+                        : '')),
+                    DataCell(Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return editNonRecurring(
+                                    id: LatenonRecurring[index]
+                                            ["nonRecurringId"]
+                                        .toString(),
+                                  );
+                                });
+                          },
+                        ),
+                        IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () async {
+                              await Internet.isInternet()
+                                  .then((connection) async {
+                                if (connection) {
+                                  await removeNonRecurring(
+                                      LatenonRecurring[index]
+                                          ["nonRecurringId"]);
+                                } else {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: const Text("No Internet !"),
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: const EdgeInsets.all(20),
+                                    action: SnackBarAction(
+                                      label: 'Dismiss',
+                                      disabledTextColor: Colors.white,
+                                      textColor: Colors.blue,
+                                      onPressed: () {
+                                        //Do whatever you want
+                                      },
+                                    ),
+                                  ));
+                                }
+                              });
+                            })
+                      ],
+                    )),
+                  ],
+                  // onSelectChanged: (e) {
+                  //   showDialog(
+                  //       context: context,
+                  //       builder: (BuildContext context) {
+                  //         return DialogBox(
+                  //             id: foundNonRecurring[index]["user_id"].toString(),
+                  //             name: foundNonRecurring[index]['user_name'],
+                  //             password: foundNonRecurring[index]['password'],
+                  //             isEditing: false);
+                  //       });
+                  // }
+                  onSelectChanged: (e) {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return editNonRecurring(
+                            id: LatenonRecurring[index]["nonRecurringId"]
+                                .toString(),
+                          );
+                        });
+                  }
+                  
+                  );
             })),
       ),
     );
@@ -821,135 +850,146 @@ class _TaskState extends State<Task> {
                       DateFormat('yyyy-MM-dd').format(DateTime.now())),
                   DateTime.parse(ActivenonRecurring[index]["due"]));
               return DataRow(
-                cells: [
-                  DataCell(Text((index + 1).toString())),
-                  DataCell(Container(
-                      margin: const EdgeInsets.symmetric(vertical: 15),
-                      child: Text(ActivenonRecurring[index]["task"]))),
-                  DataCell(Center(
-                    child: Text(
-                      ActivenonRecurring[index]["category"].split("|")[0],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      ActivenonRecurring[index]["subCategory"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      ActivenonRecurring[index]["type"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      ActivenonRecurring[index]["site"],
-                    ),
-                  )),
-                  DataCell(LinearPercentIndicator(
-                      barRadius: const Radius.circular(5),
-                      width: 100.0,
-                      lineHeight: 20.0,
-                      percent:
-                          double.parse(ActivenonRecurring[index]["status"]) /
-                              100,
-                      backgroundColor: Colors.grey,
-                      progressColor: Colors.blue,
-                      center: Text(
-                        ActivenonRecurring[index]["status"],
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ))),
-                  DataCell(Container(
-                      width: 100,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: dayLeft.isNegative
-                            ? Styles.lateColor
-                            : Styles.activeColor,
-                      ),
-                      child: Center(
-                          child: dayLeft.isNegative
-                              ? Text(
-                                  "${dayLeft.abs()} DAYS LATE",
-                                  style: Styles.dayLeftLate,
-                                )
-                              : Text(
-                                  "$dayLeft DAYS LEFT",
-                                  style: Styles.dayLeftActive,
-                                )))),
-                  DataCell(Text(
-                    DateFormat('dd/MM/yyyy')
-                        .format(
-                            DateTime.parse(ActivenonRecurring[index]["due"]))
-                        .toString(),
-                  )),
-                  DataCell(Container(
-                    margin: const EdgeInsets.symmetric(vertical: 15),
-                    child: Center(
+                  cells: [
+                    DataCell(Text((index + 1).toString())),
+                    DataCell(Container(
+                        margin: const EdgeInsets.symmetric(vertical: 15),
+                        child: Text(ActivenonRecurring[index]["task"]))),
+                    DataCell(Center(
                       child: Text(
-                        ActivenonRecurring[index]["remark"],
+                        ActivenonRecurring[index]["category"].split("|")[0],
                       ),
-                    ),
-                  )),
-                  DataCell(Text(ActivenonRecurring[index]["modify"] != null &&
-                          ActivenonRecurring[index]["modify"].isNotEmpty
-                      ? DateFormat('dd/MM/yyyy')
-                          .format(DateTime.parse(
-                              ActivenonRecurring[index]["modify"]))
-                          .toString()
-                      : '')),
-                  DataCell(IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return editNonRecurring(
-                              id: ActivenonRecurring[index]["nonRecurringId"]
-                                  .toString(),
-                            );
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        ActivenonRecurring[index]["subCategory"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        ActivenonRecurring[index]["type"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        ActivenonRecurring[index]["site"],
+                      ),
+                    )),
+                    DataCell(LinearPercentIndicator(
+                        barRadius: const Radius.circular(5),
+                        width: 100.0,
+                        lineHeight: 20.0,
+                        percent:
+                            double.parse(ActivenonRecurring[index]["status"]) /
+                                100,
+                        backgroundColor: Colors.grey,
+                        progressColor: Colors.blue,
+                        center: Text(
+                          ActivenonRecurring[index]["status"],
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ))),
+                    DataCell(Container(
+                        width: 100,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: dayLeft.isNegative
+                              ? Styles.lateColor
+                              : Styles.activeColor,
+                        ),
+                        child: Center(
+                            child: dayLeft.isNegative
+                                ? Text(
+                                    "${dayLeft.abs()} DAYS LATE",
+                                    style: Styles.dayLeftLate,
+                                  )
+                                : Text(
+                                    "$dayLeft DAYS LEFT",
+                                    style: Styles.dayLeftActive,
+                                  )))),
+                    DataCell(Text(
+                      DateFormat('dd/MM/yyyy')
+                          .format(
+                              DateTime.parse(ActivenonRecurring[index]["due"]))
+                          .toString(),
+                    )),
+                    DataCell(Container(
+                      margin: const EdgeInsets.symmetric(vertical: 15),
+                      child: Center(
+                        child: Text(
+                          ActivenonRecurring[index]["remark"],
+                        ),
+                      ),
+                    )),
+                    DataCell(Text(ActivenonRecurring[index]["modify"] != null &&
+                            ActivenonRecurring[index]["modify"].isNotEmpty
+                        ? DateFormat('dd/MM/yyyy')
+                            .format(DateTime.parse(
+                                ActivenonRecurring[index]["modify"]))
+                            .toString()
+                        : '')),
+                    DataCell(IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return editNonRecurring(
+                                id: ActivenonRecurring[index]["nonRecurringId"]
+                                    .toString(),
+                              );
+                            });
+                      },
+                    )),
+                    DataCell(IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () async {
+                          await Internet.isInternet().then((connection) async {
+                            if (connection) {
+                              await removeNonRecurring(
+                                  ActivenonRecurring[index]["nonRecurringId"]);
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: const Text("No Internet !"),
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.all(20),
+                                action: SnackBarAction(
+                                  label: 'Dismiss',
+                                  disabledTextColor: Colors.white,
+                                  textColor: Colors.blue,
+                                  onPressed: () {
+                                    //Do whatever you want
+                                  },
+                                ),
+                              ));
+                            }
                           });
-                    },
-                  )),
-                  DataCell(IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        await Internet.isInternet().then((connection) async {
-                          if (connection) {
-                            await removeNonRecurring(
-                                ActivenonRecurring[index]["nonRecurringId"]);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: const Text("No Internet !"),
-                              behavior: SnackBarBehavior.floating,
-                              margin: const EdgeInsets.all(20),
-                              action: SnackBarAction(
-                                label: 'Dismiss',
-                                disabledTextColor: Colors.white,
-                                textColor: Colors.blue,
-                                onPressed: () {
-                                  //Do whatever you want
-                                },
-                              ),
-                            ));
-                          }
+                        })),
+                  ],
+                  // onSelectChanged: (e) {
+                  //   showDialog(
+                  //       context: context,
+                  //       builder: (BuildContext context) {
+                  //         return DialogBox(
+                  //             id: foundNonRecurring[index]["user_id"].toString(),
+                  //             name: foundNonRecurring[index]['user_name'],
+                  //             password: foundNonRecurring[index]['password'],
+                  //             isEditing: false);
+                  //       });
+                  // }
+
+                  onSelectChanged: (e) {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return editNonRecurring(
+                            id: ActivenonRecurring[index]["nonRecurringId"]
+                                .toString(),
+                          );
                         });
-                      })),
-                ],
-                // onSelectChanged: (e) {
-                //   showDialog(
-                //       context: context,
-                //       builder: (BuildContext context) {
-                //         return DialogBox(
-                //             id: foundNonRecurring[index]["user_id"].toString(),
-                //             name: foundNonRecurring[index]['user_name'],
-                //             password: foundNonRecurring[index]['password'],
-                //             isEditing: false);
-                //       });
-                // }
-              );
+                  });
             })),
       ),
     );
@@ -1040,129 +1080,141 @@ class _TaskState extends State<Task> {
                   DateTime.parse(CompletednonRecurring[index]["due"]));
 
               return DataRow(
-                cells: [
-                  DataCell(Text((index + 1).toString())),
-                  DataCell(Container(
+                  cells: [
+                    DataCell(Text((index + 1).toString())),
+                    DataCell(Container(
+                        margin: const EdgeInsets.symmetric(vertical: 15),
+                        child: Text(CompletednonRecurring[index]["task"]))),
+                    DataCell(Center(
+                      child: Text(
+                        CompletednonRecurring[index]["category"].split("|")[0],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        CompletednonRecurring[index]["subCategory"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        CompletednonRecurring[index]["type"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        CompletednonRecurring[index]["site"],
+                      ),
+                    )),
+                    DataCell(
+                      CompletednonRecurring[index]["checked"] == "-"
+                          ? const Text("No Review Needed")
+                          : Row(
+                              children: [
+                                Text(CompletednonRecurring[index]["checked"]),
+                                Checkbox(
+                                  checkColor: Colors.white,
+                                  activeColor: Colors.blue,
+                                  value: CompletednonRecurring[index]
+                                              ["checked"] ==
+                                          "Checked"
+                                      ? true
+                                      : false,
+                                  shape: const CircleBorder(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      // isChecked = value!;
+                                    });
+                                  },
+                                )
+                              ],
+                            ),
+                    ),
+                    DataCell(Center(
+                        child:
+                            Text(CompletednonRecurring[index]["personCheck"]))),
+                    DataCell(Text(
+                      DateFormat('dd/MM/yyyy')
+                          .format(DateTime.parse(
+                              CompletednonRecurring[index]["due"]))
+                          .toString(),
+                    )),
+                    DataCell(Container(
                       margin: const EdgeInsets.symmetric(vertical: 15),
-                      child: Text(CompletednonRecurring[index]["task"]))),
-                  DataCell(Center(
-                    child: Text(
-                      CompletednonRecurring[index]["category"].split("|")[0],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      CompletednonRecurring[index]["subCategory"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      CompletednonRecurring[index]["type"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      CompletednonRecurring[index]["site"],
-                    ),
-                  )),
-                  DataCell(
-                    CompletednonRecurring[index]["checked"] == "-"
-                        ? const Text("No Review Needed")
-                        : Row(
-                            children: [
-                              Text(CompletednonRecurring[index]["checked"]),
-                              Checkbox(
-                                checkColor: Colors.white,
-                                activeColor: Colors.blue,
-                                value: CompletednonRecurring[index]
-                                            ["checked"] ==
-                                        "Checked"
-                                    ? true
-                                    : false,
-                                shape: const CircleBorder(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    // isChecked = value!;
-                                  });
-                                },
-                              )
-                            ],
-                          ),
-                  ),
-                  DataCell(Center(
-                      child:
-                          Text(CompletednonRecurring[index]["personCheck"]))),
-                  DataCell(Text(
-                    DateFormat('dd/MM/yyyy')
-                        .format(
-                            DateTime.parse(CompletednonRecurring[index]["due"]))
-                        .toString(),
-                  )),
-                  DataCell(Container(
-                    margin: const EdgeInsets.symmetric(vertical: 15),
-                    child: Text(
-                      CompletednonRecurring[index]["remark"],
-                    ),
-                  )),
-                  DataCell(Text(
-                    CompletednonRecurring[index]["modify"].isNotEmpty &&
-                            CompletednonRecurring[index]["modify"] != null
-                        ? DateFormat('dd/MM/yyyy')
-                            .format(DateTime.parse(
-                                CompletednonRecurring[index]["modify"]))
-                            .toString()
-                        : '',
-                  )),
-                  DataCell(IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return editNonRecurring(
-                              id: CompletednonRecurring[index]["nonRecurringId"]
-                                  .toString(),
-                            );
+                      child: Text(
+                        CompletednonRecurring[index]["remark"],
+                      ),
+                    )),
+                    DataCell(Text(
+                      CompletednonRecurring[index]["modify"].isNotEmpty &&
+                              CompletednonRecurring[index]["modify"] != null
+                          ? DateFormat('dd/MM/yyyy')
+                              .format(DateTime.parse(
+                                  CompletednonRecurring[index]["modify"]))
+                              .toString()
+                          : '',
+                    )),
+                    DataCell(IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return editNonRecurring(
+                                id: CompletednonRecurring[index]
+                                        ["nonRecurringId"]
+                                    .toString(),
+                              );
+                            });
+                      },
+                    )),
+                    DataCell(IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () async {
+                          await Internet.isInternet().then((connection) async {
+                            if (connection) {
+                              await removeNonRecurring(
+                                  CompletednonRecurring[index]
+                                      ["nonRecurringId"]);
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: const Text("No Internet !"),
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.all(20),
+                                action: SnackBarAction(
+                                  label: 'Dismiss',
+                                  disabledTextColor: Colors.white,
+                                  textColor: Colors.blue,
+                                  onPressed: () {
+                                    //Do whatever you want
+                                  },
+                                ),
+                              ));
+                            }
                           });
-                    },
-                  )),
-                  DataCell(IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        await Internet.isInternet().then((connection) async {
-                          if (connection) {
-                            await removeNonRecurring(
-                                CompletednonRecurring[index]["nonRecurringId"]);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: const Text("No Internet !"),
-                              behavior: SnackBarBehavior.floating,
-                              margin: const EdgeInsets.all(20),
-                              action: SnackBarAction(
-                                label: 'Dismiss',
-                                disabledTextColor: Colors.white,
-                                textColor: Colors.blue,
-                                onPressed: () {
-                                  //Do whatever you want
-                                },
-                              ),
-                            ));
-                          }
+                        })),
+                  ],
+                  // onSelectChanged: (e) {
+                  //   showDialog(
+                  //       context: context,
+                  //       builder: (BuildContext context) {
+                  //         return DialogBox(
+                  //             id: foundNonRecurring[index]["user_id"].toString(),
+                  //             name: foundNonRecurring[index]['user_name'],
+                  //             password: foundNonRecurring[index]['password'],
+                  //             isEditing: false);
+                  //       });
+                  // }
+                  onSelectChanged: (e) {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return editNonRecurring(
+                            id: CompletednonRecurring[index]["nonRecurringId"]
+                                .toString(),
+                          );
                         });
-                      })),
-                ],
-                // onSelectChanged: (e) {
-                //   showDialog(
-                //       context: context,
-                //       builder: (BuildContext context) {
-                //         return DialogBox(
-                //             id: foundNonRecurring[index]["user_id"].toString(),
-                //             name: foundNonRecurring[index]['user_name'],
-                //             password: foundNonRecurring[index]['password'],
-                //             isEditing: false);
-                //       });
-                // }
-              );
+                  });
             })),
       ),
     );
@@ -1252,169 +1304,180 @@ class _TaskState extends State<Task> {
                       DateFormat('yyyy-MM-dd').format(DateTime.now())),
                   DateTime.parse(foundNonRecurring[index]["due"]));
               return DataRow(
-                cells: [
-                  DataCell(Text((index + 1).toString())),
-                  DataCell(Container(
+                  cells: [
+                    DataCell(Text((index + 1).toString())),
+                    DataCell(Container(
+                        margin: const EdgeInsets.symmetric(vertical: 15),
+                        child: Text(foundNonRecurring[index]["task"]))),
+                    DataCell(Center(
+                      child: Text(
+                        foundNonRecurring[index]["category"].split("|")[0],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        foundNonRecurring[index]["subCategory"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        foundNonRecurring[index]["type"],
+                      ),
+                    )),
+                    DataCell(Center(
+                      child: Text(
+                        foundNonRecurring[index]["site"],
+                      ),
+                    )),
+                    DataCell(foundNonRecurring[index]["status"] == '100'
+                        ? foundNonRecurring[index]["checked"] == "-"
+                            ? const Text("No Review Needed")
+                            : Row(
+                                children: [
+                                  Text(foundNonRecurring[index]["checked"]),
+                                  Checkbox(
+                                    checkColor: Colors.white,
+                                    activeColor: Colors.blue,
+                                    value: foundNonRecurring[index]
+                                                ["checked"] ==
+                                            "Checked"
+                                        ? true
+                                        : false,
+                                    shape: const CircleBorder(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        // isChecked = value!;
+                                      });
+                                    },
+                                  )
+                                ],
+                              )
+                        : LinearPercentIndicator(
+                            barRadius: const Radius.circular(5),
+                            width: 100.0,
+                            lineHeight: 20.0,
+                            percent: double.parse(
+                                    foundNonRecurring[index]["status"]) /
+                                100,
+                            backgroundColor: Colors.grey,
+                            progressColor: Colors.blue,
+                            center: Text(
+                              foundNonRecurring[index]["status"],
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ))),
+                    DataCell(foundNonRecurring[index]["status"] != '100'
+                        ? Container(
+                            width: 100,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: dayLeft.isNegative
+                                  ? Styles.lateColor
+                                  : Styles.activeColor,
+                            ),
+                            child: Center(
+                                child: dayLeft.isNegative
+                                    ? Text(
+                                        "${dayLeft.abs()} DAYS LATE",
+                                        style: const TextStyle(
+                                            color: Color(0xFFf43a2c),
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    : Text(
+                                        "$dayLeft DAYS LEFT",
+                                        style: Styles.dayLeftActive,
+                                      )))
+                        : Center(
+                            child: Text(
+                              foundNonRecurring[index]["personCheck"],
+                              textAlign: TextAlign.center,
+                            ),
+                          )),
+                    DataCell(Center(
+                      child: Text(foundNonRecurring[index]["status"] != '100'
+                          ? DateFormat('dd/MM/yyyy')
+                              .format(DateTime.parse(
+                                  foundNonRecurring[index]["due"]))
+                              .toString()
+                          : "( ${DateFormat('dd/MM/yyyy').format(DateTime.parse(foundNonRecurring[index]["due"]))} )"),
+                    )),
+                    DataCell(Container(
                       margin: const EdgeInsets.symmetric(vertical: 15),
-                      child: Text(foundNonRecurring[index]["task"]))),
-                  DataCell(Center(
-                    child: Text(
-                      foundNonRecurring[index]["category"].split("|")[0],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      foundNonRecurring[index]["subCategory"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      foundNonRecurring[index]["type"],
-                    ),
-                  )),
-                  DataCell(Center(
-                    child: Text(
-                      foundNonRecurring[index]["site"],
-                    ),
-                  )),
-                  DataCell(foundNonRecurring[index]["status"] == '100'
-                      ? foundNonRecurring[index]["checked"] == "-"
-                          ? const Text("No Review Needed")
-                          : Row(
-                              children: [
-                                Text(foundNonRecurring[index]["checked"]),
-                                Checkbox(
-                                  checkColor: Colors.white,
-                                  activeColor: Colors.blue,
-                                  value: foundNonRecurring[index]["checked"] ==
-                                          "Checked"
-                                      ? true
-                                      : false,
-                                  shape: const CircleBorder(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      // isChecked = value!;
-                                    });
+                      child: Text(
+                        foundNonRecurring[index]["remark"],
+                      ),
+                    )),
+                    DataCell(Text(
+                      foundNonRecurring[index]["modify"].isNotEmpty &&
+                              foundNonRecurring[index]["modify"] != null
+                          ? DateFormat('dd/MM/yyyy')
+                              .format(DateTime.parse(
+                                  foundNonRecurring[index]["modify"]))
+                              .toString()
+                          : '',
+                    )),
+                    DataCell(IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return editNonRecurring(
+                                id: foundNonRecurring[index]["nonRecurringId"]
+                                    .toString(),
+                              );
+                            });
+                      },
+                    )),
+                    DataCell(IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () async {
+                          await Internet.isInternet().then((connection) async {
+                            if (connection) {
+                              await removeNonRecurring(
+                                  foundNonRecurring[index]["nonRecurringId"]);
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: const Text("No Internet !"),
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.all(20),
+                                action: SnackBarAction(
+                                  label: 'Dismiss',
+                                  disabledTextColor: Colors.white,
+                                  textColor: Colors.blue,
+                                  onPressed: () {
+                                    //Do whatever you want
                                   },
-                                )
-                              ],
-                            )
-                      : LinearPercentIndicator(
-                          barRadius: const Radius.circular(5),
-                          width: 100.0,
-                          lineHeight: 20.0,
-                          percent:
-                              double.parse(foundNonRecurring[index]["status"]) /
-                                  100,
-                          backgroundColor: Colors.grey,
-                          progressColor: Colors.blue,
-                          center: Text(
-                            foundNonRecurring[index]["status"],
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ))),
-                  DataCell(foundNonRecurring[index]["status"] != '100'
-                      ? Container(
-                          width: 100,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            color: dayLeft.isNegative
-                                ? Styles.lateColor
-                                : Styles.activeColor,
-                          ),
-                          child: Center(
-                              child: dayLeft.isNegative
-                                  ? Text(
-                                      "${dayLeft.abs()} DAYS LATE",
-                                      style: const TextStyle(
-                                          color: Color(0xFFf43a2c),
-                                          fontWeight: FontWeight.bold),
-                                    )
-                                  : Text(
-                                      "$dayLeft DAYS LEFT",
-                                      style: Styles.dayLeftActive,
-                                    )))
-                      : Center(
-                          child: Text(
-                            foundNonRecurring[index]["personCheck"],
-                            textAlign: TextAlign.center,
-                          ),
-                        )),
-                  DataCell(Center(
-                    child: Text(foundNonRecurring[index]["status"] != '100'
-                        ? DateFormat('dd/MM/yyyy')
-                            .format(
-                                DateTime.parse(foundNonRecurring[index]["due"]))
-                            .toString()
-                        : "( ${DateFormat('dd/MM/yyyy').format(DateTime.parse(foundNonRecurring[index]["due"]))} )"),
-                  )),
-                  DataCell(Container(
-                    margin: const EdgeInsets.symmetric(vertical: 15),
-                    child: Text(
-                      foundNonRecurring[index]["remark"],
-                    ),
-                  )),
-                  DataCell(Text(
-                    foundNonRecurring[index]["modify"].isNotEmpty &&
-                            foundNonRecurring[index]["modify"] != null
-                        ? DateFormat('dd/MM/yyyy')
-                            .format(DateTime.parse(
-                                foundNonRecurring[index]["modify"]))
-                            .toString()
-                        : '',
-                  )),
-                  DataCell(IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return editNonRecurring(
-                              id: foundNonRecurring[index]["nonRecurringId"]
-                                  .toString(),
-                            );
+                                ),
+                              ));
+                            }
                           });
-                    },
-                  )),
-                  DataCell(IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        await Internet.isInternet().then((connection) async {
-                          if (connection) {
-                            await removeNonRecurring(
-                                foundNonRecurring[index]["nonRecurringId"]);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: const Text("No Internet !"),
-                              behavior: SnackBarBehavior.floating,
-                              margin: const EdgeInsets.all(20),
-                              action: SnackBarAction(
-                                label: 'Dismiss',
-                                disabledTextColor: Colors.white,
-                                textColor: Colors.blue,
-                                onPressed: () {
-                                  //Do whatever you want
-                                },
-                              ),
-                            ));
-                          }
+                        })),
+                  ],
+                  // onSelectChanged: (e) {
+                  //   showDialog(
+                  //       context: context,
+                  //       builder: (BuildContext context) {
+                  //         return DialogBox(
+                  //             id: foundNonRecurring[index]["user_id"].toString(),
+                  //             name: foundNonRecurring[index]['user_name'],
+                  //             password: foundNonRecurring[index]['password'],
+                  //             isEditing: false);
+                  //       });
+                  // }
+                  onSelectChanged: (e) {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return editNonRecurring(
+                            id: foundNonRecurring[index]["nonRecurringId"]
+                                .toString(),
+                          );
                         });
-                      })),
-                ],
-                // onSelectChanged: (e) {
-                //   showDialog(
-                //       context: context,
-                //       builder: (BuildContext context) {
-                //         return DialogBox(
-                //             id: foundNonRecurring[index]["user_id"].toString(),
-                //             name: foundNonRecurring[index]['user_name'],
-                //             password: foundNonRecurring[index]['password'],
-                //             isEditing: false);
-                //       });
-                // }
-              );
+                  });
             })),
       ),
     );

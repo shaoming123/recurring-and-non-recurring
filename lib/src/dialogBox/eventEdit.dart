@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -10,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/event.dart';
 import '../../model/selection.dart';
 import '../../util/checkInternet.dart';
+import '../../util/conMysql.dart';
 import '../../util/datetime.dart';
 import '../../util/selection.dart';
 import '../recurrring.dart';
@@ -39,7 +41,7 @@ List<Map<String, dynamic>> event_edit = [];
 
 List<String> siteList = <String>[];
 List<String> priorityList = <String>['Low', 'Moderate', 'High'];
-List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
+List<String> statusList = <String>['Upcoming', 'In Progress', 'Done'];
 
 class _EventEditState extends State<EventEdit> {
   DbHelper dbHelper = DbHelper();
@@ -66,7 +68,7 @@ class _EventEditState extends State<EventEdit> {
   List<Event> event_recurring = [];
   List<String> siteList = <String>[];
   List<String> priorityList = <String>['Low', 'Moderate', 'High'];
-  List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
+  List<String> statusList = <String>['Upcoming', 'In Progress', 'Done'];
   List<String> _selectedUser = <String>[];
 
   var selectedOption = ''.obs;
@@ -167,6 +169,12 @@ class _EventEditState extends State<EventEdit> {
           (event_edit[0]['completeDate']) != '') {
         completeDate = DateTime.parse(event_edit[0]['completeDate']);
       }
+
+      userList.addAll(_selectedUser);
+
+      //remove duplicate
+      Set<String> set = userList.toSet();
+      userList = set.toList();
     });
 
     String uniqueNumber = event_edit[0]['uniqueNumber'];
@@ -314,7 +322,7 @@ class _EventEditState extends State<EventEdit> {
       }
 
       var url =
-          'https://ipsolutiontesting.000webhostapp.com/ipsolution/edit.php';
+          'https://ipsolutions4u.com/ipsolutions/recurringMobile/edit.php';
       int dependent_code = rng.nextInt(900000000) + 100000000;
       // edit same recurring
       if (event_recurring.isNotEmpty) {
@@ -422,26 +430,38 @@ class _EventEditState extends State<EventEdit> {
 
       if (response.statusCode == 200) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text("Updated Successfully!"),
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(20),
-            action: SnackBarAction(
-              label: 'Dismiss',
-              disabledTextColor: Colors.white,
-              textColor: Colors.blue,
-              onPressed: () {
-                //Do whatever you want
-              },
-            ),
-          ),
-        );
-        Navigator.pop(context);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Recurring()),
-        );
+
+        FocusScope.of(context).requestFocus(FocusNode());
+        await Internet.isInternet().then((connection) async {
+          if (connection) {
+            EasyLoading.show(
+              status: 'Updating and Loading Data...',
+              maskType: EasyLoadingMaskType.black,
+            );
+            await Controller().addRecurringToSqlite();
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Recurring()),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text("Updated Successfully!"),
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.all(20),
+                action: SnackBarAction(
+                  label: 'Dismiss',
+                  disabledTextColor: Colors.white,
+                  textColor: Colors.blue,
+                  onPressed: () {
+                    //Do whatever you want
+                  },
+                ),
+              ),
+            );
+            EasyLoading.showSuccess('Successfully');
+          }
+        });
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -463,7 +483,7 @@ class _EventEditState extends State<EventEdit> {
 
   Future<void> removeEvent(int recurring_Id) async {
     var url =
-        'https://ipsolutiontesting.000webhostapp.com/ipsolution/delete.php';
+        'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
 
     var response;
 
@@ -483,24 +503,34 @@ class _EventEditState extends State<EventEdit> {
       "id": recurring_Id.toString(),
     });
     if (response.statusCode == 200) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Successfully deleted!'),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(20),
-        action: SnackBarAction(
-          label: 'Dismiss',
-          disabledTextColor: Colors.white,
-          textColor: Colors.blue,
-          onPressed: () {
-            //Do whatever you want
-          },
-        ),
-      ));
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Recurring()),
-      );
+      await Internet.isInternet().then((connection) async {
+        if (connection) {
+          EasyLoading.show(
+            status: 'Deleting and Loading Data...',
+            maskType: EasyLoadingMaskType.black,
+          );
+          await Controller().addRecurringToSqlite();
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Recurring()),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text('Successfully deleted!'),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
+          ));
+          EasyLoading.showSuccess('Successfully');
+        }
+      });
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -918,6 +948,7 @@ class _EventEditState extends State<EventEdit> {
                 color: const Color(0xFFd4dce4)),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
+                decoration: const InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,

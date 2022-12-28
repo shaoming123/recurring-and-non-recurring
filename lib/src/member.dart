@@ -218,7 +218,9 @@ class _MemberState extends State<Member> {
                                       builder:
                                           (context, AsyncSnapshot snapshot) {
                                         return snapshot.hasData
-                                            ? FittedBox(
+                                            ? SingleChildScrollView(
+                                                scrollDirection:
+                                                    Axis.horizontal,
                                                 child: DataTable(
                                                     showCheckboxColumn: false,
                                                     sortColumnIndex:
@@ -312,7 +314,7 @@ class _MemberState extends State<Member> {
                                                                 const EdgeInsets
                                                                     .all(8.0),
                                                             child: Text(
-                                                              'Password',
+                                                              'Email',
                                                               style: TextStyle(
                                                                   color: Styles
                                                                       .textColor,
@@ -325,28 +327,27 @@ class _MemberState extends State<Member> {
                                                             ),
                                                           ),
                                                         ),
-                                                        // Sorting function
-                                                        // onSort: (columnIndex, _) {
-                                                        //   setState(() {
-                                                        //     _currentSortColumn = columnIndex;
-                                                        //     if (_isAscending == true) {
-                                                        //       _isAscending = false;
-                                                        //       // sort the product list in Ascending, order by Price
-                                                        //       _products.sort((productA,
-                                                        //               productB) =>
-                                                        //           productB['role'].compareTo(
-                                                        //               productA['role']));
-                                                        //     } else {
-                                                        //       _isAscending = true;
-                                                        //       // sort the product list in Descending, order by Price
-                                                        //       _products.sort((productA,
-                                                        //               productB) =>
-                                                        //           productA['role'].compareTo(
-                                                        //               productB['role']));
-                                                        //     }
-                                                        //   }
-                                                        //   );
-                                                        // }
+                                                      ),
+                                                      DataColumn(
+                                                        label: Expanded(
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: Text(
+                                                              'Role',
+                                                              style: TextStyle(
+                                                                  color: Styles
+                                                                      .textColor,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                            ),
+                                                          ),
+                                                        ),
                                                       ),
                                                       DataColumn(
                                                         label: Text(
@@ -390,92 +391,136 @@ class _MemberState extends State<Member> {
                                                                 child: Text(
                                                                   _foundUsers[
                                                                           index]
-                                                                      [
-                                                                      "password"],
+                                                                      ["email"],
                                                                 ),
                                                               ),
                                                             )),
-                                                            userRole != 'Staff'
-                                                                ? DataCell(Row(
-                                                                    children: [
-                                                                      IconButton(
-                                                                        icon: const Icon(
-                                                                            Icons.edit),
-                                                                        onPressed:
-                                                                            () {
-                                                                          showDialog(
-                                                                              context: context,
-                                                                              builder: (BuildContext context) {
-                                                                                return DialogBox(id: _foundUsers[index]["user_id"].toString(), isEditing: true);
-                                                                              });
-                                                                        },
-                                                                      ),
-                                                                      IconButton(
-                                                                          icon: const Icon(Icons
-                                                                              .delete),
-                                                                          onPressed:
-                                                                              () async {
-                                                                            await Internet.isInternet().then((connection) async {
-                                                                              if (connection) {
-                                                                                await removeUser(_foundUsers[index]["user_id"], context);
-                                                                              } else {
-                                                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                                                  content: const Text("No Internet !"),
-                                                                                  behavior: SnackBarBehavior.floating,
-                                                                                  margin: const EdgeInsets.all(20),
-                                                                                  action: SnackBarAction(
-                                                                                    label: 'Dismiss',
-                                                                                    disabledTextColor: Colors.white,
-                                                                                    textColor: Colors.blue,
-                                                                                    onPressed: () {
-                                                                                      //Do whatever you want
-                                                                                    },
-                                                                                  ),
-                                                                                ));
-                                                                              }
-                                                                            });
-                                                                          }),
-                                                                      Switch(
-                                                                        value: _foundUsers[index]["active"] ==
-                                                                                'Active'
-                                                                            ? true
-                                                                            : false,
-                                                                        onChanged:
-                                                                            ((value) async {
-                                                                          await Internet.isInternet()
-                                                                              .then((connection) async {
-                                                                            if (connection) {
-                                                                              await toggleSwitch(value, _foundUsers[index]["user_id"]);
-                                                                            } else {
-                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                                                content: const Text("No Internet !"),
-                                                                                behavior: SnackBarBehavior.floating,
-                                                                                margin: const EdgeInsets.all(20),
-                                                                                action: SnackBarAction(
-                                                                                  label: 'Dismiss',
-                                                                                  disabledTextColor: Colors.white,
-                                                                                  textColor: Colors.blue,
-                                                                                  onPressed: () {
-                                                                                    //Do whatever you want
-                                                                                  },
-                                                                                ),
-                                                                              ));
-                                                                            }
-                                                                          });
-                                                                        }),
-                                                                        activeColor:
-                                                                            Colors.white,
-                                                                        activeTrackColor:
-                                                                            Colors.blue,
-                                                                        inactiveThumbColor:
-                                                                            Colors.white,
-                                                                        inactiveTrackColor:
-                                                                            Colors.grey,
-                                                                      )
-                                                                    ],
-                                                                  ))
-                                                                : const DataCell(
-                                                                    Text(""))
+                                                            DataCell(Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8.0),
+                                                              child: Center(
+                                                                child: Text(
+                                                                  _foundUsers[
+                                                                          index]
+                                                                      ["role"],
+                                                                ),
+                                                              ),
+                                                            )),
+                                                            DataCell(Row(
+                                                              children: [
+                                                                IconButton(
+                                                                  icon: const Icon(
+                                                                      Icons
+                                                                          .edit),
+                                                                  onPressed:
+                                                                      () {
+                                                                    showDialog(
+                                                                        context:
+                                                                            context,
+                                                                        builder:
+                                                                            (BuildContext
+                                                                                context) {
+                                                                          return DialogBox(
+                                                                              id: _foundUsers[index]["user_id"].toString(),
+                                                                              isEditing: true);
+                                                                        });
+                                                                  },
+                                                                ),
+                                                                IconButton(
+                                                                    icon: const Icon(
+                                                                        Icons
+                                                                            .delete),
+                                                                    onPressed:
+                                                                        () async {
+                                                                      await Internet
+                                                                              .isInternet()
+                                                                          .then(
+                                                                              (connection) async {
+                                                                        if (connection) {
+                                                                          await removeUser(
+                                                                              _foundUsers[index]["user_id"],
+                                                                              context);
+                                                                        } else {
+                                                                          ScaffoldMessenger.of(context)
+                                                                              .showSnackBar(SnackBar(
+                                                                            content:
+                                                                                const Text("No Internet !"),
+                                                                            behavior:
+                                                                                SnackBarBehavior.floating,
+                                                                            margin:
+                                                                                const EdgeInsets.all(20),
+                                                                            action:
+                                                                                SnackBarAction(
+                                                                              label: 'Dismiss',
+                                                                              disabledTextColor: Colors.white,
+                                                                              textColor: Colors.blue,
+                                                                              onPressed: () {
+                                                                                //Do whatever you want
+                                                                              },
+                                                                            ),
+                                                                          ));
+                                                                        }
+                                                                      });
+                                                                    }),
+                                                                Switch(
+                                                                  value: _foundUsers[index]
+                                                                              [
+                                                                              "active"] ==
+                                                                          'Active'
+                                                                      ? true
+                                                                      : false,
+                                                                  onChanged:
+                                                                      ((value) async {
+                                                                    await Internet
+                                                                            .isInternet()
+                                                                        .then(
+                                                                            (connection) async {
+                                                                      if (connection) {
+                                                                        await toggleSwitch(
+                                                                            value,
+                                                                            _foundUsers[index]["user_id"]);
+                                                                      } else {
+                                                                        ScaffoldMessenger.of(context)
+                                                                            .showSnackBar(SnackBar(
+                                                                          content:
+                                                                              const Text("No Internet !"),
+                                                                          behavior:
+                                                                              SnackBarBehavior.floating,
+                                                                          margin:
+                                                                              const EdgeInsets.all(20),
+                                                                          action:
+                                                                              SnackBarAction(
+                                                                            label:
+                                                                                'Dismiss',
+                                                                            disabledTextColor:
+                                                                                Colors.white,
+                                                                            textColor:
+                                                                                Colors.blue,
+                                                                            onPressed:
+                                                                                () {
+                                                                              //Do whatever you want
+                                                                            },
+                                                                          ),
+                                                                        ));
+                                                                      }
+                                                                    });
+                                                                  }),
+                                                                  activeColor:
+                                                                      Colors
+                                                                          .white,
+                                                                  activeTrackColor:
+                                                                      Colors
+                                                                          .blue,
+                                                                  inactiveThumbColor:
+                                                                      Colors
+                                                                          .white,
+                                                                  inactiveTrackColor:
+                                                                      Colors
+                                                                          .grey,
+                                                                )
+                                                              ],
+                                                            ))
                                                           ],
                                                           onSelectChanged: (e) {
                                                             showDialog(
@@ -533,7 +578,23 @@ class _MemberState extends State<Member> {
                                                           const EdgeInsets.all(
                                                               8.0),
                                                       child: Text(
-                                                        'Password',
+                                                        'Email',
+                                                        style: TextStyle(
+                                                            color: Styles
+                                                                .textColor,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w700),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  DataColumn(
+                                                    label: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Text(
+                                                        'Role',
                                                         style: TextStyle(
                                                             color: Styles
                                                                 .textColor,

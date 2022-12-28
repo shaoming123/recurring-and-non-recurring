@@ -15,9 +15,6 @@ class nonRecurring {
   String? remark;
   String? completeDate;
 
-  // late String backgroundColor;
-  // final String rule;
-
   nonRecurring({
     this.nonRecurringId,
     required this.category,
@@ -34,9 +31,6 @@ class nonRecurring {
     required this.personCheck,
     this.remark,
     this.completeDate,
-
-    // required this.backgroundColor,
-    // required this.rule
   });
 
   Map<String, dynamic> toMap() {
@@ -54,9 +48,8 @@ class nonRecurring {
       'remark': remark,
       'checked': checked,
       'personCheck': personCheck,
-
+      'completeDate': completeDate,
       'status': status,
-      // 'backgroundColor': backgroundColor,
     };
     return map;
   }
@@ -78,7 +71,5 @@ class nonRecurring {
     checked = map['checked'];
     personCheck = map['personCheck'];
     status = map['status'];
-    // backgroundColor = map['backgroundColor'];
-    // photoName = map['photoName'];
   }
 }

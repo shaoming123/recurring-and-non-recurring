@@ -24,7 +24,7 @@ class _notificationListState extends State<notificationList> {
 
   Future<void> removeNotification(int id) async {
     var url =
-        'https://ipsolutiontesting.000webhostapp.com/ipsolution/delete.php';
+        'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
     await dbHelper.deleteNotification(id);
     final response = await http.post(Uri.parse(url), body: {
       "dataTable": "notification",

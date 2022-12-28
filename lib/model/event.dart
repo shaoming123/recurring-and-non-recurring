@@ -22,7 +22,7 @@ class Event {
   String? completeDate;
   late String status;
   late String color;
-  String? checkRecurring = "false";
+  String? checkRecurring;
   String? dependent;
   // final String rule;
 

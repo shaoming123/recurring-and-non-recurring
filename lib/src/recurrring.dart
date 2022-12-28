@@ -1,7 +1,5 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/src/dialogBox/eventEdit.dart';
@@ -12,10 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
-import '../provider/event_provider.dart';
 import '../util/app_styles.dart';
-import '../util/checkInternet.dart';
-import '../util/conMysql.dart';
 import 'dialogBox/eventAdd.dart';
 
 class Recurring extends StatefulWidget {
@@ -39,7 +34,7 @@ class _RecurringState extends State<Recurring> {
   String _selectedUser = '';
   String _selectedFunction = '';
   String _selectedSite = '';
-  String userRole = '';
+  String userRole = 'Staff';
   @override
   void initState() {
     super.initState();
@@ -47,16 +42,6 @@ class _RecurringState extends State<Recurring> {
   }
 
   Future<void> _refreshEvent() async {
-    await Internet.isInternet().then((connection) async {
-      if (connection) {
-        EasyLoading.show(
-          status: 'Fetching Data...',
-          maskType: EasyLoadingMaskType.black,
-        );
-        await Controller().addRecurringToSqlite();
-        EasyLoading.showSuccess('Successfully');
-      }
-    });
     final data = await dbHelper.fetchAllEvent();
     final userData = await dbHelper.getItems();
 
@@ -98,6 +83,7 @@ class _RecurringState extends State<Recurring> {
         if (userRole == "Manager" || userRole == "Super Admin") {
           functionList = functionData;
           userList.add(item['user_name']);
+
           siteList = [
             'HQ',
             'CRZ',
@@ -142,6 +128,7 @@ class _RecurringState extends State<Recurring> {
           }
         }
       }
+
       // userList.insert(0, "All");
       functionList.insert(0, "All");
       if (userRole == 'Super Admin' || userRole == 'Manager') {
@@ -226,12 +213,12 @@ class _RecurringState extends State<Recurring> {
     return uniqueItems;
   }
 
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   personList = [];
-  //   allEvents = [];
-  // }
+  @override
+  void dispose() {
+    super.dispose();
+
+    allEvents = [];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -501,6 +488,8 @@ class _RecurringState extends State<Recurring> {
 
                   Expanded(
                     child: SfCalendar(
+                      resourceViewSettings:
+                          const ResourceViewSettings(size: 120),
                       dataSource: EventDataSource(allEvents),
                       backgroundColor: Colors.white,
                       view: CalendarView.month,
@@ -518,8 +507,6 @@ class _RecurringState extends State<Recurring> {
                       timeSlotViewSettings: TimeSlotViewSettings(
                         timelineAppointmentHeight: height / 5,
                       ),
-
-                      // controller: _calendarController,
 
                       monthViewSettings: MonthViewSettings(
                         showAgenda: true,
@@ -539,7 +526,7 @@ class _RecurringState extends State<Recurring> {
                         appointmentItemHeight: height / 5,
                       ),
 
-                      onTap: calendarTapped,
+                      // onTap: calendarTapped,
                       todayHighlightColor: Styles.buttonColor,
                       todayTextStyle: const TextStyle(
                           color: Colors.black,

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/src/accordion/task.dart';
@@ -13,8 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
 import 'appbar.dart';
-import '../util/checkInternet.dart';
-import '../util/conMysql.dart';
 import 'accordion/teamTask.dart';
 
 class NonRecurring extends StatefulWidget {
@@ -42,7 +39,7 @@ class _NonRecurringState extends State<NonRecurring> {
   List<Map<String, dynamic>> LatenonRecurring = [];
   List<Map<String, dynamic>> ActivenonRecurring = [];
   List<Map<String, dynamic>> CompletednonRecurring = [];
-  String userRole = '';
+  String userRole = 'Staff';
 
   // bool _isExpanded = true;
   @override
@@ -53,17 +50,6 @@ class _NonRecurringState extends State<NonRecurring> {
   }
 
   Future<void> _refresh() async {
-    await Internet.isInternet().then((connection) async {
-      if (connection) {
-        EasyLoading.show(
-          status: 'Fetching Data...',
-          maskType: EasyLoadingMaskType.black,
-        );
-        // await Controller().syncdata();
-        await Controller().addNonRecurringToSqlite();
-        EasyLoading.showSuccess('Successfully');
-      }
-    });
     final data = await dbHelper.fetchAllNonRecurring();
 
     final SharedPreferences sp = await _pref;

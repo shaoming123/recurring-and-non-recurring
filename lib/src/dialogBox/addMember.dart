@@ -57,7 +57,9 @@ class _AddMemberState extends State<AddMember> {
     "PCR",
     "SPP",
     "SKP",
-    "AD2"
+    "AD2",
+    "HQ",
+    "ALL SITE"
   ];
 
   List<String> siteLeaddropdownList = [
@@ -67,7 +69,8 @@ class _AddMemberState extends State<AddMember> {
     "PCR",
     "SPP",
     "SKP",
-    "AD2"
+    "AD2",
+    "ALL SITE"
   ];
   List<String> roleList = ["Super Admin", "Manager", "Leader", "Staff"];
   String? userRole;
@@ -158,7 +161,7 @@ class _AddMemberState extends State<AddMember> {
         );
       } else {
         var url =
-            'https://ipsolutiontesting.000webhostapp.com/ipsolution/add.php';
+            'https://ipsolutions4u.com/ipsolutions/recurringMobile/add.php';
         String _selectedPos = selectedPosition.join(",");
         String _selectedSite = selectedSite.join(",");
         String _selectedSiteLead = selectedSiteLead.join(",");
@@ -253,7 +256,6 @@ class _AddMemberState extends State<AddMember> {
             child: TextFormField(
               cursorColor: Colors.black,
               style: const TextStyle(fontSize: 14),
-              keyboardType: TextInputType.number,
               decoration: InputDecoration(hintText: placeholder),
               onFieldSubmitted: (_) {},
               controller: controllerText,

@@ -32,7 +32,7 @@ class _DialogBoxState extends State<DialogBox> {
   List<String> userSite = <String>[];
   List<String> userSiteLead = <String>[];
   List<Map<String, dynamic>> userDetails = [];
-
+  bool showPassword = true;
   String userRole = '';
   String userActive = '';
   String leadFunction = '';
@@ -65,6 +65,9 @@ class _DialogBoxState extends State<DialogBox> {
     "PCR",
     "SPP",
     "SKP",
+    "AD2",
+    "HQ",
+    "ALL SITE"
   ];
 
   List<String> siteLeaddropdownList = [
@@ -107,7 +110,7 @@ class _DialogBoxState extends State<DialogBox> {
       String _selectedSite = userSite.join(",");
       String _selectedSiteLead = userSiteLead.join(",");
       var url =
-          'https://ipsolutiontesting.000webhostapp.com/ipsolution/edit.php';
+          'https://ipsolutions4u.com/ipsolutions/recurringMobile/edit.php';
 
       // await dbHelper.updateUser(UserModel(
       //     user_id: id,
@@ -187,8 +190,12 @@ class _DialogBoxState extends State<DialogBox> {
   }
 
   contentBox(context) {
-    Widget buildTextField(String labelText, String placeholder,
-        TextEditingController? controllerText, bool editable) {
+    Widget buildTextField(
+        String labelText,
+        String placeholder,
+        TextEditingController? controllerText,
+        bool editable,
+        bool isPasswordTextField) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -208,9 +215,25 @@ class _DialogBoxState extends State<DialogBox> {
             child: TextFormField(
               enabled: widget.isEditing == true ? true : false,
               cursorColor: Colors.black,
+              obscureText: isPasswordTextField ? showPassword : false,
+              decoration: InputDecoration(
+                suffixIcon: isPasswordTextField
+                    ? IconButton(
+                        onPressed: () {
+                          setState(() {
+                            showPassword = !showPassword;
+                          });
+                        },
+                        icon: const Icon(
+                          Icons.remove_red_eye,
+                          color: Colors.grey,
+                        ),
+                      )
+                    : null,
+              ),
               style: const TextStyle(fontSize: 14),
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(hintText: placeholder),
+
+              // decoration: InputDecoration(hintText: placeholder),
               onFieldSubmitted: (_) {},
               controller: controllerText,
               validator: (duration) {
@@ -310,8 +333,7 @@ class _DialogBoxState extends State<DialogBox> {
                   selectedOption.value = "";
 
                   for (var element in userPosition) {
-                    selectedOption.value =
-                        "${selectedOption.value}  $element";
+                    selectedOption.value = "${selectedOption.value}  $element";
                   }
                 });
               },
@@ -446,11 +468,11 @@ class _DialogBoxState extends State<DialogBox> {
               key: _formkey,
               child: Column(children: <Widget>[
                 buildTextField(
-                    "Username", "Username", usernameController, true),
+                    "Username", "Username", usernameController, true, false),
                 buildTextField(
-                    "Password", "Password", passwordController, true),
+                    "Password", "Password", passwordController, true, true),
                 buildTextField("Email Address", "example@gmail.com",
-                    emailController, true),
+                    emailController, true, false),
                 roleSelect(),
                 positionSelect(),
                 siteSelect(),

@@ -26,7 +26,7 @@ Future updateSP(UserModel user) async {
 }
 
 Future updateAccount(UserModel user, context) async {
-  var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/edit.php';
+  var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/edit.php';
 
   Map<String, dynamic> data = {
     "dataTable": "user_details",
@@ -109,7 +109,7 @@ Future updateAccount(UserModel user, context) async {
 
 // Delete an item
 Future removeUser(int id, context) async {
-  var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/delete.php';
+  var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
   final response = await http.post(Uri.parse(url), body: {
     "dataTable": "user_details",
     "id": id.toString(),

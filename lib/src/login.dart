@@ -36,12 +36,13 @@ class _LoginState extends State<Login> {
   }
 
   Future loginForm() async {
+    final SharedPreferences sp = await _pref;
     if (_formKey.currentState!.validate()) {
       username = userController.text;
       password = passwordController.text;
 
       var url =
-          'https://ipsolutiontesting.000webhostapp.com/ipsolution/login.php';
+          'https://ipsolutions4u.com/ipsolutions/recurringMobile/login.php';
       var response = await http.post(Uri.parse(url), body: {
         "username": username,
         "password": password,
@@ -71,11 +72,35 @@ class _LoginState extends State<Login> {
             setSP(dataModel).whenComplete(() async {
               // await Controller().addRecurringToSqlite();
               // await Controller().addNonRecurringToSqlite();
+
+              bool firsttimeSetup = await dbHelper.getfirst();
+              if (firsttimeSetup) {
+                if (!mounted) return;
+
+                FocusScope.of(context).requestFocus(FocusNode());
+                await Internet.isInternet().then((connection) async {
+                  if (connection) {
+                    EasyLoading.show(
+                      status: 'loading...',
+                      maskType: EasyLoadingMaskType.black,
+                    );
+                    await dbHelper.addfirst();
+                    await Controller().addDataToSqlite();
+                    await Controller().addNotificationDateToSqlite();
+                    await Controller().addRecurringToSqlite();
+                    await Controller().addNonRecurringToSqlite();
+
+                    // sp.setString("updateTime", DateTime.now().toString());
+                    EasyLoading.showSuccess('Done');
+                  }
+                });
+              }
               if (!mounted) return;
               Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (_) => const Dashboard()),
                   (Route<dynamic> route) => false);
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Text("Login Successfully"),
@@ -91,20 +116,6 @@ class _LoginState extends State<Login> {
                   ),
                 ),
               );
-
-              await Internet.isInternet().then((connection) async {
-                if (connection) {
-                  EasyLoading.show(
-                    status: 'Loading...',
-                    maskType: EasyLoadingMaskType.black,
-                  );
-                  await Controller().addDataToSqlite();
-                  await Controller().addNotificationDateToSqlite();
-                  // await Controller().addRecurringToSqlite();
-                  // await Controller().addNonRecurringToSqlite();
-                  EasyLoading.showSuccess('Done');
-                }
-              });
             });
           } else {
             if (!mounted) return;
@@ -192,6 +203,8 @@ class _LoginState extends State<Login> {
     sp.setString("phone", user.phone!);
     sp.setString("active", user.active);
     sp.setString("filepath", user.filepath!);
+    sp.setString("updateTime", "");
+
     // sp.setString("photoName", user.photoName!);
   }
 

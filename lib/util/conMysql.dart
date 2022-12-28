@@ -3,17 +3,19 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/user.dart';
-import 'package:mysql1/mysql1.dart';
 
 import '../databaseHandler/DbHelper.dart';
 import '../model/nonRecurring.dart';
 
 DbHelper dbHelper = DbHelper();
+// final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+// int i = 0;
 
 class Controller {
   Future addDataToSqlite() async {
     await dbHelper.deleteAllUser();
-    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
+    var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
+
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "user_details"});
     List userData = json.decode(response.body);
@@ -36,37 +38,38 @@ class Controller {
     }
   }
 
-  Future syncdata() async {
-     var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
-    var response =
-        await http.post(Uri.parse(url), body: {"tableName": "nonrecurring"});
-    List nonrecurringData = json.decode(response.body);
+  // Future syncdata() async {
+  //   var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
+  //   var response =
+  //       await http.post(Uri.parse(url), body: {"tableName": "nonrecurring"});
+  //   List nonrecurringData = json.decode(response.body);
 
-    for (int i = 0; i < nonrecurringData.length; i++) {
-      final datanonRecurring = nonRecurring(
-          nonRecurringId: int.parse(nonrecurringData[i]["id"]),
-          category: nonrecurringData[i]["category"],
-          subCategory: nonrecurringData[i]["subcategory"],
-          type: nonrecurringData[i]["type"],
-          site: nonrecurringData[i]["site"],
-          task: nonrecurringData[i]["task"],
-          owner: nonrecurringData[i]["owner"],
-          startDate: nonrecurringData[i]["createdDate"].toString(),
-          due: nonrecurringData[i]["deadline"].toString(),
-          status: nonrecurringData[i]["status"],
-          remark: nonrecurringData[i]["remarks"],
-          modify: nonrecurringData[i]["lastMod"].toString(),
-          completeDate: nonrecurringData[i]["completedDate"].toString(),
-          checked: nonrecurringData[i]["checked"],
-          personCheck: nonrecurringData[i]["personCheck"]);
+  //   for (int i = 0; i < nonrecurringData.length; i++) {
+  //     final datanonRecurring = nonRecurring(
+  //         nonRecurringId: int.parse(nonrecurringData[i]["id"]),
+  //         category: nonrecurringData[i]["category"],
+  //         subCategory: nonrecurringData[i]["subcategory"],
+  //         type: nonrecurringData[i]["type"],
+  //         site: nonrecurringData[i]["site"],
+  //         task: nonrecurringData[i]["task"],
+  //         owner: nonrecurringData[i]["owner"],
+  //         startDate: nonrecurringData[i]["createdDate"].toString(),
+  //         due: nonrecurringData[i]["deadline"].toString(),
+  //         status: nonrecurringData[i]["status"],
+  //         remark: nonrecurringData[i]["remarks"],
+  //         modify: nonrecurringData[i]["lastMod"].toString(),
+  //         completeDate: nonrecurringData[i]["completedDate"].toString(),
+  //         checked: nonrecurringData[i]["checked"],
+  //         personCheck: nonrecurringData[i]["personCheck"]);
 
-      await dbHelper.saveData123(datanonRecurring);
-    }
-  }
+  //     await dbHelper.saveData123(datanonRecurring);
+  //   }
+  // }
 
   Future addRecurringToSqlite() async {
     await dbHelper.deleteAllEvent();
-    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
+    var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
+
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "tasks"});
     List recurringData = json.decode(response.body);
@@ -104,7 +107,8 @@ class Controller {
 
   Future addNonRecurringToSqlite() async {
     await dbHelper.deleteAllNonRecurring();
-    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
+    var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
+
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "nonrecurring"});
     List nonrecurringData = json.decode(response.body);
@@ -133,7 +137,7 @@ class Controller {
 
   Future switchToggle(toggle, id, tableName, columnName) async {
     var url =
-        'https://ipsolutiontesting.000webhostapp.com/ipsolution/toggleSwitch.php';
+        'https://ipsolutions4u.com/ipsolutions/recurringMobile/toggleSwitch.php';
     var response = await http.post(Uri.parse(url), body: {
       "dataTable": tableName,
       "id": id,
@@ -147,7 +151,8 @@ class Controller {
 // anotherways to sync
   Future addNotificationDateToSqlite() async {
     await dbHelper.deleteAllNotification();
-    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
+    var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
+
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "notification"});
     List notificationData = json.decode(response.body);

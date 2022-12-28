@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:ipsolution/provider/event_provider.dart';
+
 import 'package:ipsolution/src/dashboard.dart';
 import 'package:ipsolution/src/login.dart';
 import 'package:provider/provider.dart';

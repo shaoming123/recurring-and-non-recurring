@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 class Selection {
   Future siteSelection() async {
-    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
+    var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "selection"});
 
@@ -27,7 +27,7 @@ class Selection {
   }
 
   Future typeSelection(List functionAccess, String role) async {
-    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
+    var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "selection"});
 
@@ -73,7 +73,7 @@ class Selection {
   }
 
   Future categorySelection(List functionAccess, String role) async {
-    var url = 'https://ipsolutiontesting.000webhostapp.com/ipsolution/read.php';
+    var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "selection"});
 

@@ -35,6 +35,7 @@ class _DashboardState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
+
     startDate = DateTime(dateNow.year, dateNow.month, 1);
     endDate = DateTime(dateNow.year, dateNow.month + 1, 0);
 
@@ -42,6 +43,8 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Future<void> refresh() async {
+    final SharedPreferences sp = await _pref;
+
     final taskData = await dbHelper.fetchAllEvent();
     final nonRecurringData = await dbHelper.fetchAllNonRecurring();
 
@@ -54,10 +57,11 @@ class _DashboardState extends State<Dashboard> {
     lateNon = [];
     progressNon = [];
     upcomingNon = [];
-    final SharedPreferences sp = await _pref;
+
     String userName = sp.getString("user_name")!;
     String username = sp.getString("user_name")!;
     List<String> personList = [];
+
     setState(() {
       for (int x = 0; x < taskData.length; x++) {
         personList = taskData[x]["person"].split(',');
@@ -84,7 +88,7 @@ class _DashboardState extends State<Dashboard> {
                 completed.add(taskData[x]);
               } else if (isValidDate == false) {
                 late.add(taskData[x]);
-              } else if (taskData[x]["status"] == "In-Progress") {
+              } else if (taskData[x]["status"] == "In Progress") {
                 progress.add(taskData[x]);
               } else {
                 upcoming.add(taskData[x]);
@@ -352,7 +356,7 @@ class _DashboardState extends State<Dashboard> {
                                     title: const Padding(
                                       padding: EdgeInsets.only(bottom: 8.0),
                                       child: Text(
-                                        "In-Progress",
+                                        "In Progress",
                                         style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500),
@@ -386,7 +390,7 @@ class _DashboardState extends State<Dashboard> {
                                                     DashboardDetails(
                                                       task: progress,
                                                       nonRecurring: progressNon,
-                                                      detailName: 'In-Progress',
+                                                      detailName: 'In Progress',
                                                     )),
                                           );
                                         },

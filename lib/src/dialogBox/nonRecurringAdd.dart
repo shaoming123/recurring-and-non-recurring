@@ -1,16 +1,18 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'dart:convert';
+import 'package:ipsolution/databaseHandler/DbHelper.dart';
+
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../model/manageUser.dart';
-
 import '../../model/selection.dart';
 import '../../util/checkInternet.dart';
+import '../../util/conMysql.dart';
 import '../../util/datetime.dart';
 import '../../util/selection.dart';
 import '../non_recurring.dart';
@@ -56,12 +58,13 @@ class _addNonRecurringState extends State<addNonRecurring> {
   bool check = false;
   String userPosition = '';
   String userRole = '';
+  DbHelper dbHelper = DbHelper();
+
   @override
   void initState() {
     super.initState();
-
+    statusController.text = '0';
     _selectedUser = widget.userName;
-
     Future.delayed(Duration.zero, () async {
       final SharedPreferences sp = await _pref;
       String userRole = sp.getString("role")!;
@@ -231,7 +234,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
         );
       } else {
         var url =
-            'https://ipsolutiontesting.000webhostapp.com/ipsolution/add.php';
+            'https://ipsolutions4u.com/ipsolutions/recurringMobile/add.php';
 
         String selectedCheckUser = _selectedCheckUser.join(",");
 
@@ -309,12 +312,39 @@ class _addNonRecurringState extends State<addNonRecurring> {
 
         if (response.statusCode == 200) {
           if (!mounted) return;
-          Navigator.pop(context);
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const NonRecurring()),
-          );
+          FocusScope.of(context).requestFocus(FocusNode());
+          await Internet.isInternet().then((connection) async {
+            if (connection) {
+              EasyLoading.show(
+                status: 'Adding and Loading Data ...',
+                maskType: EasyLoadingMaskType.black,
+              );
+              // await Controller().syncdata();
+              await Controller().addNonRecurringToSqlite();
+
+              if (!mounted) return;
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const NonRecurring()),
+              );
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: const Text("Adding Successful !"),
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.all(20),
+                action: SnackBarAction(
+                  label: 'Dismiss',
+                  disabledTextColor: Colors.white,
+                  textColor: Colors.blue,
+                  onPressed: () {
+                    //Do whatever you want
+                  },
+                ),
+              ));
+              EasyLoading.showSuccess('Successfully');
+            }
+          });
         } else {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -381,11 +411,19 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 onFieldSubmitted: (_) {},
                 controller: controllerText,
                 validator: labelText != "Remark"
-                    ? (data) {
-                        return data != null && data.isEmpty
-                            ? 'Field cannot be empty'
-                            : null;
-                      }
+                    ? labelText == "Status"
+                        ? (data) {
+                            if (double.parse(data!) < 0.0 ||
+                                double.parse(data) > 100.0) {
+                              return 'Value must be between 0 and 100';
+                            }
+                            return null;
+                          }
+                        : (data) {
+                            return data != null && data.isEmpty
+                                ? 'Field cannot be empty'
+                                : null;
+                          }
                     : null),
           ),
         ],
