@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
@@ -21,8 +22,7 @@ import 'package:http/http.dart' as http;
 class addNonRecurring extends StatefulWidget {
   final String userName;
   final bool task;
-  const addNonRecurring(
-      {super.key, required this.userName, required this.task});
+  const addNonRecurring({Key key, this.userName, this.task}) : super(key: key);
 
   @override
   State<addNonRecurring> createState() => _addNonRecurringState();
@@ -32,13 +32,13 @@ Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
 class _addNonRecurringState extends State<addNonRecurring> {
   final _formkey = GlobalKey<FormState>();
-  DateTime? due;
+  DateTime due;
   DateTime startDate = DateTime.now();
 
-  String? _selectedUser;
+  String _selectedUser;
   String _selectedSite = '';
   // String _selectedType = '';
-  DateTime? completeDate;
+  DateTime completeDate;
   final taskController = TextEditingController();
   final statusController = TextEditingController();
   final remarkController = TextEditingController();
@@ -46,13 +46,13 @@ class _addNonRecurringState extends State<addNonRecurring> {
   List<String> siteList = <String>[];
   List<TypeSelect> typeList = <TypeSelect>[];
   List<dynamic> user = [];
-  TypeSelect? typeselect;
+  TypeSelect typeselect;
   List<String> checkUserList = [];
   List<String> _selectedCheckUser = [];
   var selectedCheckUser = ''.obs;
 
   dynamic _selectedCategory;
-  String? _selectedSubCategory;
+  String _selectedSubCategory;
   List<int> userid = [];
   List categoryData = [];
   bool check = false;
@@ -67,13 +67,13 @@ class _addNonRecurringState extends State<addNonRecurring> {
     _selectedUser = widget.userName;
     Future.delayed(Duration.zero, () async {
       final SharedPreferences sp = await _pref;
-      String userRole = sp.getString("role")!;
-      List functionAccess = sp.getString("position")!.split(",");
+      String userRole = sp.getString("role");
+      List functionAccess = sp.getString("position").split(",");
       final typeOptions =
           await Selection().typeSelection(functionAccess, userRole);
       categoryData =
           await Selection().categorySelection(functionAccess, userRole);
-      userPosition = sp.getString("position")!;
+      userPosition = sp.getString("position");
       //type selection
       List typeDate = [];
       typeDate = typeOptions;
@@ -103,9 +103,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
     final SharedPreferences sp = await _pref;
     final data = await dbHelper.getItems();
     final siteOptions = await Selection().siteSelection();
-    String currentUserSiteLead = sp.getString("siteLead")!;
-    String currentUsername = sp.getString("user_name")!;
-    List functionData = sp.getString("position")!.split(",");
+    String currentUserSiteLead = sp.getString("siteLead");
+    String currentUsername = sp.getString("user_name");
+    List functionData = sp.getString("position").split(",");
     userRole = sp.getString("role").toString();
 
     setState(() {
@@ -211,7 +211,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
 
   Future saveNonRecurring() async {
     final SharedPreferences sp = await _pref;
-    final isValid = _formkey.currentState!.validate();
+    final isValid = _formkey.currentState.validate();
     if (isValid) {
       if (due == null) {
         AlertDialog alert = AlertDialog(
@@ -238,7 +238,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
 
         String selectedCheckUser = _selectedCheckUser.join(",");
 
-        String currentUsername = sp.getString("user_name")!;
+        String currentUsername = sp.getString("user_name");
 
         if (_selectedCheckUser.isNotEmpty &&
             _selectedCheckUser != null &&
@@ -250,7 +250,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
               'assigner': _selectedUser,
               'type': "Checking",
               'task': taskController.text,
-              'deadline': DateFormat("yyyy-MM-dd").format(due!).toString(),
+              'deadline': DateFormat("yyyy-MM-dd").format(due).toString(),
               'noted': "No",
             };
             await http.post(Uri.parse(url), body: notificationData);
@@ -262,7 +262,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
             'assigner': currentUsername,
             'type': "Non-recurring",
             'task': taskController.text,
-            'deadline': DateFormat("yyyy-MM-dd").format(due!).toString(),
+            'deadline': DateFormat("yyyy-MM-dd").format(due).toString(),
             'noted': "No",
           };
 
@@ -291,16 +291,16 @@ class _addNonRecurringState extends State<addNonRecurring> {
               "|" +
               _selectedCategory["department"],
           "subCategory": _selectedSubCategory,
-          "type": typeselect!.value,
+          "type": typeselect.value,
           "site": _selectedSite,
           "task": taskController.text,
           "owner": _selectedUser,
           "startDate": DateFormat("yyyy-MM-dd").format(startDate).toString(),
-          "due": DateFormat("yyyy-MM-dd").format(due!).toString(),
+          "due": DateFormat("yyyy-MM-dd").format(due).toString(),
           "modify": DateFormat("yyyy-MM-dd").format(DateTime.now()).toString(),
           "remark": remarkController.text,
           "completeDate": completeDate != null
-              ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+              ? DateFormat("yyyy-MM-dd").format(completeDate).toString()
               : '',
           "checked": check == false ? "-" : "Pending Review",
           "personCheck": selectedCheckUser.isEmpty ? "-" : selectedCheckUser,
@@ -384,7 +384,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
     double height = MediaQuery.of(context).size.height;
 
     Widget buildTextField(String labelText, String placeholder,
-        TextEditingController? controllerText) {
+        TextEditingController controllerText) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -413,7 +413,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 validator: labelText != "Remark"
                     ? labelText == "Status"
                         ? (data) {
-                            if (double.parse(data!) < 0.0 ||
+                            if (double.parse(data) < 0.0 ||
                                 double.parse(data) > 100.0) {
                               return 'Value must be between 0 and 100';
                             }
@@ -591,7 +591,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 }).toList(),
                 onChanged: (newValue) {
                   setState(() {
-                    typeselect = newValue!;
+                    typeselect = newValue;
                   });
                 },
                 icon: const Icon(
@@ -644,7 +644,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                     )
                     .toList(),
                 onChanged: (val) {
-                  String test = val as String;
+                  String test = val;
                   setState(() {
                     _selectedSite = test;
                   });
@@ -699,7 +699,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 ),
                 onChanged: (val) {
                   setState(() {
-                    _selectedUser = val!;
+                    _selectedUser = val;
                   });
                 },
                 icon: const Icon(
@@ -736,7 +736,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                   value: check,
                   onChanged: (value) {
                     setState(() {
-                      check = value!;
+                      check = value;
                     });
                   },
                 ),
@@ -804,7 +804,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 color: const Color(0xFFd4dce4)),
             child: ListTile(
               title: Text(
-                due == null ? 'dd/mm/yy' : Utils.toDate(due!),
+                due == null ? 'dd/mm/yy' : Utils.toDate(due),
                 style: const TextStyle(fontSize: 14),
               ),
               trailing: const Icon(
@@ -884,7 +884,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 color: const Color(0xFFd4dce4)),
             child: ListTile(
               title: Text(
-                completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate!),
+                completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate),
                 style: const TextStyle(fontSize: 14),
               ),
               trailing: const Icon(

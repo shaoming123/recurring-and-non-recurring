@@ -1,4 +1,4 @@
-// ignore: file_names
+//@dart=2.9
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -27,8 +27,8 @@ import 'package:http/http.dart' as http;
 import '../../util/selection.dart';
 
 class EventAdd extends StatefulWidget {
-  final Event? event;
-  const EventAdd({Key? key, this.event}) : super(key: key);
+  final Event event;
+  const EventAdd({Key key, this.event}) : super(key: key);
   @override
   State<EventAdd> createState() => _EventAddState();
 }
@@ -43,10 +43,10 @@ class _EventAddState extends State<EventAdd> {
   final remarkController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
   double _animatedHeight = 0.0;
-  late DateTime fromDate = DateTime.now();
-  late DateTime toDate;
-  DateTime? recurringDate;
-  DateTime? completeDate;
+  DateTime fromDate = DateTime.now();
+  DateTime toDate;
+  DateTime recurringDate;
+  DateTime completeDate;
 
   bool checkDuration = true;
   List<String> _selectedUser = [];
@@ -74,24 +74,24 @@ class _EventAddState extends State<EventAdd> {
   List categoryData = [];
   String userPosition = '';
 
-  TypeSelect? typeselect;
+  TypeSelect typeselect;
   List<TypeSelect> typeList = <TypeSelect>[];
 
   dynamic _selectedCategory;
-  String? _selectedSubCategory;
+  String _selectedSubCategory;
   @override
   void initState() {
     super.initState();
 
     Future.delayed(Duration.zero, () async {
       final SharedPreferences sp = await _pref;
-      String userRole = sp.getString("role")!;
-      List functionAccess = sp.getString("position")!.split(",");
+      String userRole = sp.getString("role");
+      List functionAccess = sp.getString("position").split(",");
       final typeOptions =
           await Selection().typeSelection(functionAccess, userRole);
       categoryData =
           await Selection().categorySelection(functionAccess, userRole);
-      userPosition = sp.getString("position")!;
+      userPosition = sp.getString("position");
       //type selection
       List typeDate = [];
       typeDate = typeOptions;
@@ -126,9 +126,9 @@ class _EventAddState extends State<EventAdd> {
     final data = await dbHelper.getItems();
     final SharedPreferences sp = await _pref;
 
-    String user = sp.getString("user_name")!;
-    String userRole = sp.getString("role")!;
-    String currentUserSiteLead = sp.getString("siteLead")!;
+    String user = sp.getString("user_name");
+    String userRole = sp.getString("role");
+    String currentUserSiteLead = sp.getString("siteLead");
 
     final siteOptions = await Selection().siteSelection();
 
@@ -202,7 +202,7 @@ class _EventAddState extends State<EventAdd> {
     }
   }
 
-  Future pickFromDateTime({required bool pickdate}) async {
+  Future pickFromDateTime({bool pickdate}) async {
     final date = await pickDateTime(fromDate, pickdate: pickdate);
     if (date == null) return;
 
@@ -211,8 +211,7 @@ class _EventAddState extends State<EventAdd> {
     });
   }
 
-  Future pickToDateTime(
-      {required bool pickdate, required int durationDay}) async {
+  Future pickToDateTime({bool pickdate, int durationDay}) async {
     final date = await pickDateTime(toDate,
         pickdate: pickdate, durationDay: durationDay);
     if (date == null) return;
@@ -246,11 +245,11 @@ class _EventAddState extends State<EventAdd> {
   // }
 
   //Put date and time format together in one object
-  Future<DateTime?> pickDateTime(
+  Future<DateTime> pickDateTime(
     DateTime initialDate, {
-    required bool pickdate,
-    int? durationDay,
-    DateTime? firstDate,
+    bool pickdate,
+    int durationDay,
+    DateTime firstDate,
   }) async {
     if (pickdate) {
       final date = await showDatePicker(
@@ -288,10 +287,10 @@ class _EventAddState extends State<EventAdd> {
 
   Future saveEvent() async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/add.php';
-    final isValid = _formkey.currentState!.validate();
+    final isValid = _formkey.currentState.validate();
     final SharedPreferences sp = await _pref;
-    String currentUsername = sp.getString("user_name")!;
-    String? color;
+    String currentUsername = sp.getString("user_name");
+    String color;
 
     if (isValid) {
       String selectedUser = _selectedUser.join(",");
@@ -412,7 +411,7 @@ class _EventAddState extends State<EventAdd> {
               "|" +
               _selectedCategory["department"],
           "subCategory": _selectedSubCategory,
-          "type": typeselect!.value,
+          "type": typeselect.value,
           "site": _selectedSite,
           "task": taskController.text,
           "start": _startDate[i].toString(),
@@ -435,7 +434,7 @@ class _EventAddState extends State<EventAdd> {
           "uniqueNumber": unique_code.toString(),
           "dependent": dependent_code.toString(),
           "completeDate": completeDate != null
-              ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+              ? DateFormat("yyyy-MM-dd").format(completeDate).toString()
               : '',
 
           "status": _selectedStatus,
@@ -640,7 +639,7 @@ class _EventAddState extends State<EventAdd> {
             }).toList(),
             onChanged: (newValue) {
               setState(() {
-                typeselect = newValue!;
+                typeselect = newValue;
               });
             },
             icon: const Icon(
@@ -723,7 +722,7 @@ class _EventAddState extends State<EventAdd> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedSite = test;
               });
@@ -767,7 +766,7 @@ class _EventAddState extends State<EventAdd> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedPriority = test;
               });
@@ -811,7 +810,7 @@ class _EventAddState extends State<EventAdd> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedStatus = test;
               });
@@ -855,7 +854,7 @@ class _EventAddState extends State<EventAdd> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedRecurring = test;
                 if (_selectedRecurring == 'Once') {
@@ -1032,7 +1031,7 @@ class _EventAddState extends State<EventAdd> {
             color: const Color(0xFFd4dce4)),
         child: ListTile(
           title: Text(
-            completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate!),
+            completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate),
             style: const TextStyle(fontSize: 14),
           ),
           trailing: const Icon(
@@ -1104,7 +1103,7 @@ class _EventAddState extends State<EventAdd> {
                             controller: recurringController,
                             validator: (data) {
                               return data == null &&
-                                      data!.isEmpty &&
+                                      data.isEmpty &&
                                       _selectedRecurring != 'Once'
                                   ? 'Field cannot be empty'
                                   : null;
@@ -1135,7 +1134,7 @@ class _EventAddState extends State<EventAdd> {
                       title: Text(
                         recurringDate == null
                             ? 'dd/mm/yy'
-                            : Utils.toDate(recurringDate!),
+                            : Utils.toDate(recurringDate),
                         style: const TextStyle(fontSize: 14),
                       ),
                       trailing: const Icon(

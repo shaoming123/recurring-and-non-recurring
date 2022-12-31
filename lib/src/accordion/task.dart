@@ -1,9 +1,10 @@
+//@dart=2.9
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
-import 'package:ipsolution/src/dialogBox/eventEdit.dart';
+
 import 'package:ipsolution/src/dialogBox/nonRecurringAdd.dart';
 import 'package:ipsolution/src/dialogBox/nonRecurringEdit.dart';
 import 'package:ipsolution/src/non_recurring.dart';
@@ -24,36 +25,38 @@ class Task extends StatefulWidget {
   List<Map<String, dynamic>> CompletednonRecurring;
 
   Task({
-    super.key,
-    required this.allNonRecurring,
-    required this.foundNonRecurring,
-    required this.LatenonRecurring,
-    required this.ActivenonRecurring,
-    required this.CompletednonRecurring,
-  });
+    Key key,
+    this.allNonRecurring,
+    this.foundNonRecurring,
+    this.LatenonRecurring,
+    this.ActivenonRecurring,
+    this.CompletednonRecurring,
+  }) : super(key: key);
   @override
   State<Task> createState() => _TaskState();
 }
 
 class _TaskState extends State<Task> {
-  List<Map<String, dynamic>> allNonRecurring = [];
-  List<Map<String, dynamic>> foundNonRecurring = [];
-  List<Map<String, dynamic>> LatenonRecurring = [];
-  List<Map<String, dynamic>> ActivenonRecurring = [];
-  List<Map<String, dynamic>> CompletednonRecurring = [];
+  List<Map<String, dynamic>> allNonRecurring;
+  List<Map<String, dynamic>> foundNonRecurring;
+  List<Map<String, dynamic>> LatenonRecurring;
+  List<Map<String, dynamic>> ActivenonRecurring;
+  List<Map<String, dynamic>> CompletednonRecurring;
   List<String> type = <String>['Late', 'Active', 'Completed', 'All'];
 
   String _selectedUser = "";
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-  TextEditingController? textcontroller;
+  TextEditingController textcontroller;
   @override
   void initState() {
     super.initState();
+
     textcontroller = TextEditingController();
     foundNonRecurring = widget.foundNonRecurring;
     LatenonRecurring = widget.LatenonRecurring;
     ActivenonRecurring = widget.ActivenonRecurring;
     CompletednonRecurring = widget.CompletednonRecurring;
+
     getUserId();
   }
 
@@ -61,7 +64,7 @@ class _TaskState extends State<Task> {
     final SharedPreferences sp = await _pref;
 
     setState(() {
-      _selectedUser = sp.getString("user_name")!;
+      _selectedUser = sp.getString("user_name");
     });
   }
 
@@ -108,6 +111,7 @@ class _TaskState extends State<Task> {
 
     if (enteredKeyword.isEmpty) {
       // if the search field is empty or only contains white-space, we'll display all users
+
       results_one = widget.LatenonRecurring;
       results_two = widget.ActivenonRecurring;
       results_three = widget.CompletednonRecurring;
@@ -758,9 +762,7 @@ class _TaskState extends State<Task> {
                                 .toString(),
                           );
                         });
-                  }
-                  
-                  );
+                  });
             })),
       ),
     );

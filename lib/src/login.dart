@@ -1,4 +1,4 @@
-// ignore: file_names
+//@dart=2.9
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -15,7 +15,9 @@ import '../util/checkInternet.dart';
 import '../util/fade_animation.dart';
 
 class Login extends StatefulWidget {
-  const Login({super.key});
+  const Login({
+    Key key,
+  }) : super(key: key);
 
   @override
   State<Login> createState() => _LoginState();
@@ -27,8 +29,8 @@ class _LoginState extends State<Login> {
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   DbHelper dbHelper = DbHelper();
-  late String username;
-  late String password;
+  String username;
+  String password;
 
   @override
   void initState() {
@@ -36,8 +38,7 @@ class _LoginState extends State<Login> {
   }
 
   Future loginForm() async {
-    final SharedPreferences sp = await _pref;
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState.validate()) {
       username = userController.text;
       password = passwordController.text;
 
@@ -95,6 +96,7 @@ class _LoginState extends State<Login> {
                   }
                 });
               }
+
               if (!mounted) return;
               Navigator.pushAndRemoveUntil(
                   context,
@@ -190,19 +192,19 @@ class _LoginState extends State<Login> {
   Future setSP(UserModel user) async {
     final SharedPreferences sp = await _pref;
     sp.setBool("isLoggedIn", true);
-    sp.setInt("user_id", user.user_id!);
+    sp.setInt("user_id", user.user_id);
     sp.setString("user_name", user.user_name);
 
     sp.setString("password", user.password);
     sp.setString("email", user.email);
     sp.setString("role", user.role);
     sp.setString("position", user.position);
-    sp.setString("site", user.site!);
-    sp.setString("leadFunc", user.leadFunc!);
-    sp.setString("siteLead", user.siteLead!);
-    sp.setString("phone", user.phone!);
+    sp.setString("site", user.site);
+    sp.setString("leadFunc", user.leadFunc);
+    sp.setString("siteLead", user.siteLead);
+    sp.setString("phone", user.phone);
     sp.setString("active", user.active);
-    sp.setString("filepath", user.filepath!);
+    sp.setString("filepath", user.filepath);
     sp.setString("updateTime", "");
 
     // sp.setString("photoName", user.photoName!);
@@ -308,7 +310,7 @@ class _LoginState extends State<Login> {
                                 decoration: BoxDecoration(
                                     border: Border(
                                         bottom: BorderSide(
-                                            color: Colors.grey[100]!))),
+                                            color: Colors.grey[100]))),
                                 child: TextFormField(
                                   validator: (text) {
                                     if (text == null || text.isEmpty) {

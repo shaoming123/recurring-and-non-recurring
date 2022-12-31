@@ -1,4 +1,4 @@
-// ignore: file_names
+//@dart=2.9
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
@@ -10,7 +10,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'appbar.dart';
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({super.key});
+  const Dashboard({
+    Key key,
+  }) : super(key: key);
 
   @override
   State<Dashboard> createState() => _DashboardState();
@@ -30,8 +32,8 @@ class _DashboardState extends State<Dashboard> {
   List<Map<String, dynamic>> progressNon = [];
   List<Map<String, dynamic>> upcomingNon = [];
   DateTime dateNow = DateTime.now();
-  DateTime? startDate;
-  DateTime? endDate;
+  DateTime startDate;
+  DateTime endDate;
   @override
   void initState() {
     super.initState();
@@ -58,8 +60,8 @@ class _DashboardState extends State<Dashboard> {
     progressNon = [];
     upcomingNon = [];
 
-    String userName = sp.getString("user_name")!;
-    String username = sp.getString("user_name")!;
+    String userName = sp.getString("user_name");
+    String username = sp.getString("user_name");
     List<String> personList = [];
 
     setState(() {
@@ -74,15 +76,15 @@ class _DashboardState extends State<Dashboard> {
                 DateFormat.yMd().format(dateStart) ==
                     DateFormat.yMd().format(dateEnd);
 
-            if ((dateEnd.isAfter(startDate!) ||
+            if ((dateEnd.isAfter(startDate) ||
                     DateFormat.yMd()
                             .format(dateEnd)
-                            .compareTo(DateFormat.yMd().format(startDate!)) ==
+                            .compareTo(DateFormat.yMd().format(startDate)) ==
                         0) &&
-                (dateEnd.isBefore(endDate!) ||
+                (dateEnd.isBefore(endDate) ||
                     DateFormat.yMd()
                             .format(dateEnd)
-                            .compareTo(DateFormat.yMd().format(endDate!)) ==
+                            .compareTo(DateFormat.yMd().format(endDate)) ==
                         0)) {
               if (taskData[x]["status"] == "Done") {
                 completed.add(taskData[x]);
@@ -105,15 +107,15 @@ class _DashboardState extends State<Dashboard> {
           bool isValidDate = dateStart.isBefore(dateEnd) ||
               DateFormat.yMd().format(dateStart) ==
                   DateFormat.yMd().format(dateEnd); // YOUR DATE GOES HERE
-          if ((dateEnd.isAfter(startDate!) ||
+          if ((dateEnd.isAfter(startDate) ||
                   DateFormat.yMd()
                           .format(dateEnd)
-                          .compareTo(DateFormat.yMd().format(startDate!)) ==
+                          .compareTo(DateFormat.yMd().format(startDate)) ==
                       0) &&
-              (dateEnd.isBefore(endDate!) ||
+              (dateEnd.isBefore(endDate) ||
                   DateFormat.yMd()
                           .format(dateEnd)
-                          .compareTo(DateFormat.yMd().format(endDate!)) ==
+                          .compareTo(DateFormat.yMd().format(endDate)) ==
                       0)) {
             if (nonRecurringData[x]["status"] == "100") {
               completedNon.add(nonRecurringData[x]);
@@ -131,7 +133,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void _show() async {
-    final DateTimeRange? result = await showDateRangePicker(
+    final DateTimeRange result = await showDateRangePicker(
       context: context,
       firstDate: DateTime(DateTime.now().year - 50),
       lastDate: DateTime(DateTime.now().year + 50),
@@ -190,7 +192,7 @@ class _DashboardState extends State<Dashboard> {
                       children: [
                         const Icon(Icons.calendar_month),
                         Text(
-                          "${DateFormat.yMMMMd('en_US').format(startDate!).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate!).toString()}",
+                          "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
                           style:
                               TextStyle(color: Styles.textColor, fontSize: 14),
                         ),

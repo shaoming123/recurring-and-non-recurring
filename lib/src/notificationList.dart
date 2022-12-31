@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:flutter/material.dart';
 import 'package:ipsolution/model/manageUser.dart';
 
@@ -8,7 +9,7 @@ import 'package:http/http.dart' as http;
 
 class notificationList extends StatefulWidget {
   List<NotificationModel> notification;
-  notificationList({super.key, required this.notification});
+  notificationList({Key key, this.notification}) : super(key: key);
 
   @override
   State<notificationList> createState() => _notificationListState();

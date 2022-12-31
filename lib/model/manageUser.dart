@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:flutter/material.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
@@ -12,16 +13,16 @@ Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 Future updateSP(UserModel user) async {
   final SharedPreferences sp = await _pref;
 
-  sp.setInt("user_id", user.user_id!);
-  sp.setString("phone", user.phone!);
+  sp.setInt("user_id", user.user_id);
+  sp.setString("phone", user.phone);
   sp.setString("user_name", user.user_name);
   sp.setString("password", user.password);
   sp.setString("email", user.email);
   sp.setString("role", user.role);
   sp.setString("position", user.position);
-  sp.setString("leadFunc", user.leadFunc!);
-  sp.setString("site", user.site!);
-  sp.setString("siteLead", user.siteLead!);
+  sp.setString("leadFunc", user.leadFunc);
+  sp.setString("site", user.site);
+  sp.setString("siteLead", user.siteLead);
   sp.setString("active", user.active);
 }
 

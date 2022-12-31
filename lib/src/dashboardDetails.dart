@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
@@ -10,10 +11,8 @@ class DashboardDetails extends StatefulWidget {
   final List<Map<String, dynamic>> nonRecurring;
   final String detailName;
   const DashboardDetails(
-      {super.key,
-      required this.task,
-      required this.nonRecurring,
-      required this.detailName});
+      {Key key, this.task, this.nonRecurring, this.detailName})
+      : super(key: key);
 
   @override
   State<DashboardDetails> createState() => _DashboardDetailsState();

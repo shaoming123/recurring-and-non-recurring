@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'dart:convert';
 import 'dart:io';
 
@@ -16,7 +17,7 @@ import 'appbar.dart';
 import '../util/checkInternet.dart';
 
 class Account extends StatefulWidget {
-  const Account({super.key});
+  const Account({Key key}) : super(key: key);
 
   @override
   State<Account> createState() => _AccountState();
@@ -26,21 +27,21 @@ class _AccountState extends State<Account> {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
   bool showPassword = true;
-  File? image;
+  File image;
 
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   DbHelper dbHelper = DbHelper();
 
   final username = TextEditingController();
   final password = TextEditingController();
-  int? userid;
+  int userid;
   final email = TextEditingController();
   final phone = TextEditingController();
   final userRole = TextEditingController();
   final site = TextEditingController();
   final siteLead = TextEditingController();
   String active = '';
-  String? filepath;
+  String filepath;
   final function = TextEditingController();
   List userData = [];
   @override
@@ -53,18 +54,18 @@ class _AccountState extends State<Account> {
     final SharedPreferences sp = await _pref;
 
     setState(() {
-      userid = sp.getInt("user_id")!;
-      username.text = sp.getString("user_name")!;
-      password.text = sp.getString("password")!;
-      email.text = sp.getString("email")!;
-      phone.text = sp.getString("phone")!;
-      userRole.text = sp.getString("role")!;
-      function.text = sp.getString("position")!;
-      site.text = sp.getString("site")!;
-      siteLead.text = sp.getString("siteLead")!;
-      active = sp.getString("active")!;
+      userid = sp.getInt("user_id");
+      username.text = sp.getString("user_name");
+      password.text = sp.getString("password");
+      email.text = sp.getString("email");
+      phone.text = sp.getString("phone");
+      userRole.text = sp.getString("role");
+      function.text = sp.getString("position");
+      site.text = sp.getString("site");
+      siteLead.text = sp.getString("siteLead");
+      active = sp.getString("active");
 
-      filepath = sp.getString("filepath")!;
+      filepath = sp.getString("filepath");
     });
   }
 
@@ -98,7 +99,7 @@ class _AccountState extends State<Account> {
 
       if (response.statusCode == 200) {
         setState(() {
-          sp.setString("filepath", pic.filename!);
+          sp.setString("filepath", pic.filename);
         });
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -227,7 +228,7 @@ class _AccountState extends State<Account> {
                                     image: DecorationImage(
                                       fit: BoxFit.cover,
                                       image: filepath != null
-                                          ? filepath!.isNotEmpty
+                                          ? filepath.isNotEmpty
                                               ? NetworkImage(
                                                       "https://ipsolutions4u.com/ipsolutions/recurring/upload/$filepath")
                                                   as ImageProvider
@@ -295,8 +296,8 @@ class _AccountState extends State<Account> {
                                 borderRadius: BorderRadius.circular(20)),
                           ),
                           onPressed: (() async {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
+                            if (_formKey.currentState.validate()) {
+                              _formKey.currentState.save();
 
                               await Internet.isInternet()
                                   .then((connection) async {
@@ -357,7 +358,7 @@ class _AccountState extends State<Account> {
       String placeholder,
       bool isPasswordTextField,
       bool editable,
-      TextEditingController? controllerText,
+      TextEditingController controllerText,
       int line) {
     return Container(
       padding: const EdgeInsets.only(bottom: 30.0),

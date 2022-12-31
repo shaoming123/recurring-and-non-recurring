@@ -1,7 +1,9 @@
+//@dart=2.9
 import 'dart:convert';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+
 import 'package:gap/gap.dart';
 import 'package:ipsolution/src/Login.dart';
 import 'package:ipsolution/src/account.dart';
@@ -18,7 +20,7 @@ import '../databaseHandler/DbHelper.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Navbar extends StatefulWidget {
-  const Navbar({super.key});
+  const Navbar({Key key}) : super(key: key);
 
   @override
   State<Navbar> createState() => _NavbarState();
@@ -26,17 +28,17 @@ class Navbar extends StatefulWidget {
 
 class _NavbarState extends State<Navbar> {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-  late DbHelper dbHelper;
+  DbHelper dbHelper;
   String username = "";
   String email = "";
-  String? userRole = "";
-  String? filepath;
-  int? userid;
+  String userRole = "";
+  String filepath;
+  int userid;
   List userData = [];
 
   final Uri ipsolutionUrl = Uri.parse('https://ipsolutions4u.com/ipsolutions/');
 
-  TapGestureRecognizer? _ipsolutionTapRecognizer;
+  TapGestureRecognizer _ipsolutionTapRecognizer;
   @override
   void initState() {
     dbHelper = DbHelper();
@@ -70,11 +72,11 @@ class _NavbarState extends State<Navbar> {
     //   }
     // });
     setState(() {
-      userid = sp.getInt("user_id")!;
-      username = sp.getString("user_name")!;
-      userRole = sp.getString("role")!;
-      email = sp.getString("email")!;
-      filepath = sp.getString("filepath")!;
+      userid = sp.getInt("user_id");
+      username = sp.getString("user_name");
+      userRole = sp.getString("role");
+      email = sp.getString("email");
+      filepath = sp.getString("filepath");
     });
   }
 
@@ -145,7 +147,7 @@ class _NavbarState extends State<Navbar> {
                           //   height: 90,
                           // ),
                           filepath != null
-                              ? filepath!.isNotEmpty
+                              ? filepath.isNotEmpty
                                   ? ClipRRect(
                                       borderRadius:
                                           BorderRadius.circular(100.0),
@@ -185,11 +187,10 @@ class _NavbarState extends State<Navbar> {
                 MaterialPageRoute(builder: (context) => const Dashboard())),
           ),
           ListTile(
-            leading: const Icon(Icons.event_repeat),
-            title: const Text('Recurring'),
-            onTap: () => Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => const Recurring())),
-          ),
+              leading: const Icon(Icons.event_repeat),
+              title: const Text('Recurring'),
+              onTap: () => Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const Recurring()))),
           ListTile(
             leading: const Icon(Icons.low_priority),
             title: const Text('Non-Recurring'),

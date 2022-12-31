@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -16,8 +17,7 @@ class DialogBox extends StatefulWidget {
 
   final bool isEditing;
 
-  const DialogBox({Key? key, required this.id, required this.isEditing})
-      : super(key: key);
+  const DialogBox({Key key, this.id, this.isEditing}) : super(key: key);
 
   @override
   State<DialogBox> createState() => _DialogBoxState();
@@ -105,7 +105,7 @@ class _DialogBoxState extends State<DialogBox> {
   }
 
   Future<void> _updateUser(int id) async {
-    if (_formkey.currentState!.validate()) {
+    if (_formkey.currentState.validate()) {
       String _selectedPos = userPosition.join(",");
       String _selectedSite = userSite.join(",");
       String _selectedSiteLead = userSiteLead.join(",");
@@ -193,7 +193,7 @@ class _DialogBoxState extends State<DialogBox> {
     Widget buildTextField(
         String labelText,
         String placeholder,
-        TextEditingController? controllerText,
+        TextEditingController controllerText,
         bool editable,
         bool isPasswordTextField) {
       return Column(
@@ -288,7 +288,7 @@ class _DialogBoxState extends State<DialogBox> {
                     .toList(),
                 onChanged: widget.isEditing
                     ? (val) {
-                        String test = val as String;
+                        String test = val;
                         setState(() {
                           userRole = test;
                         });

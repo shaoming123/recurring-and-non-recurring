@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:flutter/material.dart';
 
 import 'dart:async';
@@ -15,7 +16,7 @@ import 'appbar.dart';
 import 'accordion/teamTask.dart';
 
 class NonRecurring extends StatefulWidget {
-  const NonRecurring({Key? key}) : super(key: key);
+  const NonRecurring({Key key}) : super(key: key);
 
   @override
   State<NonRecurring> createState() => _NonRecurringState();
@@ -40,12 +41,15 @@ class _NonRecurringState extends State<NonRecurring> {
   List<Map<String, dynamic>> ActivenonRecurring = [];
   List<Map<String, dynamic>> CompletednonRecurring = [];
   String userRole = 'Staff';
-
+  // DateTime dateNow = DateTime.now();
+  // DateTime startDate;
+  // DateTime endDate;
   // bool _isExpanded = true;
   @override
   void initState() {
     super.initState();
-
+    // startDate = DateTime(dateNow.year, 1, 1);
+    // endDate = DateTime(dateNow.year + 1, 1, 0);
     _refresh();
   }
 
@@ -53,13 +57,29 @@ class _NonRecurringState extends State<NonRecurring> {
     final data = await dbHelper.fetchAllNonRecurring();
 
     final SharedPreferences sp = await _pref;
-    String userName = sp.getString("user_name")!;
-
+    String userName = sp.getString("user_name");
+    // allNonRecurring = [];
+    // foundNonRecurring = [];
+    // LatenonRecurring = [];
+    // ActivenonRecurring = [];
+    // CompletednonRecurring = [];
     setState(() {
-      userRole = sp.getString("role")!;
+      userRole = sp.getString("role");
 
       for (int x = 0; x < data.length; x++) {
         if (data[x]["owner"] == userName) {
+          DateTime dateEnd = DateTime.parse(data[x]["due"]);
+
+          // if ((dateEnd.isAfter(startDate) ||
+          //         DateFormat.yMd()
+          //                 .format(dateEnd)
+          //                 .compareTo(DateFormat.yMd().format(startDate)) ==
+          //             0) &&
+          //     (dateEnd.isBefore(endDate) ||
+          //         DateFormat.yMd()
+          //                 .format(dateEnd)
+          //                 .compareTo(DateFormat.yMd().format(endDate)) ==
+          //             0)) {
           final dayLeft = daysBetween(
               DateTime.parse(DateFormat('yyyy-MM-dd').format(DateTime.now())),
               DateTime.parse(data[x]["due"]));
@@ -72,6 +92,7 @@ class _NonRecurringState extends State<NonRecurring> {
           } else if (dayLeft > 0) {
             ActivenonRecurring.add(data[x]);
           }
+          // }
         }
 
         if (data[x]["checked"] == "Pending Review" &&
@@ -103,6 +124,24 @@ class _NonRecurringState extends State<NonRecurring> {
     });
   }
 
+  // void _show() async {
+  //   final DateTimeRange result = await showDateRangePicker(
+  //     context: context,
+  //     firstDate: DateTime(DateTime.now().year - 50),
+  //     lastDate: DateTime(DateTime.now().year + 50),
+  //     currentDate: DateTime.now(),
+  //     saveText: 'Done',
+  //   );
+
+  //   if (result != null) {
+  //     setState(() {
+  //       startDate = result.start;
+  //       endDate = result.end;
+  //     });
+  //     await _refresh();
+  //   }
+  // }
+
   // @override
   // void dispose() {
   //   super.dispose();
@@ -132,7 +171,30 @@ class _NonRecurringState extends State<NonRecurring> {
             child: Column(
               children: [
                 Appbar(title: "Non-Recurring", scaffoldKey: scaffoldKey),
-                const Gap(20),
+                const Gap(5),
+                // GestureDetector(
+                //   onTap: () {
+                //     _show();
+                //   },
+                //   child: Container(
+                //     padding: const EdgeInsets.symmetric(horizontal: 10),
+                //     child: Row(
+                //       mainAxisAlignment: MainAxisAlignment.end,
+                //       children: [
+                //         const Icon(Icons.calendar_month, size: 15),
+                //         Padding(
+                //           padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                //           child: Text(
+                //             "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
+                //             style: TextStyle(
+                //                 color: Styles.textColor, fontSize: 12),
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+                const Gap(15),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -141,57 +203,57 @@ class _NonRecurringState extends State<NonRecurring> {
                       Column(children: [
                         Text("Total ",
                             style: TextStyle(
-                                color: Styles.textColor, fontSize: 14)),
+                                color: Styles.textColor, fontSize: 12)),
                         Text("Tasks",
                             style: TextStyle(
-                                color: Styles.textColor, fontSize: 14)),
+                                color: Styles.textColor, fontSize: 12)),
                         const Gap(5),
                         Text(totalTasks,
                             style: const TextStyle(
                                 color: Colors.black,
-                                fontSize: 25,
+                                fontSize: 22,
                                 fontWeight: FontWeight.w700)),
                       ]),
                       Column(children: [
                         Text("Completed",
                             style: TextStyle(
-                                color: Styles.textColor, fontSize: 14)),
+                                color: Styles.textColor, fontSize: 12)),
                         Text("Tasks",
                             style: TextStyle(
-                                color: Styles.textColor, fontSize: 14)),
+                                color: Styles.textColor, fontSize: 12)),
                         const Gap(5),
                         Text("$completedTasksPer%",
                             style: const TextStyle(
                                 color: Colors.black,
-                                fontSize: 25,
+                                fontSize: 22,
                                 fontWeight: FontWeight.w700)),
                       ]),
                       Column(children: [
                         Text("Overdue",
                             style: TextStyle(
-                                color: Styles.textColor, fontSize: 14)),
+                                color: Styles.textColor, fontSize: 12)),
                         Text("Tasks",
                             style: TextStyle(
-                                color: Styles.textColor, fontSize: 14)),
+                                color: Styles.textColor, fontSize: 12)),
                         const Gap(5),
                         Text(overdueTasks,
                             style: const TextStyle(
                                 color: Colors.black,
-                                fontSize: 25,
+                                fontSize: 22,
                                 fontWeight: FontWeight.w700)),
                       ]),
                       Column(children: [
                         Text("Pending",
                             style: TextStyle(
-                                color: Styles.textColor, fontSize: 14)),
+                                color: Styles.textColor, fontSize: 12)),
                         Text("Review",
                             style: TextStyle(
-                                color: Styles.textColor, fontSize: 14)),
+                                color: Styles.textColor, fontSize: 12)),
                         const Gap(5),
                         Text(pendingReviewNumber,
                             style: const TextStyle(
                                 color: Colors.black,
-                                fontSize: 25,
+                                fontSize: 22,
                                 fontWeight: FontWeight.w700)),
                       ]),
                       userRole == 'Staff'
@@ -199,21 +261,21 @@ class _NonRecurringState extends State<NonRecurring> {
                           : Column(children: [
                               Text("Request",
                                   style: TextStyle(
-                                      color: Styles.textColor, fontSize: 14)),
+                                      color: Styles.textColor, fontSize: 12)),
                               Text("Review",
                                   style: TextStyle(
-                                      color: Styles.textColor, fontSize: 14)),
+                                      color: Styles.textColor, fontSize: 12)),
                               const Gap(5),
                               Text(requestReviewNumber,
                                   style: const TextStyle(
                                       color: Colors.black,
-                                      fontSize: 25,
+                                      fontSize: 22,
                                       fontWeight: FontWeight.w700)),
                             ])
                     ],
                   ),
                 ),
-                const Gap(20),
+                const Gap(10),
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
@@ -238,8 +300,9 @@ class _NonRecurringState extends State<NonRecurring> {
                             children: [
                               ExpansionTile(
                                 title: const Text("Task Overview",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    )),
                                 // key: PageStorageKey<Task>(Task),
                                 maintainState: true,
 

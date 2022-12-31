@@ -1,4 +1,4 @@
-// ignore: file_names
+//@dart=2.9
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
@@ -9,7 +9,9 @@ import 'package:ipsolution/util/app_styles.dart';
 import '../util/fade_animation.dart';
 
 class SignUp extends StatefulWidget {
-  const SignUp({super.key});
+  const SignUp({
+    Key key,
+  }) : super(key: key);
 
   @override
   State<SignUp> createState() => _SignUpState();
@@ -20,10 +22,9 @@ class _SignUpState extends State<SignUp> {
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  late String username;
-  late String password;
-  late int userQuantity = 0;
-
+  String username;
+  String password;
+  int userQuantity = 0;
   var dbHelper = DbHelper();
 
   @override
@@ -32,11 +33,11 @@ class _SignUpState extends State<SignUp> {
   }
 
   void signupForm() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState.validate()) {
       username = userController.text;
       password = passwordController.text;
 
-      _formKey.currentState!.save();
+      _formKey.currentState.save();
 
       UserModel user_model = UserModel(
           user_name: username,
@@ -187,7 +188,7 @@ class _SignUpState extends State<SignUp> {
                                 decoration: BoxDecoration(
                                     border: Border(
                                         bottom: BorderSide(
-                                            color: Colors.grey[100]!))),
+                                            color: Colors.grey[100]))),
                                 child: TextFormField(
                                   validator: (text) {
                                     if (text == null || text.isEmpty) {

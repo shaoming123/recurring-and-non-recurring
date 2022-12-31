@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:data_connection_checker/data_connection_checker.dart';
 

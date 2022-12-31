@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'dart:math';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -20,8 +21,7 @@ import 'package:http/http.dart' as http;
 class EventEdit extends StatefulWidget {
   final String id;
   final List<String> user_list;
-  const EventEdit({Key? key, required this.id, required this.user_list})
-      : super(key: key);
+  const EventEdit({Key key, this.id, this.user_list}) : super(key: key);
 
   @override
   State<EventEdit> createState() => _EventEditState();
@@ -30,8 +30,8 @@ class EventEdit extends StatefulWidget {
 final _formkey = GlobalKey<FormState>();
 DateTime fromDate = DateTime.now();
 DateTime toDate = DateTime.now();
-DateTime? recurringDate;
-DateTime? completeDate;
+DateTime recurringDate;
+DateTime completeDate;
 TextEditingController taskController = TextEditingController();
 TextEditingController durationController = TextEditingController();
 TextEditingController recurringController = TextEditingController();
@@ -45,14 +45,14 @@ List<String> statusList = <String>['Upcoming', 'In Progress', 'Done'];
 
 class _EventEditState extends State<EventEdit> {
   DbHelper dbHelper = DbHelper();
-  late int recurringId;
-  DateTime? recurringDate;
-  DateTime? completeDate;
+  int recurringId;
+  DateTime recurringDate;
+  DateTime completeDate;
   String _selectedStatus = '';
 
   final _formkey = GlobalKey<FormState>();
-  late DateTime fromDate = DateTime.now();
-  late DateTime toDate = DateTime.now();
+  DateTime fromDate = DateTime.now();
+  DateTime toDate = DateTime.now();
   var rng = Random();
   TextEditingController taskController = TextEditingController();
   TextEditingController durationController = TextEditingController();
@@ -79,9 +79,9 @@ class _EventEditState extends State<EventEdit> {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   List categoryData = [];
   List<TypeSelect> typeList = <TypeSelect>[];
-  TypeSelect? typeselect;
+  TypeSelect typeselect;
   dynamic _selectedCategory;
-  String? _selectedSubCategory;
+  String _selectedSubCategory;
   List<String> _selectedData = [];
   @override
   void initState() {
@@ -95,8 +95,8 @@ class _EventEditState extends State<EventEdit> {
         if (connection) {
           await getData();
           final SharedPreferences sp = await _pref;
-          List functionAccess = sp.getString("position")!.split(",");
-          String userRole = sp.getString("role")!;
+          List functionAccess = sp.getString("position").split(",");
+          String userRole = sp.getString("role");
           final typeOptions =
               await Selection().typeSelection(functionAccess, userRole);
           categoryData =
@@ -212,7 +212,7 @@ class _EventEditState extends State<EventEdit> {
     }
   }
 
-  Future pickFromDateTime({required bool pickdate}) async {
+  Future pickFromDateTime({bool pickdate}) async {
     final date = await pickDateTime(fromDate, pickdate: pickdate);
     if (date == null) return;
 
@@ -221,8 +221,7 @@ class _EventEditState extends State<EventEdit> {
     });
   }
 
-  Future pickToDateTime(
-      {required bool pickdate, required int durationDay}) async {
+  Future pickToDateTime({bool pickdate, int durationDay}) async {
     final date = await pickDateTime(toDate,
         pickdate: pickdate, durationDay: durationDay);
     if (date == null) return;
@@ -233,11 +232,11 @@ class _EventEditState extends State<EventEdit> {
   }
 
   //Put date and time format together in one object
-  Future<DateTime?> pickDateTime(
+  Future<DateTime> pickDateTime(
     DateTime initialDate, {
-    required bool pickdate,
-    int? durationDay,
-    DateTime? firstDate,
+    bool pickdate,
+    int durationDay,
+    DateTime firstDate,
   }) async {
     if (pickdate) {
       final date = await showDatePicker(
@@ -274,9 +273,9 @@ class _EventEditState extends State<EventEdit> {
   }
 
   Future<void> updateEvent(int recurringId) async {
-    final isValid = _formkey.currentState!.validate();
+    final isValid = _formkey.currentState.validate();
     String selectedUser = _selectedUser.join(",");
-    String? color;
+    String color;
     if (isValid) {
       // final event = Event(
       //     recurringId: recurringId,
@@ -335,7 +334,7 @@ class _EventEditState extends State<EventEdit> {
                   "|" +
                   _selectedCategory["department"],
               "subCategory": _selectedSubCategory,
-              "type": typeselect!.value,
+              "type": typeselect.value,
               "site": _selectedSite,
               "task": taskController.text,
               "start": item.from.toString(),
@@ -363,7 +362,7 @@ class _EventEditState extends State<EventEdit> {
               "remark": remarkController.text,
 
               "completeDate": completeDate != null
-                  ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+                  ? DateFormat("yyyy-MM-dd").format(completeDate).toString()
                   : '',
 
               "status": _selectedStatus,
@@ -382,7 +381,7 @@ class _EventEditState extends State<EventEdit> {
             "|" +
             _selectedCategory["department"],
         "subCategory": _selectedSubCategory,
-        "type": typeselect!.value,
+        "type": typeselect.value,
         "site": _selectedSite,
         "task": taskController.text,
         "start": fromDate.toString(),
@@ -403,7 +402,7 @@ class _EventEditState extends State<EventEdit> {
         "remark": remarkController.text,
 
         "completeDate": completeDate != null
-            ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+            ? DateFormat("yyyy-MM-dd").format(completeDate).toString()
             : '',
 
         "status": _selectedStatus,
@@ -694,7 +693,7 @@ class _EventEditState extends State<EventEdit> {
             }).toList(),
             onChanged: (newValue) {
               setState(() {
-                typeselect = newValue!;
+                typeselect = newValue;
               });
             },
             icon: const Icon(
@@ -736,7 +735,7 @@ class _EventEditState extends State<EventEdit> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedSite = test;
               });
@@ -780,7 +779,7 @@ class _EventEditState extends State<EventEdit> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedPriority = test;
               });
@@ -1001,7 +1000,7 @@ class _EventEditState extends State<EventEdit> {
             color: const Color(0xFFd4dce4)),
         child: ListTile(
           title: Text(
-            completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate!),
+            completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate),
             style: const TextStyle(fontSize: 14),
           ),
           trailing: const Icon(
@@ -1046,7 +1045,7 @@ class _EventEditState extends State<EventEdit> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedStatus = test;
               });
@@ -1149,7 +1148,7 @@ class _EventEditState extends State<EventEdit> {
                                               setState(() {
                                                 event_recurring[index]
                                                         .checkRecurring =
-                                                    newValue!.toString();
+                                                    newValue.toString();
                                               });
                                             },
                                           ),

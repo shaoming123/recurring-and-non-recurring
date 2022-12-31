@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -11,13 +12,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../util/app_styles.dart';
 import '../util/checkInternet.dart';
 import '../util/conMysql.dart';
+import 'member.dart';
 import 'non_recurring.dart';
 import 'notificationList.dart';
 
 class Appbar extends StatefulWidget {
   String title;
   GlobalKey<ScaffoldState> scaffoldKey;
-  Appbar({super.key, required this.title, required this.scaffoldKey});
+  Appbar({Key key, this.title, this.scaffoldKey}) : super(key: key);
 
   @override
   State<Appbar> createState() => _AppbarState();
@@ -67,7 +69,7 @@ class _AppbarState extends State<Appbar> {
               color: Colors.black,
               size: 25,
             ),
-            onPressed: () => widget.scaffoldKey.currentState!.openDrawer(),
+            onPressed: () => widget.scaffoldKey.currentState.openDrawer(),
           ),
           const Gap(20),
           Text(widget.title, style: Styles.title),
@@ -114,6 +116,14 @@ class _AppbarState extends State<Appbar> {
                           MaterialPageRoute(
                               builder: (context) => const Dashboard()),
                         );
+                      } else if (widget.title == "Member") {
+                        await Controller().addDataToSqlite();
+                        if (!mounted) return;
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Member()),
+                        );
                       }
 
                       EasyLoading.showSuccess('Done');
@@ -121,6 +131,7 @@ class _AppbarState extends State<Appbar> {
                   });
                 },
               ),
+              const Gap(15),
               Container(
                 margin: const EdgeInsets.only(right: 10),
                 child: GestureDetector(
@@ -156,17 +167,6 @@ class _AppbarState extends State<Appbar> {
               ),
             ],
           ),
-          // IconButton(
-          //   icon: const Icon(
-          //     Icons.exit_to_app,
-          //     color: Colors.black,
-          //     size: 25,
-          //   ),
-          //   onPressed: () => {
-          //     Navigator.pushReplacement(context,
-          //         MaterialPageRoute(builder: (context) => const Login()))
-          //   },
-          // ),
         ],
       ),
     );

@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -5,7 +6,6 @@ import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/src/appbar.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../databaseHandler/DbHelper.dart';
@@ -14,7 +14,9 @@ import '../util/app_styles.dart';
 import 'dialogBox/eventAdd.dart';
 
 class Recurring extends StatefulWidget {
-  const Recurring({super.key});
+  const Recurring({
+    Key key,
+  }) : super(key: key);
 
   @override
   State<Recurring> createState() => _RecurringState();
@@ -54,12 +56,12 @@ class _RecurringState extends State<Recurring> {
     userList = [];
     siteList = [];
     setState(() {
-      String username = sp.getString("user_name")!;
-      userRole = sp.getString("role")!;
-      functionData = sp.getString("position")!.split(",");
-      String currentUserSiteLead = sp.getString("siteLead")!;
+      String username = sp.getString("user_name");
+      userRole = sp.getString("role");
+      functionData = sp.getString("position").split(",");
+      String currentUserSiteLead = sp.getString("siteLead");
 
-      currentUserSite = sp.getString("site")!.split(",");
+      currentUserSite = sp.getString("site").split(",");
 
       _selectedUser = username;
 
@@ -368,7 +370,7 @@ class _RecurringState extends State<Recurring> {
                               onChanged: (val) async {
                                 if (mounted) {
                                   setState(() {
-                                    _selectedUser = val!;
+                                    _selectedUser = val;
                                   });
                                   await runFilter();
                                 }
@@ -422,7 +424,7 @@ class _RecurringState extends State<Recurring> {
                                 onChanged: (val) {
                                   if (mounted) {
                                     setState(() {
-                                      _selectedFunction = val!;
+                                      _selectedFunction = val;
                                       runFilter();
                                     });
                                   }
@@ -471,7 +473,7 @@ class _RecurringState extends State<Recurring> {
                                 onChanged: (val) {
                                   if (mounted) {
                                     setState(() {
-                                      _selectedSite = val!;
+                                      _selectedSite = val;
                                       runFilter();
                                     });
                                   }
@@ -668,7 +670,7 @@ class _RecurringState extends State<Recurring> {
     } else if (event.color == "palegoldenrod") {
       cardColor = const Color(0xFFeee8aa);
     } else {
-      cardColor = Colors.lightGreen;
+      cardColor = const Color(0xFF94ec94);
     }
 
     return GestureDetector(

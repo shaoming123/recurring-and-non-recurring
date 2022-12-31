@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
@@ -13,7 +14,9 @@ import '../util/checkInternet.dart';
 import '../util/conMysql.dart';
 
 class Member extends StatefulWidget {
-  const Member({super.key});
+  const Member({
+    Key key,
+  }) : super(key: key);
 
   @override
   State<Member> createState() => _MemberState();
@@ -31,7 +34,7 @@ class _MemberState extends State<Member> {
   bool selected = false;
   String userRole = '';
   String searchString = "";
-  late bool isEditing;
+  bool isEditing;
   bool _isLoading = true;
   bool isSwitched = false;
   List<Map<String, dynamic>> usersFiltered = [];
@@ -39,7 +42,7 @@ class _MemberState extends State<Member> {
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   DbHelper dbHelper = DbHelper();
-  late Future _future;
+  Future _future;
   @override
   void initState() {
     super.initState();
@@ -59,7 +62,7 @@ class _MemberState extends State<Member> {
     final data = await dbHelper.getItems();
 
     setState(() {
-      userRole = sp.getString("role")!;
+      userRole = sp.getString("role");
       _isLoading = false;
       List _allUsers = data;
       for (var item in _allUsers) {

@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -9,7 +10,9 @@ import 'package:http/http.dart' as http;
 import '../../util/checkInternet.dart';
 
 class AddMember extends StatefulWidget {
-  const AddMember({super.key});
+  const AddMember({
+    Key key,
+  }) : super(key: key);
 
   @override
   State<AddMember> createState() => _AddMemberState();
@@ -73,7 +76,7 @@ class _AddMemberState extends State<AddMember> {
     "ALL SITE"
   ];
   List<String> roleList = ["Super Admin", "Manager", "Leader", "Staff"];
-  String? userRole;
+  String userRole;
   @override
   void initState() {
     super.initState();
@@ -84,7 +87,7 @@ class _AddMemberState extends State<AddMember> {
     final SharedPreferences sp = await _pref;
 
     setState(() {
-      userRole = sp.getString("role")!;
+      userRole = sp.getString("role");
       if (userRole == 'Leader') {
         roleList.remove("Super Admin");
         roleList.remove("Manager");
@@ -139,7 +142,7 @@ class _AddMemberState extends State<AddMember> {
   }
 
   Future<void> addUser() async {
-    if (_formkey.currentState!.validate()) {
+    if (_formkey.currentState.validate()) {
       if (selectedPosition.isEmpty) {
         AlertDialog alert = AlertDialog(
           title: const Text("Error"),
@@ -236,7 +239,7 @@ class _AddMemberState extends State<AddMember> {
 
   contentBox(context) {
     Widget buildTextField(String labelText, String placeholder,
-        TextEditingController? controllerText, bool editable) {
+        TextEditingController controllerText, bool editable) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -309,7 +312,7 @@ class _AddMemberState extends State<AddMember> {
                     )
                     .toList(),
                 onChanged: (val) {
-                  String test = val as String;
+                  String test = val;
                   setState(() {
                     _selectedRole = test;
 
@@ -399,7 +402,7 @@ class _AddMemberState extends State<AddMember> {
                       value: checkPosition,
                       onChanged: (value) {
                         setState(() {
-                          checkPosition = value!;
+                          checkPosition = value;
                           selectAllPosition();
                         });
                       },
@@ -475,7 +478,7 @@ class _AddMemberState extends State<AddMember> {
                       value: checkSite,
                       onChanged: (value) {
                         setState(() {
-                          checkSite = value!;
+                          checkSite = value;
                           selectAllSite();
                         });
                       },
@@ -551,7 +554,7 @@ class _AddMemberState extends State<AddMember> {
                       value: checkSiteLead,
                       onChanged: (value) {
                         setState(() {
-                          checkSiteLead = value!;
+                          checkSiteLead = value;
                           selectAllSiteLead();
                         });
                       },

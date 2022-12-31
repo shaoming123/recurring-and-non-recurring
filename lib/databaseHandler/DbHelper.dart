@@ -1,4 +1,4 @@
-
+//@dart=2.9
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/user.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,7 +9,7 @@ import '../model/nonRecurring.dart';
 import '../model/notification.dart';
 
 class DbHelper {
-  static Database? _db;
+  static Database _db;
 
   final DB_Name = 'sqlite.db';
   final Table_User = 'user_account';
@@ -88,10 +88,10 @@ class DbHelper {
 
   Future<Database> get db async {
     if (_db != null) {
-      return _db!;
+      return _db;
     }
     _db = await initDb();
-    return _db!;
+    return _db;
   }
 
   initDb() async {
@@ -156,7 +156,7 @@ class DbHelper {
     var dbClient = await db;
     final res = Sqflite.firstIntValue(
         await dbClient.rawQuery('SELECT COUNT(*) FROM checkfirst'));
-    print(res);
+
     if (res == 0) {
       // Table is empty, return true
       return true;
@@ -207,7 +207,7 @@ class DbHelper {
     return res;
   }
 
-  Future<UserModel?> getLoginUser(String username, String password) async {
+  Future<UserModel> getLoginUser(String username, String password) async {
     var dbClient = await db;
     var res = await dbClient.rawQuery("SELECT * FROM $Table_User WHERE "
         "$C_UserName = '$username' AND "

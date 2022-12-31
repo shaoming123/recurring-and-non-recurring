@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:badges/badges.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ import '../dialogBox/nonRecurringEdit.dart';
 import '../non_recurring.dart';
 
 class TeamTask extends StatefulWidget {
-  const TeamTask({Key? key}) : super(key: key);
+  const TeamTask({Key key}) : super(key: key);
   @override
   State<TeamTask> createState() => _TeamTaskState();
 }
@@ -25,7 +26,7 @@ final textcontroller = TextEditingController();
 Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
 class _TeamTaskState extends State<TeamTask> {
-  TextEditingController? textcontroller;
+  TextEditingController textcontroller;
   String _selectedPosition = "";
   String _selectedUser = "";
   // bool _showContent = false;
@@ -33,7 +34,7 @@ class _TeamTaskState extends State<TeamTask> {
   String currentUserSite = '';
   List<String> combineType = <String>[];
   String userRole = '';
-  String? currentUsername;
+  String currentUsername;
   String currentUserSiteLead = '';
   String currentUserLeadFunc = '';
   List<String> siteType = <String>[];
@@ -70,10 +71,10 @@ class _TeamTaskState extends State<TeamTask> {
     siteType = <String>[];
     currentUsername = sp.getString("user_name").toString();
     userRole = sp.getString("role").toString();
-    currentUserPosition = sp.getString("position")!;
-    currentUserSite = sp.getString("site")!;
-    currentUserSiteLead = sp.getString("siteLead")!;
-    currentUserLeadFunc = sp.getString("leadFunc")!;
+    currentUserPosition = sp.getString("position");
+    currentUserSite = sp.getString("site");
+    currentUserSiteLead = sp.getString("siteLead");
+    currentUserLeadFunc = sp.getString("leadFunc");
     setState(() {
       positionType = currentUserPosition.split(",");
       siteType = currentUserSite.split(",");
@@ -199,7 +200,7 @@ class _TeamTaskState extends State<TeamTask> {
     CompletedTeamnonRecurring = [];
     LateTeamnonRecurring = [];
     ActiveTeamnonRecurring = [];
-    textcontroller!.clear();
+    textcontroller.clear();
     setState(() {
       for (int x = 0; x < data.length; x++) {
         if (userRole == "Super Admin" || userRole == 'Manager') {
@@ -217,7 +218,6 @@ class _TeamTaskState extends State<TeamTask> {
               }
             } else if (positionType.contains(_selectedPosition) ||
                 _selectedPosition == "Manager") {
-              print(data[x]);
               foundTeamNonRecurring.add(data[x]);
               if (data[x]["status"] == '100') {
                 CompletedTeamnonRecurring.add(data[x]);
@@ -564,98 +564,6 @@ class _TeamTaskState extends State<TeamTask> {
     });
   }
 
-  // Widget Search(context) {
-  //   return SingleChildScrollView(
-  //     child: Dialog(
-  //       shape: RoundedRectangleBorder(
-  //         borderRadius: BorderRadius.circular(20),
-  //       ),
-  //       backgroundColor: Colors.transparent,
-  //       child: Container(
-  //           padding: const EdgeInsets.all(20),
-  //           margin: const EdgeInsets.only(top: 45),
-  //           decoration: BoxDecoration(
-  //               shape: BoxShape.rectangle,
-  //               color: const Color(0xFF384464),
-  //               borderRadius: BorderRadius.circular(20),
-  //               boxShadow: [
-  //                 const BoxShadow(
-  //                     color: Colors.black,
-  //                     offset: Offset(0, 10),
-  //                     blurRadius: 10),
-  //               ]),
-  //           child: Column(
-  //               mainAxisAlignment: MainAxisAlignment.end,
-  //               crossAxisAlignment: CrossAxisAlignment.end,
-  //               children: [
-  //                 Row(
-  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                   children: [
-  //                     const Text("Search",
-  //                         style: TextStyle(
-  //                             color: Color(0xFFd4dce4),
-  //                             fontSize: 26,
-  //                             fontWeight: FontWeight.w700)),
-  //                     IconButton(
-  //                       icon: const Icon(
-  //                         Icons.cancel_outlined,
-  //                         color: Color(0XFFd4dce4),
-  //                         size: 30,
-  //                       ),
-  //                       onPressed: () => Navigator.of(context).pop(),
-  //                     ),
-  //                   ],
-  //                 ),
-  //                 const Gap(20),
-  //                 Container(
-  //                   margin: const EdgeInsets.only(bottom: 30),
-  //                   padding: const EdgeInsets.symmetric(horizontal: 5),
-  //                   decoration: BoxDecoration(
-  //                       border: Border.all(color: Colors.white, width: 1),
-  //                       borderRadius: BorderRadius.circular(12),
-  //                       color: const Color(0xFFd4dce4)),
-  //                   child: TextFormField(
-  //                     cursorColor: Colors.black,
-  //                     style: const TextStyle(fontSize: 14),
-
-  //                     decoration: InputDecoration(hintText: "Search...."),
-  //                     onChanged: (value) {
-  //                       setState(() {
-  //                         searchResult(value);
-  //                       });
-  //                     },
-  //                     // controller: controllerText,
-  //                   ),
-  //                 ),
-  //                 Align(
-  //                   alignment: Alignment.bottomRight,
-  //                   child: TextButton(
-  //                       style: ButtonStyle(
-  //                         padding: MaterialStateProperty.all<EdgeInsets>(
-  //                           const EdgeInsets.all(10),
-  //                         ),
-  //                         backgroundColor: MaterialStateProperty.all<Color>(
-  //                             const Color(0xFF60b4b4)),
-  //                         shape: MaterialStateProperty.all(
-  //                             RoundedRectangleBorder(
-  //                                 borderRadius: BorderRadius.circular(10.0))),
-  //                       ),
-  //                       onPressed: () {
-  //                         Navigator.pop(context);
-  //                       },
-  //                       child: const Text(
-  //                         "search",
-  //                         style: TextStyle(
-  //                             fontSize: 18,
-  //                             color: Color(0xFFd4dce4),
-  //                             fontWeight: FontWeight.w700),
-  //                       )),
-  //                 ),
-  //               ])),
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -770,7 +678,7 @@ class _TeamTaskState extends State<TeamTask> {
                     .toList(),
                 onChanged: (val) {
                   setState(() {
-                    _selectedPosition = val!;
+                    _selectedPosition = val;
                     _selectedUser = '';
 
                     _animatedHeight = 85;
@@ -817,7 +725,7 @@ class _TeamTaskState extends State<TeamTask> {
                     ),
                     onChanged: (val) {
                       setState(() {
-                        _selectedUser = val!;
+                        _selectedUser = val;
                         showTable = true;
                       });
                       getTeamData();
