@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'appbar.dart';
 import '../util/checkInternet.dart';
+import 'footer.dart';
 
 class Account extends StatefulWidget {
   const Account({Key key}) : super(key: key);
@@ -163,7 +164,7 @@ class _AccountState extends State<Account> {
         drawer: const Navbar(), //set gobal key defined above
         body: SingleChildScrollView(
           child: Container(
-            height: height - height * 0.16,
+            height: height - height * 0.12,
             margin: EdgeInsets.symmetric(
                 vertical: height * 0.08, horizontal: width * 0.02),
             child: Column(children: [
@@ -348,6 +349,7 @@ class _AccountState extends State<Account> {
                   ),
                 ),
               ),
+              const Footer()
             ]),
           ),
         ));

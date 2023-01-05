@@ -205,8 +205,6 @@ class _NavbarState extends State<Navbar> {
             leading: const Icon(Icons.receipt_long),
             title: const Text('Report'),
             onTap: () {
-              // Navigator.pushReplacement(
-              //     context, MaterialPageRoute(builder: (context) => Report()));
               showDialog(
                   context: context,
                   builder: (BuildContext context) {

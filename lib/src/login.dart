@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../util/checkInternet.dart';
 import '../util/fade_animation.dart';
+import 'footer.dart';
 
 class Login extends StatefulWidget {
   const Login({
@@ -434,9 +435,10 @@ class _LoginState extends State<Login> {
                   //         ),
                   //       ),
                   //     )),
+                  const Footer()
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

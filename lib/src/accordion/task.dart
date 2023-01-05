@@ -528,8 +528,7 @@ class _TaskState extends State<Task> {
   }
 
   Widget lateView() {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
+   
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: SingleChildScrollView(

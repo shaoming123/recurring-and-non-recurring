@@ -27,7 +27,6 @@ class EventEdit extends StatefulWidget {
   State<EventEdit> createState() => _EventEditState();
 }
 
-final _formkey = GlobalKey<FormState>();
 DateTime fromDate = DateTime.now();
 DateTime toDate = DateTime.now();
 DateTime recurringDate;
@@ -139,7 +138,6 @@ class _EventEditState extends State<EventEdit> {
   }
 
   Future<void> getEditData(int id) async {
-    final userData = await dbHelper.getItems();
     event_edit = await dbHelper.fetchAEvent(id);
     event_data = await dbHelper.fetchAllEvent();
     userList = [];
@@ -1204,7 +1202,7 @@ class _EventEditState extends State<EventEdit> {
     }
 
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
+
     return Stack(children: <Widget>[
       Container(
           width: width,

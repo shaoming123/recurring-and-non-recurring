@@ -14,6 +14,7 @@ import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
 import 'appbar.dart';
 import 'accordion/teamTask.dart';
+import 'footer.dart';
 
 class NonRecurring extends StatefulWidget {
   const NonRecurring({Key key}) : super(key: key);
@@ -68,7 +69,7 @@ class _NonRecurringState extends State<NonRecurring> {
 
       for (int x = 0; x < data.length; x++) {
         if (data[x]["owner"] == userName) {
-          DateTime dateEnd = DateTime.parse(data[x]["due"]);
+          // DateTime dateEnd = DateTime.parse(data[x]["due"]);
 
           // if ((dateEnd.isAfter(startDate) ||
           //         DateFormat.yMd()
@@ -353,6 +354,7 @@ class _NonRecurringState extends State<NonRecurring> {
                                 ),
                               )
                             : Container(),
+                        const Footer()
                       ],
                     ),
                   ),

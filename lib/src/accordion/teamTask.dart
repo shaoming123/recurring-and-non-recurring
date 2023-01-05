@@ -567,7 +567,7 @@ class _TeamTaskState extends State<TeamTask> {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
+
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),

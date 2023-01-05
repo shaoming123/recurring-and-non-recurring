@@ -261,8 +261,6 @@ class _editNonRecurringState extends State<editNonRecurring> {
       var url_noti =
           'https://ipsolutions4u.com/ipsolutions/recurringMobile/add.php';
 
-      String currentUsername = sp.getString("user_name");
-
       String selectedCheckUser = _selectedCheckUser.join(",");
 
       if (_selectedCheckUser.isNotEmpty &&
@@ -398,9 +396,6 @@ class _editNonRecurringState extends State<editNonRecurring> {
   }
 
   contentBox(context) {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
-
     Widget buildTextField(String labelText, String placeholder,
         TextEditingController controllerText) {
       return Column(

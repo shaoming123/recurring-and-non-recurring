@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/src/dashboardDetails.dart';
+import 'package:ipsolution/src/footer.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -625,6 +626,7 @@ class _DashboardState extends State<Dashboard> {
                   elevation: 8,
                   margin: const EdgeInsets.all(10),
                 ),
+                const Footer()
               ],
             ),
           ),

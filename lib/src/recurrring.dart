@@ -224,21 +224,21 @@ class _RecurringState extends State<Recurring> {
 
   @override
   Widget build(BuildContext context) {
-    final CalendarController _calendarController = CalendarController();
+    // final CalendarController _calendarController = CalendarController();
     GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
 
-    void calendarTapped(CalendarTapDetails calendarTapDetails) {
-      if (_calendarController.view == CalendarView.month &&
-          calendarTapDetails.targetElement == CalendarElement.calendarCell) {
-        _calendarController.view = CalendarView.day;
-      } else if ((_calendarController.view == CalendarView.week ||
-              _calendarController.view == CalendarView.workWeek) &&
-          calendarTapDetails.targetElement == CalendarElement.viewHeader) {
-        _calendarController.view = CalendarView.day;
-      }
-    }
+    // void calendarTapped(CalendarTapDetails calendarTapDetails) {
+    //   if (_calendarController.view == CalendarView.month &&
+    //       calendarTapDetails.targetElement == CalendarElement.calendarCell) {
+    //     _calendarController.view = CalendarView.day;
+    //   } else if ((_calendarController.view == CalendarView.week ||
+    //           _calendarController.view == CalendarView.workWeek) &&
+    //       calendarTapDetails.targetElement == CalendarElement.viewHeader) {
+    //     _calendarController.view = CalendarView.day;
+    //   }
+    // }
 
     return Scaffold(
       backgroundColor: Styles.bgColor,

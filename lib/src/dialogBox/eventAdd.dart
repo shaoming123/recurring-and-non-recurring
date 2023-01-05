@@ -34,7 +34,6 @@ class EventAdd extends StatefulWidget {
 }
 
 Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class _EventAddState extends State<EventAdd> {
   final taskController = TextEditingController();
@@ -510,7 +509,7 @@ class _EventAddState extends State<EventAdd> {
 
   contentBox(context) {
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
+
     Widget categoryDropdown() {
       return Container(
         margin: const EdgeInsets.only(bottom: 30),
