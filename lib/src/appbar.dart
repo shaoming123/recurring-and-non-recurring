@@ -60,6 +60,7 @@ class _AppbarState extends State<Appbar> {
     double width = MediaQuery.of(context).size.width;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: width * 0.02),
+      padding: const EdgeInsets.only(bottom: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -75,61 +76,68 @@ class _AppbarState extends State<Appbar> {
           Text(widget.title, style: Styles.title),
           Row(
             children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.sync,
-                  color: Colors.black,
-                  size: 25,
-                ),
-                onPressed: () async {
-                  await Internet.isInternet().then((connection) async {
-                    if (connection) {
-                      EasyLoading.show(
-                        status: 'Sync data...',
-                        maskType: EasyLoadingMaskType.black,
-                      );
-                      await Controller().addNotificationDateToSqlite();
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  InkWell(
+                    child:
+                        const Icon(Icons.sync, color: Colors.black, size: 20),
+                    onTap: () async {
+                      await Internet.isInternet().then((connection) async {
+                        if (connection) {
+                          EasyLoading.show(
+                            status: 'Sync data...',
+                            maskType: EasyLoadingMaskType.black,
+                          );
+                          await Controller().addNotificationDateToSqlite();
 
-                      if (widget.title == "Recurring") {
-                        await Controller().addRecurringToSqlite();
-                        if (!mounted) return;
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Recurring()),
-                        );
-                      } else if (widget.title == "Non-Recurring") {
-                        await Controller().addNonRecurringToSqlite();
-                        if (!mounted) return;
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const NonRecurring()),
-                        );
-                      } else if (widget.title == "Dashboard") {
-                        await Controller().addRecurringToSqlite();
-                        await Controller().addNonRecurringToSqlite();
+                          if (widget.title == "Recurring") {
+                            await Controller().addRecurringToSqlite();
+                            if (!mounted) return;
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Recurring()),
+                            );
+                          } else if (widget.title == "Non-Recurring") {
+                            await Controller().addNonRecurringToSqlite();
+                            if (!mounted) return;
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const NonRecurring()),
+                            );
+                          } else if (widget.title == "Dashboard") {
+                            await Controller().addRecurringToSqlite();
+                            await Controller().addNonRecurringToSqlite();
 
-                        if (!mounted) return;
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Dashboard()),
-                        );
-                      } else if (widget.title == "Member") {
-                        await Controller().addDataToSqlite();
-                        if (!mounted) return;
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Member()),
-                        );
-                      }
+                            if (!mounted) return;
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Dashboard()),
+                            );
+                          } else if (widget.title == "Member") {
+                            await Controller().addDataToSqlite();
+                            if (!mounted) return;
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Member()),
+                            );
+                          }
 
-                      EasyLoading.showSuccess('Done');
-                    }
-                  });
-                },
+                          EasyLoading.showSuccess('Done');
+                        }
+                      });
+                    },
+                  ),
+                  const Text(
+                    "Sync data",
+                    style: TextStyle(fontSize: 10),
+                  )
+                ],
               ),
               const Gap(15),
               Container(
