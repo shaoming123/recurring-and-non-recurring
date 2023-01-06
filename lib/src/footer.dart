@@ -7,13 +7,24 @@ class Footer extends StatelessWidget {
   Widget build(BuildContext context) {
     int currentYear = DateTime.now().year;
 
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        color: Colors.transparent,
+    // return Positioned(
+    //   bottom: 0,
+    //   left: 0,
+    //   right: 0,
+    //   child: Container(
+    //     padding: const EdgeInsets.all(8),
+    //     color: Colors.transparent,
+    //     child: Text(
+    //       '$currentYear, Powered by Invenio Potential',
+    //       style: const TextStyle(color: Colors.grey),
+    //       textAlign: TextAlign.center,
+    //     ),
+    //   ),
+    // );
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Align(
+        alignment: Alignment.bottomCenter,
         child: Text(
           '$currentYear, Powered by Invenio Potential',
           style: const TextStyle(color: Colors.grey),
