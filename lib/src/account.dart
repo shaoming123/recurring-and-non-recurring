@@ -378,8 +378,8 @@ class _AccountState extends State<Account> {
                         showPassword = !showPassword;
                       });
                     },
-                    icon: const Icon(
-                      Icons.remove_red_eye,
+                    icon: Icon(
+                      showPassword ? Icons.visibility : Icons.visibility_off,
                       color: Colors.grey,
                     ),
                   )

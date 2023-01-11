@@ -26,6 +26,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  bool showPassword = true;
   final userController = TextEditingController();
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -339,11 +340,25 @@ class _LoginState extends State<Login> {
                                     return null;
                                   },
                                   controller: passwordController,
-                                  obscureText: true,
+                                  obscureText: showPassword,
                                   enableSuggestions: false,
                                   autocorrect: false,
                                   decoration: InputDecoration(
                                       border: InputBorder.none,
+                                      suffixIcon: IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            showPassword = !showPassword;
+                                          });
+                                        },
+                                        icon: Icon(
+                                          showPassword
+                                              ? Icons.visibility
+                                              : Icons.visibility_off,
+                                          color: Colors.grey,
+                                          size: 18,
+                                        ),
+                                      ),
                                       hintText: "Password",
                                       hintStyle:
                                           TextStyle(color: Colors.grey[400])),

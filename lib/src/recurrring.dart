@@ -338,7 +338,7 @@ class _RecurringState extends State<Recurring> {
                   userRole != 'Staff'
                       ? Container(
                           height: 30,
-                          margin: const EdgeInsets.only(bottom: 10, top: 10),
+                          margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
                               border: Border.all(color: Colors.white, width: 1),
@@ -494,6 +494,7 @@ class _RecurringState extends State<Recurring> {
                           const ResourceViewSettings(size: 120),
                       dataSource: EventDataSource(allEvents),
                       backgroundColor: Colors.white,
+                      headerHeight: 30,
                       view: CalendarView.month,
                       allowViewNavigation: true,
                       showDatePickerButton: true,
@@ -513,6 +514,7 @@ class _RecurringState extends State<Recurring> {
                       monthViewSettings: MonthViewSettings(
                         showAgenda: true,
                         agendaItemHeight: height / 5.5,
+                        agendaViewHeight: 180,
                         monthCellStyle: const MonthCellStyle(
                             textStyle: TextStyle(
                                 fontStyle: FontStyle.normal,

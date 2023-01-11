@@ -528,7 +528,6 @@ class _TaskState extends State<Task> {
   }
 
   Widget lateView() {
-   
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: SingleChildScrollView(
@@ -552,7 +551,7 @@ class _TaskState extends State<Task> {
               DataColumn(
                   label: Expanded(
                       child: Text(
-                'Cetegory',
+                'Category',
                 textAlign: TextAlign.center,
               ))),
               DataColumn(
