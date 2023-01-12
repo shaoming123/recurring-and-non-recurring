@@ -17,7 +17,9 @@ import 'accordion/teamTask.dart';
 import 'footer.dart';
 
 class NonRecurring extends StatefulWidget {
-  const NonRecurring({Key key}) : super(key: key);
+  final DateTime start;
+  final DateTime end;
+  const NonRecurring({Key key, this.start, this.end}) : super(key: key);
 
   @override
   State<NonRecurring> createState() => _NonRecurringState();
@@ -41,16 +43,20 @@ class _NonRecurringState extends State<NonRecurring> {
   List<Map<String, dynamic>> LatenonRecurring = [];
   List<Map<String, dynamic>> ActivenonRecurring = [];
   List<Map<String, dynamic>> CompletednonRecurring = [];
+  DateTime startDate = DateTime(DateTime.now().year, 1, 1);
+  DateTime endDate = DateTime(DateTime.now().year + 1, 1, 0);
   String userRole = 'Staff';
-  // DateTime dateNow = DateTime.now();
-  // DateTime startDate;
-  // DateTime endDate;
+
   // bool _isExpanded = true;
   @override
   void initState() {
     super.initState();
-    // startDate = DateTime(dateNow.year, 1, 1);
-    // endDate = DateTime(dateNow.year + 1, 1, 0);
+
+    if (widget.start != null && widget.end != null) {
+      startDate = widget.start;
+      endDate = widget.end;
+    }
+
     _refresh();
   }
 
@@ -69,31 +75,31 @@ class _NonRecurringState extends State<NonRecurring> {
 
       for (int x = 0; x < data.length; x++) {
         if (data[x]["owner"] == userName) {
-          // DateTime dateEnd = DateTime.parse(data[x]["due"]);
+          DateTime dateEnd = DateTime.parse(data[x]["due"]);
 
-          // if ((dateEnd.isAfter(startDate) ||
-          //         DateFormat.yMd()
-          //                 .format(dateEnd)
-          //                 .compareTo(DateFormat.yMd().format(startDate)) ==
-          //             0) &&
-          //     (dateEnd.isBefore(endDate) ||
-          //         DateFormat.yMd()
-          //                 .format(dateEnd)
-          //                 .compareTo(DateFormat.yMd().format(endDate)) ==
-          //             0)) {
-          final dayLeft = daysBetween(
-              DateTime.parse(DateFormat('yyyy-MM-dd').format(DateTime.now())),
-              DateTime.parse(data[x]["due"]));
-          allNonRecurring.add(data[x]);
-          foundNonRecurring.add(data[x]);
-          if (data[x]["status"] == '100') {
-            CompletednonRecurring.add(data[x]);
-          } else if (dayLeft.isNegative) {
-            LatenonRecurring.add(data[x]);
-          } else if (dayLeft > 0) {
-            ActivenonRecurring.add(data[x]);
+          if ((dateEnd.isAfter(startDate) ||
+                  DateFormat.yMd()
+                          .format(dateEnd)
+                          .compareTo(DateFormat.yMd().format(startDate)) ==
+                      0) &&
+              (dateEnd.isBefore(endDate) ||
+                  DateFormat.yMd()
+                          .format(dateEnd)
+                          .compareTo(DateFormat.yMd().format(endDate)) ==
+                      0)) {
+            final dayLeft = daysBetween(
+                DateTime.parse(DateFormat('yyyy-MM-dd').format(DateTime.now())),
+                DateTime.parse(data[x]["due"]));
+            allNonRecurring.add(data[x]);
+            foundNonRecurring.add(data[x]);
+            if (data[x]["status"] == '100') {
+              CompletednonRecurring.add(data[x]);
+            } else if (dayLeft.isNegative) {
+              LatenonRecurring.add(data[x]);
+            } else if (dayLeft > 0) {
+              ActivenonRecurring.add(data[x]);
+            }
           }
-          // }
         }
 
         if (data[x]["checked"] == "Pending Review" &&
@@ -125,23 +131,32 @@ class _NonRecurringState extends State<NonRecurring> {
     });
   }
 
-  // void _show() async {
-  //   final DateTimeRange result = await showDateRangePicker(
-  //     context: context,
-  //     firstDate: DateTime(DateTime.now().year - 50),
-  //     lastDate: DateTime(DateTime.now().year + 50),
-  //     currentDate: DateTime.now(),
-  //     saveText: 'Done',
-  //   );
+  Future<void> _show() async {
+    final DateTimeRange result = await showDateRangePicker(
+      context: context,
+      initialDateRange: startDate != null && endDate != null
+          ? DateTimeRange(start: startDate, end: endDate)
+          : null,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      firstDate: DateTime(DateTime.now().year - 50),
+      lastDate: DateTime(DateTime.now().year + 50),
+      saveText: 'Done',
+    );
 
-  //   if (result != null) {
-  //     setState(() {
-  //       startDate = result.start;
-  //       endDate = result.end;
-  //     });
-  //     await _refresh();
-  //   }
-  // }
+    if (result != null) {
+      setState(() {
+        startDate = result.start;
+        endDate = result.end;
+      });
+      _refresh();
+      if (!mounted) return;
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  NonRecurring(start: startDate, end: endDate)));
+    }
+  }
 
   // @override
   // void dispose() {
@@ -152,6 +167,9 @@ class _NonRecurringState extends State<NonRecurring> {
   //   ActivenonRecurring = [];
   //   CompletednonRecurring = [];
   // }
+
+  // RefreshIndicator(
+  //         onRefresh: _show,
 
   @override
   Widget build(BuildContext context) {
@@ -173,28 +191,28 @@ class _NonRecurringState extends State<NonRecurring> {
               children: [
                 Appbar(title: "Non-Recurring", scaffoldKey: scaffoldKey),
                 const Gap(5),
-                // GestureDetector(
-                //   onTap: () {
-                //     _show();
-                //   },
-                //   child: Container(
-                //     padding: const EdgeInsets.symmetric(horizontal: 10),
-                //     child: Row(
-                //       mainAxisAlignment: MainAxisAlignment.end,
-                //       children: [
-                //         const Icon(Icons.calendar_month, size: 15),
-                //         Padding(
-                //           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                //           child: Text(
-                //             "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
-                //             style: TextStyle(
-                //                 color: Styles.textColor, fontSize: 12),
-                //           ),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
+                GestureDetector(
+                  onTap: () {
+                    _show();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const Icon(Icons.calendar_month, size: 15),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(
+                            "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
+                            style: TextStyle(
+                                color: Styles.textColor, fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const Gap(15),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
