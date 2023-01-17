@@ -391,83 +391,83 @@ class DbHelper {
 
 // sync data
 
-  Future syncMember(UserModel data) async {
-    var dbClient = await db;
+  // Future syncMember(UserModel data) async {
+  //   var dbClient = await db;
 
-    // Loop through the rows
+  //   // Loop through the rows
 
-    // Check if the row exists in the SQLite database
-    final list = await dbClient
-        .query(Table_User, where: '$C_UserID=?', whereArgs: [data.user_id]);
+  //   // Check if the row exists in the SQLite database
+  //   final list = await dbClient
+  //       .query(Table_User, where: '$C_UserID=?', whereArgs: [data.user_id]);
 
-    // If the row exists in the SQLite database, update it
-    if (list.isNotEmpty) {
-      await dbClient.update(Table_User, data.toMap(),
-          where: '$C_UserID = ?', whereArgs: [data.user_id]);
-    }
-    // If the row does not exist in the SQLite database, insert it
-    else {
-      await dbClient.insert(Table_User, data.toMap());
-    }
-  }
+  //   // If the row exists in the SQLite database, update it
+  //   if (list.isNotEmpty) {
+  //     await dbClient.update(Table_User, data.toMap(),
+  //         where: '$C_UserID = ?', whereArgs: [data.user_id]);
+  //   }
+  //   // If the row does not exist in the SQLite database, insert it
+  //   else {
+  //     await dbClient.insert(Table_User, data.toMap());
+  //   }
+  // }
 
-  Future syncEvent(Event data) async {
-    var dbClient = await db;
+  // Future syncEvent(Event data) async {
+  //   var dbClient = await db;
 
-    // Loop through the rows
+  //   // Loop through the rows
 
-    // Check if the row exists in the SQLite database
-    final list = await dbClient.query(Table_Event,
-        where: '$recurringId=?', whereArgs: [data.recurringId]);
+  //   // Check if the row exists in the SQLite database
+  //   final list = await dbClient.query(Table_Event,
+  //       where: '$recurringId=?', whereArgs: [data.recurringId]);
 
-    // If the row exists in the SQLite database, update it
-    if (list.isNotEmpty) {
-      await dbClient.update(Table_Event, data.toMap(),
-          where: '$recurringId = ?', whereArgs: [data.recurringId]);
-    }
-    // If the row does not exist in the SQLite database, insert it
-    else {
-      await dbClient.insert(Table_Event, data.toMap());
-    }
-  }
+  //   // If the row exists in the SQLite database, update it
+  //   if (list.isNotEmpty) {
+  //     await dbClient.update(Table_Event, data.toMap(),
+  //         where: '$recurringId = ?', whereArgs: [data.recurringId]);
+  //   }
+  //   // If the row does not exist in the SQLite database, insert it
+  //   else {
+  //     await dbClient.insert(Table_Event, data.toMap());
+  //   }
+  // }
 
-  Future syncNonRecurring(nonRecurring data) async {
-    var dbClient = await db;
+  // Future syncNonRecurring(nonRecurring data) async {
+  //   var dbClient = await db;
 
-    // Loop through the rows
+  //   // Loop through the rows
 
-    // Check if the row exists in the SQLite database
-    final list = await dbClient.query(Table_NonRecurring,
-        where: '$nonRecurringId=?', whereArgs: [data.nonRecurringId]);
+  //   // Check if the row exists in the SQLite database
+  //   final list = await dbClient.query(Table_NonRecurring,
+  //       where: '$nonRecurringId=?', whereArgs: [data.nonRecurringId]);
 
-    // If the row exists in the SQLite database, update it
-    if (list.isNotEmpty) {
-      await dbClient.update(Table_NonRecurring, data.toMap(),
-          where: '$nonRecurringId = ?', whereArgs: [data.nonRecurringId]);
-    }
-    // If the row does not exist in the SQLite database, insert it
-    else {
-      await dbClient.insert(Table_NonRecurring, data.toMap());
-    }
-  }
+  //   // If the row exists in the SQLite database, update it
+  //   if (list.isNotEmpty) {
+  //     await dbClient.update(Table_NonRecurring, data.toMap(),
+  //         where: '$nonRecurringId = ?', whereArgs: [data.nonRecurringId]);
+  //   }
+  //   // If the row does not exist in the SQLite database, insert it
+  //   else {
+  //     await dbClient.insert(Table_NonRecurring, data.toMap());
+  //   }
+  // }
 
-  Future syncNotification(NotificationModel data) async {
-    var dbClient = await db;
+  // Future syncNotification(NotificationModel data) async {
+  //   var dbClient = await db;
 
-    // Loop through the rows
+  //   // Loop through the rows
 
-    // Check if the row exists in the SQLite database
-    final list = await dbClient.query(Table_Notification,
-        where: '$notificationId=?', whereArgs: [data.id]);
+  //   // Check if the row exists in the SQLite database
+  //   final list = await dbClient.query(Table_Notification,
+  //       where: '$notificationId=?', whereArgs: [data.id]);
 
-    // If the row exists in the SQLite database, update it
-    if (list.isNotEmpty) {
-      await dbClient.update(Table_Notification, data.toMap(),
-          where: '$notificationId = ?', whereArgs: [data.id]);
-    }
-    // If the row does not exist in the SQLite database, insert it
-    else {
-      await dbClient.insert(Table_Notification, data.toMap());
-    }
-  }
+  //   // If the row exists in the SQLite database, update it
+  //   if (list.isNotEmpty) {
+  //     await dbClient.update(Table_Notification, data.toMap(),
+  //         where: '$notificationId = ?', whereArgs: [data.id]);
+  //   }
+  //   // If the row does not exist in the SQLite database, insert it
+  //   else {
+  //     await dbClient.insert(Table_Notification, data.toMap());
+  //   }
+  // }
 }

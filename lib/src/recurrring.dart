@@ -30,6 +30,7 @@ List<String> functionData = [];
 List<String> currentUserSite = [];
 DbHelper dbHelper = DbHelper();
 List<String> userList = [];
+List<String> userLists = [];
 
 class _RecurringState extends State<Recurring> {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
@@ -137,6 +138,8 @@ class _RecurringState extends State<Recurring> {
         functionList.insert(1, "Manager");
       }
       siteList.insert(0, "All");
+
+      userLists = userList;
     });
   }
 
@@ -218,7 +221,8 @@ class _RecurringState extends State<Recurring> {
   @override
   void dispose() {
     super.dispose();
-
+    _selectedUser = '';
+    userList = [];
     allEvents = [];
   }
 
@@ -368,13 +372,12 @@ class _RecurringState extends State<Recurring> {
                                   )
                                   .toList(),
                               onChanged: (val) async {
-                                if (mounted) {
-                                  setState(() {
-                                    _selectedUser = val;
-                                  });
-                                  await runFilter();
-                                }
+                                setState(() {
+                                  _selectedUser = val;
+                                });
+                                await runFilter();
                               },
+
                               icon: const Icon(
                                 Icons.arrow_drop_down,
                                 color: Colors.black,
@@ -681,7 +684,7 @@ class _RecurringState extends State<Recurring> {
             context: context,
             builder: (BuildContext context) {
               return EventEdit(
-                  id: event.recurringId.toString(), user_list: userList);
+                  id: event.recurringId.toString(), user_list: userLists);
             });
       },
       child: Container(

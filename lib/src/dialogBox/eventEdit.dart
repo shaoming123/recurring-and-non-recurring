@@ -27,21 +27,6 @@ class EventEdit extends StatefulWidget {
   State<EventEdit> createState() => _EventEditState();
 }
 
-DateTime fromDate = DateTime.now();
-DateTime toDate = DateTime.now();
-DateTime recurringDate;
-DateTime completeDate;
-TextEditingController taskController = TextEditingController();
-TextEditingController durationController = TextEditingController();
-TextEditingController recurringController = TextEditingController();
-final remarkController = TextEditingController();
-
-List<Map<String, dynamic>> event_edit = [];
-
-List<String> siteList = <String>[];
-List<String> priorityList = <String>['Low', 'Moderate', 'High'];
-List<String> statusList = <String>['Upcoming', 'In Progress', 'Done'];
-
 class _EventEditState extends State<EventEdit> {
   DbHelper dbHelper = DbHelper();
   int recurringId;
@@ -49,28 +34,32 @@ class _EventEditState extends State<EventEdit> {
   DateTime completeDate;
   String _selectedStatus = '';
 
-  final _formkey = GlobalKey<FormState>();
-  DateTime fromDate = DateTime.now();
-  DateTime toDate = DateTime.now();
-  var rng = Random();
   TextEditingController taskController = TextEditingController();
   TextEditingController durationController = TextEditingController();
   TextEditingController recurringController = TextEditingController();
   final remarkController = TextEditingController();
 
+  List<Map<String, dynamic>> event_edit = [];
+
+  List<String> siteList = <String>[];
+  List<String> priorityList = <String>['Low', 'Moderate', 'High'];
+  List<String> statusList = <String>['Upcoming', 'In Progress', 'Done'];
+  final _formkey = GlobalKey<FormState>();
+  DateTime fromDate = DateTime.now();
+  DateTime toDate = DateTime.now();
+  var rng = Random();
+
   String _selectedPriority = '';
   bool isTapped = false;
   String _selectedRecurring = '';
   String _selectedSite = '';
-  List<Map<String, dynamic>> event_edit = [];
+
   List<Map<String, dynamic>> event_data = [];
   List<Event> event_recurring = [];
-  List<String> siteList = <String>[];
-  List<String> priorityList = <String>['Low', 'Moderate', 'High'];
-  List<String> statusList = <String>['Upcoming', 'In Progress', 'Done'];
-  List<String> _selectedUser = <String>[];
 
-  var selectedOption = ''.obs;
+  List<String> selectedUsers = <String>[];
+
+  var _selectedOption = ''.obs;
   List<String> userList = <String>[];
   bool checkUser = false;
   bool internet = false;
@@ -138,13 +127,16 @@ class _EventEditState extends State<EventEdit> {
   }
 
   Future<void> getEditData(int id) async {
+    final SharedPreferences sp = await _pref;
     event_edit = await dbHelper.fetchAEvent(id);
     event_data = await dbHelper.fetchAllEvent();
+    String userRole = sp.getString("role");
+    String currentUserSiteLead = sp.getString("siteLead");
+
+    final userData = await dbHelper.getItems();
     userList = [];
 
     setState(() {
-      userList = widget.user_list..removeWhere((item) => item == 'All');
-
       recurringId = event_edit[0]['recurringId'];
       fromDate = DateTime.parse(event_edit[0]['fromD']);
       toDate = DateTime.parse(event_edit[0]['toD']);
@@ -155,7 +147,7 @@ class _EventEditState extends State<EventEdit> {
       _selectedSite = event_edit[0]['site'];
       _selectedPriority = event_edit[0]['priority'];
       _selectedStatus = event_edit[0]['status'];
-      _selectedUser = event_edit[0]['person'].split(',');
+      selectedUsers = event_edit[0]['person'].split(',');
       taskController.text = event_edit[0]['task'];
       durationController.text = event_edit[0]['duration'];
       _selectedRecurring = event_edit[0]['recurringOpt'];
@@ -168,11 +160,43 @@ class _EventEditState extends State<EventEdit> {
         completeDate = DateTime.parse(event_edit[0]['completeDate']);
       }
 
-      userList.addAll(_selectedUser);
+      //User List
+      userList.addAll(selectedUsers);
+      List functionData = sp.getString("position").split(",");
 
-      //remove duplicate
-      Set<String> set = userList.toSet();
-      userList = set.toList();
+      for (int i = 0; i < userData.length; i++) {
+        List siteData = userData[i]["site"].split(",");
+        List positionList = userData[i]["position"].split(",");
+        if (userRole == "Manager" || userRole == "Super Admin") {
+          userList.add(userData[i]["user_name"]);
+        } else if (userRole == "Leader" && currentUserSiteLead != "-") {
+          for (int y = 0; y < siteData.length; y++) {
+            if ((userData[i]["role"] == "Leader" ||
+                    userData[i]["role"] == "Staff") &&
+                siteData[y] == currentUserSiteLead) {
+              userList.add(userData[i]["user_name"]);
+            }
+          }
+        } else {
+          for (int y = 0; y < positionList.length; y++) {
+            for (int x = 0; x < functionData.length; x++) {
+              if (positionList[y] == functionData[x] &&
+                  (userData[i]["role"] == "Leader" ||
+                      userData[i]["role"] == "Staff")) {
+                if (userList.contains(userData[i]['user_name'])) {
+                } else {
+                  userList.add(userData[i]["user_name"]);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // List<String> modifiedList = widget.user_list
+      //   ..removeWhere((item) => item == 'All');
+
+      // print(userLists);
     });
 
     String uniqueNumber = event_edit[0]['uniqueNumber'];
@@ -272,7 +296,7 @@ class _EventEditState extends State<EventEdit> {
 
   Future<void> updateEvent(int recurringId) async {
     final isValid = _formkey.currentState.validate();
-    String selectedUser = _selectedUser.join(",");
+    String selectedUser = selectedUsers.join(",");
     String color;
     if (isValid) {
       // final event = Event(
@@ -953,16 +977,16 @@ class _EventEditState extends State<EventEdit> {
                 options: userList,
                 onChanged: (value) {
                   setState(() {
-                    _selectedUser = value;
-                    selectedOption.value = "";
+                    selectedUsers = value;
+                    _selectedOption.value = "";
 
-                    for (var element in _selectedUser) {
-                      selectedOption.value =
-                          "${selectedOption.value}  $element";
+                    for (var element in selectedUsers) {
+                      _selectedOption.value =
+                          "${_selectedOption.value}  $element";
                     }
                   });
                 },
-                selectedValues: _selectedUser,
+                selectedValues: selectedUsers,
               ),
             ),
           ),

@@ -12,6 +12,7 @@ import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
+import '../util/conMysql.dart';
 import 'appbar.dart';
 import 'accordion/teamTask.dart';
 import 'footer.dart';
@@ -51,17 +52,17 @@ class _NonRecurringState extends State<NonRecurring> {
   @override
   void initState() {
     super.initState();
-
+    _refresh();
     if (widget.start != null && widget.end != null) {
       startDate = widget.start;
       endDate = widget.end;
     }
-
-    _refresh();
   }
 
   Future<void> _refresh() async {
     final data = await dbHelper.fetchAllNonRecurring();
+    // List data;
+    // final data = await Controller().getNonRecurring();
 
     final SharedPreferences sp = await _pref;
     String userName = sp.getString("user_name");
@@ -70,63 +71,68 @@ class _NonRecurringState extends State<NonRecurring> {
     // LatenonRecurring = [];
     // ActivenonRecurring = [];
     // CompletednonRecurring = [];
+
     setState(() {
       userRole = sp.getString("role");
-
-      for (int x = 0; x < data.length; x++) {
-        if (data[x]["owner"] == userName) {
-          DateTime dateEnd = DateTime.parse(data[x]["due"]);
-
-          if ((dateEnd.isAfter(startDate) ||
-                  DateFormat.yMd()
-                          .format(dateEnd)
-                          .compareTo(DateFormat.yMd().format(startDate)) ==
-                      0) &&
-              (dateEnd.isBefore(endDate) ||
-                  DateFormat.yMd()
-                          .format(dateEnd)
-                          .compareTo(DateFormat.yMd().format(endDate)) ==
-                      0)) {
-            final dayLeft = daysBetween(
-                DateTime.parse(DateFormat('yyyy-MM-dd').format(DateTime.now())),
-                DateTime.parse(data[x]["due"]));
-            allNonRecurring.add(data[x]);
-            foundNonRecurring.add(data[x]);
-            if (data[x]["status"] == '100') {
-              CompletednonRecurring.add(data[x]);
-            } else if (dayLeft.isNegative) {
-              LatenonRecurring.add(data[x]);
-            } else if (dayLeft > 0) {
-              ActivenonRecurring.add(data[x]);
-            }
-          }
-        }
-
-        if (data[x]["checked"] == "Pending Review" &&
-            data[x]["status"] == '100') {
-          List personList = data[x]['personCheck'].split(",");
-
-          for (int i = 0; i < personList.length; i++) {
-            if (personList[i] == userName) {
-              requestReview = requestReview + 1;
-            }
-          }
+      if (data.isNotEmpty) {
+        for (int x = 0; x < data.length; x++) {
           if (data[x]["owner"] == userName) {
-            pendingReview = pendingReview + 1;
+            DateTime dateEnd = DateTime.parse(data[x]["due"]);
+
+            if ((dateEnd.isAfter(startDate) ||
+                    DateFormat.yMd()
+                            .format(dateEnd)
+                            .compareTo(DateFormat.yMd().format(startDate)) ==
+                        0) &&
+                (dateEnd.isBefore(endDate) ||
+                    DateFormat.yMd()
+                            .format(dateEnd)
+                            .compareTo(DateFormat.yMd().format(endDate)) ==
+                        0)) {
+              final dayLeft = daysBetween(
+                  DateTime.parse(
+                      DateFormat('yyyy-MM-dd').format(DateTime.now())),
+                  DateTime.parse(data[x]["due"]));
+              allNonRecurring.add(data[x]);
+              foundNonRecurring.add(data[x]);
+              if (data[x]["status"] == '100') {
+                CompletednonRecurring.add(data[x]);
+              } else if (dayLeft.isNegative) {
+                LatenonRecurring.add(data[x]);
+              } else if (dayLeft > 0) {
+                ActivenonRecurring.add(data[x]);
+              }
+            }
+          }
+
+          if (data[x]["checked"] == "Pending Review" &&
+              data[x]["status"] == '100') {
+            List personList = data[x]['personCheck'].split(",");
+
+            for (int i = 0; i < personList.length; i++) {
+              if (personList[i] == userName) {
+                requestReview = requestReview + 1;
+              }
+            }
+            if (data[x]["owner"] == userName) {
+              pendingReview = pendingReview + 1;
+            }
           }
         }
-      }
 
-      completedTask = CompletednonRecurring.length.toString();
-      overdueTasks = LatenonRecurring.length.toString();
-      totalTasks = allNonRecurring.length.toString();
-      requestReviewNumber = requestReview.toString();
-      pendingReviewNumber = pendingReview.toString();
-      if (completedTask != '0') {
-        completedTasksPer =
-            ((int.parse(completedTask) / int.parse(totalTasks)) * 100)
-                .toStringAsFixed(0)
-                .toString();
+        completedTask = CompletednonRecurring.length.toString();
+        overdueTasks = LatenonRecurring.length.toString();
+        totalTasks = allNonRecurring.length.toString();
+        requestReviewNumber = requestReview.toString();
+        pendingReviewNumber = pendingReview.toString();
+        if (completedTask != '0') {
+          completedTasksPer =
+              ((int.parse(completedTask) / int.parse(totalTasks)) * 100)
+                  .toStringAsFixed(0)
+                  .toString();
+        }
+      } else {
+        print('Error');
       }
     });
   }
@@ -327,7 +333,6 @@ class _NonRecurringState extends State<NonRecurring> {
 
                                 children: <Widget>[
                                   Task(
-                                    allNonRecurring: allNonRecurring,
                                     foundNonRecurring: foundNonRecurring,
                                     LatenonRecurring: LatenonRecurring,
                                     ActivenonRecurring: ActivenonRecurring,

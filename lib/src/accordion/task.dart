@@ -18,7 +18,7 @@ import 'package:http/http.dart' as http;
 import '../../util/conMysql.dart';
 
 class Task extends StatefulWidget {
-  List<Map<String, dynamic>> allNonRecurring;
+
   List<Map<String, dynamic>> foundNonRecurring;
   List<Map<String, dynamic>> LatenonRecurring;
   List<Map<String, dynamic>> ActivenonRecurring;
@@ -26,18 +26,18 @@ class Task extends StatefulWidget {
 
   Task({
     Key key,
-    this.allNonRecurring,
-    this.foundNonRecurring,
-    this.LatenonRecurring,
-    this.ActivenonRecurring,
-    this.CompletednonRecurring,
+  
+    @required this.foundNonRecurring,
+    @required this.LatenonRecurring,
+    @required this.ActivenonRecurring,
+    @required this.CompletednonRecurring,
   }) : super(key: key);
   @override
   State<Task> createState() => _TaskState();
 }
 
 class _TaskState extends State<Task> {
-  List<Map<String, dynamic>> allNonRecurring;
+ 
   List<Map<String, dynamic>> foundNonRecurring;
   List<Map<String, dynamic>> LatenonRecurring;
   List<Map<String, dynamic>> ActivenonRecurring;

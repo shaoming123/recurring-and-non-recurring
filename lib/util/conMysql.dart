@@ -1,12 +1,15 @@
 //@dart=2.9
 import 'dart:convert';
+import 'dart:isolate';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/user.dart';
 
 import '../databaseHandler/DbHelper.dart';
 import '../model/nonRecurring.dart';
+import 'checkInternet.dart';
 
 DbHelper dbHelper = DbHelper();
 // final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
@@ -104,7 +107,7 @@ class Controller {
           checked: nonrecurringData[i]["checked"],
           personCheck: nonrecurringData[i]["personCheck"]);
 
-      await dbHelper.addNonRecurring(datanonRecurring);
+      // await dbHelper.addNonRecurring(datanonRecurring);
     }
   }
 
@@ -144,4 +147,51 @@ class Controller {
     await dbHelper.addNotification(notificationData);
     // }
   }
+
+  // var receivePort = ReceivePort();
+  // Future getNonRecurring() async {
+  //   final receivePort = ReceivePort();
+
+  //   List nonrecurringData = [];
+  //   await Internet.isInternet().then((connection) async {
+  //     if (connection) {
+  //       var url =
+  //           'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
+
+  //       var response = await http
+  //           .post(Uri.parse(url), body: {"tableName": "nonrecurring"});
+  //       nonrecurringData = await json.decode(response.body);
+  //       for (int i = 0; i < nonrecurringData.length; i++) {
+  //         nonrecurringData[i]['nonRecurringId'] = nonrecurringData[i]['id'];
+  //         nonrecurringData[i]['startDate'] = nonrecurringData[i]['createdDate'];
+  //         nonrecurringData[i]['subCategory'] =
+  //             nonrecurringData[i]['subcategory'];
+  //         nonrecurringData[i]['due'] = nonrecurringData[i]['deadline'];
+  //         nonrecurringData[i]['remark'] = nonrecurringData[i]['remarks'];
+  //         nonrecurringData[i]['modify'] = nonrecurringData[i]['lastMod'];
+  //         nonrecurringData[i]['completeDate'] =
+  //             nonrecurringData[i]['completedDate'];
+  //         nonrecurringData[i].remove('id');
+  //         nonrecurringData[i].remove('createdDate');
+  //         nonrecurringData[i].remove('deadline');
+  //         nonrecurringData[i].remove('remarks');
+  //         nonrecurringData[i].remove('lastMod');
+  //         nonrecurringData[i].remove('completedDate');
+  //       }
+  //       await Isolate.spawn(
+  //           insertData, [receivePort.sendPort, nonrecurringData]);
+  //     } else {
+  //       nonrecurringData = await dbHelper.fetchAllNonRecurring();
+  //     }
+  //   });
+  //   return nonrecurringData;
+  // }
+
+  // void insertData(List<dynamic> args) async {
+  //   ReceivePort receivePort = ReceivePort();
+  //   var sendPort = args[0] as SendPort;
+
+  //   DbHelper().addNonRecurring(args[1]);
+  //   Isolate.exit(sendPort, args);
+  // }
 }

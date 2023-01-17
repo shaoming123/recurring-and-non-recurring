@@ -441,6 +441,20 @@ class _NavbarState extends State<Navbar> {
                 if (!mounted) return;
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) => const Login()));
+
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: const Text("Logout Successfully !"),
+                  behavior: SnackBarBehavior.floating,
+                  margin: const EdgeInsets.all(20),
+                  action: SnackBarAction(
+                    label: 'Dismiss',
+                    disabledTextColor: Colors.white,
+                    textColor: Colors.blue,
+                    onPressed: () {
+                      //Do whatever you want
+                    },
+                  ),
+                ));
               }),
         ],
       ),
