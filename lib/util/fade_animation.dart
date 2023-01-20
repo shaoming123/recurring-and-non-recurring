@@ -1,12 +1,12 @@
+//@dart=2.9
 import 'package:flutter/material.dart';
-// ignore: import_of_legacy_library_into_null_safe
 import 'package:simple_animations/simple_animations.dart';
 
 class FadeAnimation extends StatelessWidget {
   final double delay;
   final Widget child;
 
-  const FadeAnimation(this.delay, this.child, {super.key});
+  const FadeAnimation(this.delay, this.child, {Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

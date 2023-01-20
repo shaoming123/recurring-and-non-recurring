@@ -1,18 +1,17 @@
-// ignore: file_names
+//@dart=2.9
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/Login.dart';
-import 'package:ipsolution/src/dashboard.dart';
-import 'package:ipsolution/src/dialogBox/addMember.dart';
 import 'package:ipsolution/util/app_styles.dart';
 
 import '../util/fade_animation.dart';
 
 class SignUp extends StatefulWidget {
-  const SignUp({super.key});
+  const SignUp({
+    Key key,
+  }) : super(key: key);
 
   @override
   State<SignUp> createState() => _SignUpState();
@@ -23,24 +22,22 @@ class _SignUpState extends State<SignUp> {
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  late String username;
-  late String password;
-  late int userQuantity = 0;
-
-  var dbHelper;
+  String username;
+  String password;
+  int userQuantity = 0;
+  var dbHelper = DbHelper();
 
   @override
   void initState() {
     super.initState();
-    dbHelper = DbHelper();
   }
 
   void signupForm() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState.validate()) {
       username = userController.text;
       password = passwordController.text;
 
-      _formKey.currentState!.save();
+      _formKey.currentState.save();
 
       UserModel user_model = UserModel(
           user_name: username,
@@ -54,13 +51,13 @@ class _SignUpState extends State<SignUp> {
           active: 'Active');
       await dbHelper.saveData(user_model).then((userData) {
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => Login()));
+            context, MaterialPageRoute(builder: (context) => const Login()));
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Register account Successfully!"),
+            content: const Text("Register account Successfully!"),
             behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
+            margin: const EdgeInsets.all(20),
             action: SnackBarAction(
               label: 'Dismiss',
               disabledTextColor: Colors.white,
@@ -72,13 +69,11 @@ class _SignUpState extends State<SignUp> {
           ),
         );
       }).catchError((error) {
-        print(error);
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Error: Data Save Fail"),
+            content: const Text("Error: Data Save Fail"),
             behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
+            margin: const EdgeInsets.all(20),
             action: SnackBarAction(
               label: 'Dismiss',
               disabledTextColor: Colors.white,
@@ -193,7 +188,7 @@ class _SignUpState extends State<SignUp> {
                                 decoration: BoxDecoration(
                                     border: Border(
                                         bottom: BorderSide(
-                                            color: Colors.grey[100]!))),
+                                            color: Colors.grey[100]))),
                                 child: TextFormField(
                                   validator: (text) {
                                     if (text == null || text.isEmpty) {

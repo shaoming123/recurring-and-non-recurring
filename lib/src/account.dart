@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'dart:convert';
 import 'dart:io';
 
@@ -12,11 +13,12 @@ import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../util/appbar.dart';
+import 'appbar.dart';
 import '../util/checkInternet.dart';
+import 'footer.dart';
 
 class Account extends StatefulWidget {
-  const Account({super.key});
+  const Account({Key key}) : super(key: key);
 
   @override
   State<Account> createState() => _AccountState();
@@ -26,55 +28,51 @@ class _AccountState extends State<Account> {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>();
   bool showPassword = true;
-  File? image;
+  File image;
 
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-  late DbHelper dbHelper;
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  DbHelper dbHelper = DbHelper();
 
   final username = TextEditingController();
   final password = TextEditingController();
-  int? userid;
+  int userid;
   final email = TextEditingController();
   final phone = TextEditingController();
   final userRole = TextEditingController();
   final site = TextEditingController();
   final siteLead = TextEditingController();
   String active = '';
+  String filepath;
   final function = TextEditingController();
   List userData = [];
   @override
   void initState() {
     super.initState();
-    getUserData().whenComplete(() async {
-      await Internet.isInternet().then((connection) async {
-        if (connection) {
-          await getImage();
-        }
-      });
-    });
-
-    dbHelper = DbHelper();
+    getUserData();
   }
 
   Future<void> getUserData() async {
     final SharedPreferences sp = await _pref;
 
     setState(() {
-      userid = sp.getInt("user_id")!;
-      username.text = sp.getString("user_name")!;
-      password.text = sp.getString("password")!;
-      email.text = sp.getString("email")!;
-      userRole.text = sp.getString("role")!;
-      function.text = sp.getString("position")!;
-      site.text = sp.getString("site")!;
-      siteLead.text = sp.getString("siteLead")!;
-      active = sp.getString("active")!;
-      phone.text = sp.getString("phone")!;
+      userid = sp.getInt("user_id");
+      username.text = sp.getString("user_name");
+      password.text = sp.getString("password");
+      email.text = sp.getString("email");
+      phone.text = sp.getString("phone");
+      userRole.text = sp.getString("role");
+      function.text = sp.getString("position");
+      site.text = sp.getString("site");
+      siteLead.text = sp.getString("siteLead");
+      active = sp.getString("active");
+
+      filepath = sp.getString("filepath");
     });
   }
 
   Future<void> getImage() async {
-    var url = "http://192.168.1.111/testdb/getProfileImage.php";
+    var url =
+        "https://ipsolutions4u.com/ipsolutions/recurringMobile/getProfileImage.php";
     var response = await http.post(Uri.parse(url),
         body: {"tableName": "user_details", "user_id": userid.toString()});
     List user = json.decode(response.body);
@@ -85,13 +83,15 @@ class _AccountState extends State<Account> {
   }
 
   Future pickImage() async {
+    final SharedPreferences sp = await _pref;
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
       if (image == null) return;
       final imageTemp = File(image.path);
       setState(() => this.image = imageTemp);
 
-      final uri = Uri.parse("http://192.168.1.111/testdb/uploadImage.php");
+      final uri = Uri.parse(
+          "https://ipsolutions4u.com/ipsolutions/recurringMobile/uploadImage.php");
       var request = http.MultipartRequest('POST', uri);
       request.fields['user_id'] = userid.toString();
       var pic = await http.MultipartFile.fromPath("image", image.path);
@@ -99,10 +99,14 @@ class _AccountState extends State<Account> {
       var response = await request.send();
 
       if (response.statusCode == 200) {
+        setState(() {
+          sp.setString("filepath", pic.filename);
+        });
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Image Uploaded!'),
+          content: const Text('Image Uploaded!'),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           action: SnackBarAction(
             label: 'Dismiss',
             disabledTextColor: Colors.white,
@@ -117,10 +121,11 @@ class _AccountState extends State<Account> {
           MaterialPageRoute(builder: (context) => const Account()),
         );
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Error!'),
+          content: const Text('Error!'),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           action: SnackBarAction(
             label: 'Dismiss',
             disabledTextColor: Colors.white,
@@ -131,12 +136,12 @@ class _AccountState extends State<Account> {
           ),
         ));
       }
-      setState(() {});
     } on PlatformException catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Failed to pick image: $e'),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         action: SnackBarAction(
           label: 'Dismiss',
           disabledTextColor: Colors.white,
@@ -159,7 +164,7 @@ class _AccountState extends State<Account> {
         drawer: const Navbar(), //set gobal key defined above
         body: SingleChildScrollView(
           child: Container(
-            height: height - height * 0.16,
+            height: height - height * 0.12,
             margin: EdgeInsets.symmetric(
                 vertical: height * 0.08, horizontal: width * 0.02),
             child: Column(children: [
@@ -187,10 +192,10 @@ class _AccountState extends State<Account> {
                                 } else {
                                   ScaffoldMessenger.of(context)
                                       .showSnackBar(SnackBar(
-                                    content:
-                                        Text('Not internet connection found'),
+                                    content: const Text(
+                                        'Not internet connection found'),
                                     behavior: SnackBarBehavior.floating,
-                                    margin: EdgeInsets.all(20),
+                                    margin: const EdgeInsets.all(20),
                                     action: SnackBarAction(
                                       label: 'Dismiss',
                                       disabledTextColor: Colors.white,
@@ -223,16 +228,14 @@ class _AccountState extends State<Account> {
                                     shape: BoxShape.circle,
                                     image: DecorationImage(
                                       fit: BoxFit.cover,
-                                      image: userData.length > 0
-                                          ? userData[0]['filepath']
-                                                      .isNotEmpty &&
-                                                  userData[0]['filepath'] !=
-                                                      null
+                                      image: filepath != null
+                                          ? filepath.isNotEmpty
                                               ? NetworkImage(
-                                                      "http://192.168.1.111/testdb/uploads/${userData[0]['filepath']}")
+                                                      "https://ipsolutions4u.com/ipsolutions/recurring/upload/$filepath")
                                                   as ImageProvider
-                                              : AssetImage('assets/logo.png')
-                                          : AssetImage('assets/logo.png'),
+                                              : const AssetImage(
+                                                  'assets/logo.png')
+                                          : const AssetImage('assets/logo.png'),
                                     ),
                                   ),
                                 ),
@@ -270,7 +273,8 @@ class _AccountState extends State<Account> {
                                 true, email, 1),
                             buildTextField("Password", "********", true, true,
                                 password, 1),
-                            phoneTextField("Phone No", "", false, true, phone),
+                            buildTextField(
+                                "Phone No", "", false, true, phone, 1),
 
                             buildTextField(
                                 "Role", "-", false, false, userRole, 1),
@@ -284,86 +288,68 @@ class _AccountState extends State<Account> {
                           ],
                         ),
                         const Gap(20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 50),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20))),
-                              onPressed: () {},
-                              child: const Text("CANCEL",
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      letterSpacing: 2.2,
-                                      color: Colors.black)),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Styles.buttonColor,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 50),
-                                elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
-                              ),
-                              onPressed: (() async {
-                                if (_formKey.currentState!.validate()) {
-                                  _formKey.currentState!.save();
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Styles.buttonColor,
+                            padding: const EdgeInsets.symmetric(horizontal: 50),
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                          ),
+                          onPressed: (() async {
+                            if (_formKey.currentState.validate()) {
+                              _formKey.currentState.save();
 
-                                  await Internet.isInternet()
-                                      .then((connection) async {
-                                    if (connection) {
-                                      await updateAccount(
-                                          UserModel(
-                                              user_id: userid,
-                                              user_name: username.text,
-                                              password: password.text,
-                                              email: email.text,
-                                              role: userRole.text,
-                                              position: function.text,
-                                              site: site.text,
-                                              siteLead: siteLead.text,
-                                              phone: phone.text,
-                                              active: active),
-                                          context);
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content: Text("No Internet !"),
-                                        behavior: SnackBarBehavior.floating,
-                                        margin: EdgeInsets.all(20),
-                                        action: SnackBarAction(
-                                          label: 'Dismiss',
-                                          disabledTextColor: Colors.white,
-                                          textColor: Colors.blue,
-                                          onPressed: () {
-                                            //Do whatever you want
-                                          },
-                                        ),
-                                      ));
-                                    }
-                                  });
+                              await Internet.isInternet()
+                                  .then((connection) async {
+                                if (connection) {
+                                  await updateAccount(
+                                      UserModel(
+                                          user_id: userid,
+                                          user_name: username.text,
+                                          password: password.text,
+                                          email: email.text,
+                                          role: userRole.text,
+                                          position: function.text,
+                                          site: site.text,
+                                          siteLead: siteLead.text,
+                                          phone: phone.text,
+                                          active: active),
+                                      context);
+                                } else {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: const Text("No Internet !"),
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: const EdgeInsets.all(20),
+                                    action: SnackBarAction(
+                                      label: 'Dismiss',
+                                      disabledTextColor: Colors.white,
+                                      textColor: Colors.blue,
+                                      onPressed: () {
+                                        //Do whatever you want
+                                      },
+                                    ),
+                                  ));
                                 }
-                              }),
-                              child: const Text(
-                                "SAVE",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  letterSpacing: 2.2,
-                                ),
-                              ),
-                            )
-                          ],
+                              });
+                            }
+                          }),
+                          child: const Text(
+                            "Update",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              letterSpacing: 2.2,
+                            ),
+                          ),
                         )
                       ],
                     ),
                   ),
                 ),
               ),
+              const Footer()
             ]),
           ),
         ));
@@ -374,7 +360,7 @@ class _AccountState extends State<Account> {
       String placeholder,
       bool isPasswordTextField,
       bool editable,
-      TextEditingController? controllerText,
+      TextEditingController controllerText,
       int line) {
     return Container(
       padding: const EdgeInsets.only(bottom: 30.0),
@@ -392,8 +378,8 @@ class _AccountState extends State<Account> {
                         showPassword = !showPassword;
                       });
                     },
-                    icon: const Icon(
-                      Icons.remove_red_eye,
+                    icon: Icon(
+                      showPassword ? Icons.visibility : Icons.visibility_off,
                       color: Colors.grey,
                     ),
                   )
@@ -403,14 +389,16 @@ class _AccountState extends State<Account> {
             floatingLabelBehavior: FloatingLabelBehavior.always,
             hintText: placeholder,
             isDense: true),
-        validator: (text) {
-          if (text == null || text.isEmpty) {
-            return 'Can\'t be empty';
-          }
+        validator: controllerText != phone
+            ? (text) {
+                if (text == null || text.isEmpty) {
+                  return 'Can\'t be empty';
+                }
 
-          return null;
-        },
-        style: TextStyle(
+                return null;
+              }
+            : null,
+        style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
           color: Colors.black,
@@ -419,43 +407,31 @@ class _AccountState extends State<Account> {
     );
   }
 
-  Widget phoneTextField(
-      String labelText,
-      String placeholder,
-      bool isPasswordTextField,
-      bool editable,
-      TextEditingController? controllerText) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 30.0),
-      child: TextFormField(
-        controller: controllerText,
-        enabled: editable,
-        obscureText: isPasswordTextField ? showPassword : false,
-        decoration: InputDecoration(
-          suffixIcon: isPasswordTextField
-              ? IconButton(
-                  onPressed: () {
-                    setState(() {
-                      showPassword = !showPassword;
-                    });
-                  },
-                  icon: const Icon(
-                    Icons.remove_red_eye,
-                    color: Colors.grey,
-                  ),
-                )
-              : null,
-          contentPadding: const EdgeInsets.only(bottom: 3),
-          labelText: labelText,
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          hintText: placeholder,
-        ),
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
-        ),
-      ),
-    );
-  }
+  // Widget phoneTextField(
+  //     String labelText,
+  //     String placeholder,
+  //     bool isPasswordTextField,
+  //     bool editable,
+  //     TextEditingController? controllerText) {
+  //   return Padding(
+  //     padding: const EdgeInsets.only(bottom: 30.0),
+  //     child: TextFormField(
+  //       controller: controllerText,
+  //       enabled: editable,
+  //       minLines: 1,
+  //       obscureText: isPasswordTextField ? showPassword : false,
+  //       decoration: InputDecoration(
+  //         contentPadding: const EdgeInsets.only(bottom: 3),
+  //         labelText: labelText,
+  //         floatingLabelBehavior: FloatingLabelBehavior.always,
+  //         // hintText: placeholder,
+  //       ),
+  //       style: const TextStyle(
+  //         fontSize: 16,
+  //         fontWeight: FontWeight.bold,
+  //         color: Colors.black,
+  //       ),
+  //     ),
+  //   );
+  // }
 }

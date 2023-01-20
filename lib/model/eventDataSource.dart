@@ -1,6 +1,4 @@
-import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:ipsolution/model/event.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
@@ -108,10 +106,10 @@ class EventDataSource extends CalendarDataSource {
 
   String getColors(int index) => getEvent(index).color;
 
-  // @override
-  // bool isAllDay(int index) {
-  //   return false;
-  // }
+  @override
+  bool isAllDay(int index) {
+    return false;
+  }
 
   @override
   Color getColor(int index) {

@@ -1,25 +1,25 @@
+//@dart=2.9
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get_rx/get_rx.dart';
-import 'package:ipsolution/model/manageUser.dart';
-import 'package:ipsolution/src/account.dart';
 import 'package:ipsolution/src/member.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../../model/user.dart';
 import '../../util/checkInternet.dart';
 
 class AddMember extends StatefulWidget {
-  const AddMember({super.key});
+  const AddMember({
+    Key key,
+  }) : super(key: key);
 
   @override
   State<AddMember> createState() => _AddMemberState();
 }
 
 class _AddMemberState extends State<AddMember> {
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   final _formkey = GlobalKey<FormState>();
   final username = TextEditingController();
   final password = TextEditingController();
@@ -60,7 +60,9 @@ class _AddMemberState extends State<AddMember> {
     "PCR",
     "SPP",
     "SKP",
-    "AD2"
+    "AD2",
+    "HQ",
+    "ALL SITE"
   ];
 
   List<String> siteLeaddropdownList = [
@@ -70,10 +72,11 @@ class _AddMemberState extends State<AddMember> {
     "PCR",
     "SPP",
     "SKP",
-    "AD2"
+    "AD2",
+    "ALL SITE"
   ];
   List<String> roleList = ["Super Admin", "Manager", "Leader", "Staff"];
-  String? userRole;
+  String userRole;
   @override
   void initState() {
     super.initState();
@@ -84,7 +87,7 @@ class _AddMemberState extends State<AddMember> {
     final SharedPreferences sp = await _pref;
 
     setState(() {
-      userRole = sp.getString("role")!;
+      userRole = sp.getString("role");
       if (userRole == 'Leader') {
         roleList.remove("Super Admin");
         roleList.remove("Manager");
@@ -139,7 +142,7 @@ class _AddMemberState extends State<AddMember> {
   }
 
   Future<void> addUser() async {
-    if (_formkey.currentState!.validate()) {
+    if (_formkey.currentState.validate()) {
       if (selectedPosition.isEmpty) {
         AlertDialog alert = AlertDialog(
           title: const Text("Error"),
@@ -160,7 +163,8 @@ class _AddMemberState extends State<AddMember> {
           },
         );
       } else {
-        var url = 'http://192.168.1.111/testdb/add.php';
+        var url =
+            'https://ipsolutions4u.com/ipsolutions/recurringMobile/add.php';
         String _selectedPos = selectedPosition.join(",");
         String _selectedSite = selectedSite.join(",");
         String _selectedSiteLead = selectedSiteLead.join(",");
@@ -188,20 +192,37 @@ class _AddMemberState extends State<AddMember> {
           "position": _selectedPos,
           "site": _selectedSite.isEmpty ? '-' : _selectedSite,
           "siteLead": _selectedSiteLead.isEmpty ? '-' : _selectedSiteLead,
-          "active": active
+          "active": active,
+          "filepath": ""
         };
 
         final response = await http.post(Uri.parse(url), body: data);
 
         if (response.statusCode == 200) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text("Add User Successful!"),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
+          ));
           Navigator.pop(context);
+          // ignore: use_build_context_synchronously
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => const Member()));
         } else {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Adding Unsuccessful !"),
+            content: const Text("Adding Unsuccessful !"),
             behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
+            margin: const EdgeInsets.all(20),
             action: SnackBarAction(
               label: 'Dismiss',
               disabledTextColor: Colors.white,
@@ -218,14 +239,14 @@ class _AddMemberState extends State<AddMember> {
 
   contentBox(context) {
     Widget buildTextField(String labelText, String placeholder,
-        TextEditingController? controllerText, bool editable) {
+        TextEditingController controllerText, bool editable) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             labelText,
-            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
           const Gap(10),
           Container(
@@ -238,7 +259,6 @@ class _AddMemberState extends State<AddMember> {
             child: TextFormField(
               cursorColor: Colors.black,
               style: const TextStyle(fontSize: 14),
-              keyboardType: TextInputType.number,
               decoration: InputDecoration(hintText: placeholder),
               onFieldSubmitted: (_) {},
               controller: controllerText,
@@ -258,7 +278,7 @@ class _AddMemberState extends State<AddMember> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Role',
             style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
@@ -292,9 +312,20 @@ class _AddMemberState extends State<AddMember> {
                     )
                     .toList(),
                 onChanged: (val) {
-                  String test = val as String;
+                  String test = val;
                   setState(() {
                     _selectedRole = test;
+
+                    if (_selectedRole == "Super Admin" ||
+                        _selectedRole == "Manager") {
+                      checkPosition = true;
+                      checkSite = true;
+                    } else {
+                      checkPosition = false;
+                      checkSite = false;
+                    }
+                    selectAllPosition();
+                    selectAllSite();
                   });
                 },
                 icon: const Icon(
@@ -315,7 +346,7 @@ class _AddMemberState extends State<AddMember> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            const Text(
               'Function Access',
               style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
             ),
@@ -329,7 +360,7 @@ class _AddMemberState extends State<AddMember> {
                   color: const Color(0xFFd4dce4)),
               child: DropdownButtonHideUnderline(
                 child: DropDownMultiSelect(
-                  decoration: InputDecoration(border: InputBorder.none),
+                  decoration: const InputDecoration(border: InputBorder.none),
                   icon: const Icon(
                     Icons.arrow_drop_down,
                     color: Colors.black,
@@ -342,10 +373,10 @@ class _AddMemberState extends State<AddMember> {
                       selectedPosition = value;
                       selectedOption.value = "";
 
-                      selectedPosition.forEach((element) {
+                      for (var element in selectedPosition) {
                         selectedOption.value =
-                            selectedOption.value + "  " + element;
-                      });
+                            "${selectedOption.value}  $element";
+                      }
 
                       // if (selectedPosition.isNotEmpty) {
                       //   checkFunctionAccess = true;
@@ -361,7 +392,7 @@ class _AddMemberState extends State<AddMember> {
               child: Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
                     width: 14,
                     height: 14,
                     color: Colors.white,
@@ -371,13 +402,13 @@ class _AddMemberState extends State<AddMember> {
                       value: checkPosition,
                       onChanged: (value) {
                         setState(() {
-                          checkPosition = value!;
+                          checkPosition = value;
                           selectAllPosition();
                         });
                       },
                     ),
                   ),
-                  Gap(10),
+                  const Gap(10),
                   const Text(
                     "Select All",
                     style: TextStyle(color: Color(0xFFd4dce4), fontSize: 16),
@@ -397,7 +428,7 @@ class _AddMemberState extends State<AddMember> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            const Text(
               'Site In-Charge',
               style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
             ),
@@ -411,7 +442,7 @@ class _AddMemberState extends State<AddMember> {
                   color: const Color(0xFFd4dce4)),
               child: DropdownButtonHideUnderline(
                 child: DropDownMultiSelect(
-                  decoration: InputDecoration(border: InputBorder.none),
+                  decoration: const InputDecoration(border: InputBorder.none),
                   icon: const Icon(
                     Icons.arrow_drop_down,
                     color: Colors.black,
@@ -423,10 +454,10 @@ class _AddMemberState extends State<AddMember> {
                     selectedSite = value;
                     selectedSiteOption.value = "";
 
-                    selectedSite.forEach((element) {
+                    for (var element in selectedSite) {
                       selectedSiteOption.value =
-                          selectedSiteOption.value + "  " + element;
-                    });
+                          "${selectedSiteOption.value}  $element";
+                    }
                   },
                   selectedValues: selectedSite,
                 ),
@@ -437,7 +468,7 @@ class _AddMemberState extends State<AddMember> {
               child: Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
                     width: 14,
                     height: 14,
                     color: Colors.white,
@@ -447,13 +478,13 @@ class _AddMemberState extends State<AddMember> {
                       value: checkSite,
                       onChanged: (value) {
                         setState(() {
-                          checkSite = value!;
+                          checkSite = value;
                           selectAllSite();
                         });
                       },
                     ),
                   ),
-                  Gap(10),
+                  const Gap(10),
                   const Text(
                     "Select All",
                     style: TextStyle(color: Color(0xFFd4dce4), fontSize: 16),
@@ -473,7 +504,7 @@ class _AddMemberState extends State<AddMember> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            const Text(
               'Does this user hold any leadership role on the Site?',
               style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
             ),
@@ -487,7 +518,7 @@ class _AddMemberState extends State<AddMember> {
                   color: const Color(0xFFd4dce4)),
               child: DropdownButtonHideUnderline(
                 child: DropDownMultiSelect(
-                  decoration: InputDecoration(border: InputBorder.none),
+                  decoration: const InputDecoration(border: InputBorder.none),
                   icon: const Icon(
                     Icons.arrow_drop_down,
                     color: Colors.black,
@@ -499,10 +530,10 @@ class _AddMemberState extends State<AddMember> {
                     selectedSiteLead = value;
                     selectedSiteLeadOption.value = "";
 
-                    selectedSiteLead.forEach((element) {
+                    for (var element in selectedSiteLead) {
                       selectedSiteLeadOption.value =
-                          selectedSiteLeadOption.value + "  " + element;
-                    });
+                          "${selectedSiteLeadOption.value}  $element";
+                    }
                   },
                   selectedValues: selectedSiteLead,
                 ),
@@ -513,7 +544,7 @@ class _AddMemberState extends State<AddMember> {
               child: Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
                     width: 14,
                     height: 14,
                     color: Colors.white,
@@ -523,13 +554,13 @@ class _AddMemberState extends State<AddMember> {
                       value: checkSiteLead,
                       onChanged: (value) {
                         setState(() {
-                          checkSiteLead = value!;
+                          checkSiteLead = value;
                           selectAllSiteLead();
                         });
                       },
                     ),
                   ),
-                  Gap(10),
+                  const Gap(10),
                   const Text(
                     "Select All",
                     style: TextStyle(color: Color(0xFFd4dce4), fontSize: 16),
@@ -550,8 +581,8 @@ class _AddMemberState extends State<AddMember> {
               shape: BoxShape.rectangle,
               color: const Color(0xFF384464),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                const BoxShadow(
+              boxShadow: const [
+                BoxShadow(
                     color: Colors.black, offset: Offset(0, 10), blurRadius: 10),
               ]),
           child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
@@ -605,9 +636,9 @@ class _AddMemberState extends State<AddMember> {
                         await addUser();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text("No Internet !"),
+                          content: const Text("No Internet !"),
                           behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.all(20),
+                          margin: const EdgeInsets.all(20),
                           action: SnackBarAction(
                             label: 'Dismiss',
                             disabledTextColor: Colors.white,

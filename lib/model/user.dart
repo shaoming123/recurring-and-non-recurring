@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class UserModel {
   late int? user_id;
   late String user_name;
@@ -10,8 +8,9 @@ class UserModel {
   late String position;
   late String? site;
   late String? siteLead;
-  late String? phone;
+  String? phone;
   late String active;
+  String? filepath;
   // late String? photoName =
   //     'https://oflutter.com/wp-content/uploads/2021/02/girl-profile.png';
 
@@ -27,6 +26,7 @@ class UserModel {
     this.siteLead,
     this.phone,
     required this.active,
+    this.filepath,
   });
 
   Map<String, dynamic> toMap() {
@@ -42,6 +42,7 @@ class UserModel {
       'siteLead': siteLead,
       'phone': phone,
       'active': active,
+      'filepath': filepath,
       // 'photoName': photoName
     };
     return map;
@@ -59,6 +60,7 @@ class UserModel {
     phone = map['phone'];
     active = map['active'];
     position = map['position'];
+    filepath = map['filepath'];
     // photoName = map['photoName'];
   }
 }

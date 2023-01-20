@@ -1,7 +1,9 @@
+//@dart=2.9
 import 'dart:convert';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+
 import 'package:gap/gap.dart';
 import 'package:ipsolution/src/Login.dart';
 import 'package:ipsolution/src/account.dart';
@@ -9,45 +11,40 @@ import 'package:ipsolution/src/dashboard.dart';
 import 'package:ipsolution/src/member.dart';
 import 'package:ipsolution/src/non_recurring.dart';
 import 'package:ipsolution/src/recurrring.dart';
-import 'package:ipsolution/src/report.dart';
+
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../databaseHandler/DbHelper.dart';
-import '../util/checkInternet.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 
 class Navbar extends StatefulWidget {
-  const Navbar({super.key});
+  const Navbar({Key key}) : super(key: key);
 
   @override
   State<Navbar> createState() => _NavbarState();
 }
 
 class _NavbarState extends State<Navbar> {
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-  late DbHelper dbHelper;
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  DbHelper dbHelper;
   String username = "";
   String email = "";
-  String? userRole = "";
-  int? userid;
+  String userRole = "";
+  String filepath;
+  int userid;
   List userData = [];
 
   final Uri ipsolutionUrl = Uri.parse('https://ipsolutions4u.com/ipsolutions/');
 
-  TapGestureRecognizer? _ipsolutionTapRecognizer;
+  TapGestureRecognizer _ipsolutionTapRecognizer;
   @override
   void initState() {
     dbHelper = DbHelper();
 
     _ipsolutionTapRecognizer = TapGestureRecognizer()..onTap = () => _openUrl();
-    getUserData().whenComplete(() async {
-      await Internet.isInternet().then((connection) async {
-        if (connection) {
-          await getImage();
-        }
-      });
-    });
+    getUserData();
 
     super.initState();
   }
@@ -57,28 +54,49 @@ class _NavbarState extends State<Navbar> {
     if (!await launchUrl(ipsolutionUrl)) {
       throw 'Could not launch $ipsolutionUrl';
     }
+    // var urllaunchable = await canLaunch(
+    //     ipsolutionUrl.toString()); //canLaunch is from url_launcher package
+    // if (urllaunchable) {
+    //   await window.open(ipsolutionUrl
+    //       .toString()); //launch is from url_launcher package to launch URL
+    // } else {
+    //   print("URL can't be launched.");
+    // }
   }
 
   Future<void> getUserData() async {
     final SharedPreferences sp = await _pref;
-
+    // await Internet.isInternet().then((connection) async {
+    //   if (connection) {
+    //     await getImage();
+    //   }
+    // });
     setState(() {
-      userid = sp.getInt("user_id")!;
-      username = sp.getString("user_name")!;
-      userRole = sp.getString("role")!;
-      email = sp.getString("email")!;
+      userid = sp.getInt("user_id");
+      username = sp.getString("user_name");
+      userRole = sp.getString("role");
+      email = sp.getString("email");
+      filepath = sp.getString("filepath");
     });
   }
 
-  Future<void> getImage() async {
-    var url = "http://192.168.1.111/testdb/getProfileImage.php";
+  Future getImage() async {
+    var url =
+        "https://ipsolutions4u.com/ipsolutions/recurringMobile/getProfileImage.php";
     var response = await http.post(Uri.parse(url),
         body: {"tableName": "user_details", "user_id": userid.toString()});
     List user = json.decode(response.body);
-
     setState(() {
       userData = user;
     });
+  }
+
+  void websitelaunch() async {
+    final Uri url =
+        Uri(scheme: 'https', host: 'www.ipsolutions4u.com', path: '');
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw 'Could not launch $url';
+    }
   }
 
   @override
@@ -100,9 +118,12 @@ class _NavbarState extends State<Navbar> {
                 color: Styles.textColor,
               ),
             ),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.transparent,
-              child: Container(
+            currentAccountPicture: GestureDetector(
+              onTap: () => Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const Account())),
+              child: CircleAvatar(
+                radius: 100,
+                backgroundColor: Colors.white,
                 child: ClipOval(
                   child: Container(
                       decoration: BoxDecoration(
@@ -125,15 +146,17 @@ class _NavbarState extends State<Navbar> {
                           //   width: 90,
                           //   height: 90,
                           // ),
-
-                          userData.length > 0
-                              ? userData[0]['filepath'].isNotEmpty &&
-                                      userData[0]['filepath'] != null
-                                  ? Image.network(
-                                      "http://192.168.1.111/testdb/uploads/${userData[0]['filepath']}",
-                                      fit: BoxFit.cover,
-                                      width: 90,
-                                      height: 90,
+                          filepath != null
+                              ? filepath.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(100.0),
+                                      child: Image.network(
+                                        "https://ipsolutions4u.com/ipsolutions/recurring/upload/$filepath",
+                                        fit: BoxFit.cover,
+                                        width: 90,
+                                        height: 90,
+                                      ),
                                     )
                                   : Image.asset(
                                       'assets/logo.png',
@@ -160,34 +183,36 @@ class _NavbarState extends State<Navbar> {
           ListTile(
             leading: const Icon(Icons.dashboard),
             title: const Text('Dashboard'),
-            onTap: () => Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => Dashboard())),
+            onTap: () => Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => const Dashboard())),
           ),
           ListTile(
-            leading: const Icon(Icons.event_repeat),
-            title: const Text('Recurring'),
-            onTap: () => Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => const Recurring())),
-          ),
+              leading: const Icon(Icons.event_repeat),
+              title: const Text('Recurring'),
+              onTap: () => Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => const Recurring()))),
           ListTile(
             leading: const Icon(Icons.low_priority),
             title: const Text('Non-Recurring'),
             onTap: () {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => NonRecurring()));
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const NonRecurring()));
             },
           ),
           ListTile(
             leading: const Icon(Icons.receipt_long),
             title: const Text('Report'),
             onTap: () {
-              // Navigator.pushReplacement(
-              //     context, MaterialPageRoute(builder: (context) => Report()));
               showDialog(
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      title: const Text('Report Function is Not Supported.'),
+                      title: const Text(
+                        'Report Function is Not Supported.',
+                        style: TextStyle(fontSize: 18),
+                      ),
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,8 +227,8 @@ class _NavbarState extends State<Navbar> {
                                 TextSpan(
                                     text: 'here',
                                     recognizer: TapGestureRecognizer()
-                                      ..onTap = () => _openUrl(),
-                                    style: TextStyle(
+                                      ..onTap = () => websitelaunch(),
+                                    style: const TextStyle(
                                         color: Colors.blue, fontSize: 16)),
                                 const TextSpan(
                                     text: ' to visit the web version. '),
@@ -213,7 +238,7 @@ class _NavbarState extends State<Navbar> {
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -238,15 +263,15 @@ class _NavbarState extends State<Navbar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           RichText(
-                            text: TextSpan(
+                            text: const TextSpan(
                               text: 'Coming Soon',
-                              style: const TextStyle(color: Colors.black87),
+                              style: TextStyle(color: Colors.black87),
                             ),
                           )
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -271,15 +296,15 @@ class _NavbarState extends State<Navbar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           RichText(
-                            text: TextSpan(
+                            text: const TextSpan(
                               text: 'Coming Soon',
-                              style: const TextStyle(color: Colors.black87),
+                              style: TextStyle(color: Colors.black87),
                             ),
                           )
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -304,15 +329,15 @@ class _NavbarState extends State<Navbar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           RichText(
-                            text: TextSpan(
+                            text: const TextSpan(
                               text: 'Coming Soon',
-                              style: const TextStyle(color: Colors.black87),
+                              style: TextStyle(color: Colors.black87),
                             ),
                           )
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -337,15 +362,15 @@ class _NavbarState extends State<Navbar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           RichText(
-                            text: TextSpan(
+                            text: const TextSpan(
                               text: 'Coming Soon',
-                              style: const TextStyle(color: Colors.black87),
+                              style: TextStyle(color: Colors.black87),
                             ),
                           )
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -370,15 +395,15 @@ class _NavbarState extends State<Navbar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           RichText(
-                            text: TextSpan(
+                            text: const TextSpan(
                               text: 'Coming Soon',
-                              style: const TextStyle(color: Colors.black87),
+                              style: TextStyle(color: Colors.black87),
                             ),
                           )
                         ],
                       ),
                       actions: <Widget>[
-                        new TextButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -402,17 +427,35 @@ class _NavbarState extends State<Navbar> {
                   leading: const Icon(Icons.supervisor_account),
                   title: const Text('Member'),
                   onTap: () => Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => Member())),
+                      MaterialPageRoute(builder: (context) => const Member())),
                 )
               : Container(),
           const Divider(),
           const Gap(50),
           ListTile(
-            title: const Text('Logout'),
-            leading: const Icon(Icons.exit_to_app),
-            onTap: () => Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => const Login())),
-          ),
+              title: const Text('Logout'),
+              leading: const Icon(Icons.exit_to_app),
+              onTap: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                prefs.clear();
+                if (!mounted) return;
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => const Login()));
+
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: const Text("Logout Successfully !"),
+                  behavior: SnackBarBehavior.floating,
+                  margin: const EdgeInsets.all(20),
+                  action: SnackBarAction(
+                    label: 'Dismiss',
+                    disabledTextColor: Colors.white,
+                    textColor: Colors.blue,
+                    onPressed: () {
+                      //Do whatever you want
+                    },
+                  ),
+                ));
+              }),
         ],
       ),
     );

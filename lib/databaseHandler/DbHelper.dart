@@ -1,23 +1,21 @@
-import 'package:flutter/animation.dart';
+//@dart=2.9
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/user.dart';
-
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:io' as io;
-
 import '../model/nonRecurring.dart';
-import '../provider/event_provider.dart';
+import '../model/notification.dart';
 
 class DbHelper {
-  static Database? _db;
+  static Database _db;
 
-  final DB_Name = 'test.db';
+  final DB_Name = 'sqlite.db';
   final Table_User = 'user_account';
   final Table_Event = 'recurring_table';
   final Table_NonRecurring = 'non_recurring';
+  final Table_Notification = 'notification';
   int Version = 1;
 
   // user
@@ -33,6 +31,7 @@ class DbHelper {
   String C_SiteLead = 'siteLead';
   String C_Phone = 'phone';
   String C_Active = 'active';
+  String C_File = 'filepath';
 
   //event
   String recurringId = 'recurringId';
@@ -55,8 +54,11 @@ class DbHelper {
   String color = 'color';
   String date = 'date';
   String deadline = 'deadline';
-  String start = 'start';
-  String end = 'end';
+  String start = 'startTime';
+  String end = 'dueTime';
+  String uniqueNumber = 'uniqueNumber';
+  String dependent = 'dependent';
+  String checkRecurring = 'checkRecurring';
 
   //non-recurring
   String nonRecurringId = 'nonRecurringId';
@@ -75,12 +77,21 @@ class DbHelper {
   String personCheck = 'personCheck';
   String nonstatus = 'status';
 
+  //notification
+  String notificationId = 'id';
+  String notificationOwner = 'owner';
+  String assigner = 'assigner';
+  String notificationTask = 'task';
+  String notificationDeadline = 'deadline';
+  String notificationType = 'type';
+  String noted = 'noted';
+
   Future<Database> get db async {
     if (_db != null) {
-      return _db!;
+      return _db;
     }
     _db = await initDb();
-    return _db!;
+    return _db;
   }
 
   initDb() async {
@@ -104,12 +115,66 @@ class DbHelper {
         " $C_Site TEXT, "
         " $C_SiteLead TEXT, "
         " $C_Phone TEXT, "
+        " $C_File TEXT, "
         " $C_Active TEXT "
         ")");
+    await db.execute("CREATE TABLE $Table_Event ("
+        " $recurringId INTEGER PRIMARY KEY, "
+        " $category TEXT, "
+        " $subCategory TEXT, "
+        " $type TEXT, "
+        " $site TEXT, "
+        " $task TEXT, "
+        " $date TEXT, "
+        " $deadline TEXT, "
+        " $start TEXT, "
+        " $end TEXT, "
+        " $from TEXT, "
+        " $to TEXT, "
+        " $duration TEXT, "
+        " $priority TEXT, "
+        " $color TEXT, "
+        " $recurringOpt TEXT, "
+        " $recurringEvery TEXT, "
+        " $remark TEXT, "
+        " $completeDate TEXT, "
+        " $dependent TEXT, "
+        " $uniqueNumber TEXT, "
+        " $checkRecurring TEXT, "
+        " $status TEXT, "
+        " $person TEXT "
+        ")");
     await db.execute(
-        "CREATE TABLE $Table_Event($recurringId INTEGER PRIMARY KEY AUTOINCREMENT, $category TEXT, $subCategory TEXT, $type TEXT,$site TEXT,$task TEXT,$date TEXT,$deadline TEXT,$start TEXT,$end TEXT, $from TEXT,$to TEXT, $duration TEXT,$priority TEXT, $color TEXT, $recurringOpt TEXT, $recurringEvery TEXT, $remark TEXT, $completeDate TEXT, $status TEXT, $person TEXT)");
+        "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate TEXT,$due TEXT,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $checked TEXT, $personCheck TEXT, $nonstatus TEXT)");
     await db.execute(
-        "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY AUTOINCREMENT, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate TEXT,$due TEXT,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $checked TEXT, $personCheck TEXT, $nonstatus TEXT)");
+        "CREATE TABLE $Table_Notification($notificationId INTEGER PRIMARY KEY, $notificationOwner TEXT, $assigner TEXT, $notificationTask TEXT,$notificationDeadline TEXT,$notificationType TEXT ,$noted TEXT)");
+    await db.execute(
+        "CREATE TABLE checkfirst(id INTEGER PRIMARY KEY, firsttime TEXT)");
+  }
+
+  Future<bool> getfirst() async {
+    var dbClient = await db;
+    final res = Sqflite.firstIntValue(
+        await dbClient.rawQuery('SELECT COUNT(*) FROM checkfirst'));
+
+    if (res == 0) {
+      // Table is empty, return true
+      return true;
+    } else {
+      // Table is not empty, return false
+      return false;
+    }
+  }
+
+  Future<int> addfirst() async {
+    var dbClient = await db;
+    var res = await dbClient.insert(
+      'checkfirst', {'firsttime': 'true'}, //toMap() function from MemoModel
+      conflictAlgorithm:
+          ConflictAlgorithm.ignore, //ignores conflicts due to duplicate entries
+    );
+
+    return res;
   }
 
   Future<int> getUserQuantity() async {
@@ -142,7 +207,7 @@ class DbHelper {
     return res;
   }
 
-  Future<UserModel?> getLoginUser(String username, String password) async {
+  Future<UserModel> getLoginUser(String username, String password) async {
     var dbClient = await db;
     var res = await dbClient.rawQuery("SELECT * FROM $Table_User WHERE "
         "$C_UserName = '$username' AND "
@@ -288,4 +353,121 @@ class DbHelper {
     return res;
   }
   /*end non-recurring*/
+
+  /*start notification*/
+
+  Future addNotification(List item) async {
+    var dbClient = await db;
+    for (var element in item) {
+      await dbClient.insert(
+        Table_Notification,
+        element, //toMap() function from MemoModel
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      ); //ignores conflicts due to duplicate entries
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchAllNotification() async {
+    var dbClient = await db;
+    return dbClient.query(Table_Notification, orderBy: notificationId);
+  }
+
+  Future<int> deleteAllNotification() async {
+    var dbClient = await db;
+    var res = await dbClient.delete(Table_Notification);
+    return res;
+  }
+
+  Future<int> deleteNotification(int id) async {
+    //returns number of items deleted
+    final dbClient = await db; //open database
+
+    var res = await dbClient.delete(Table_Notification,
+        where: '$notificationId = ?', whereArgs: [id]);
+
+    return res;
+  }
+  /*end notification*/
+
+// sync data
+
+  // Future syncMember(UserModel data) async {
+  //   var dbClient = await db;
+
+  //   // Loop through the rows
+
+  //   // Check if the row exists in the SQLite database
+  //   final list = await dbClient
+  //       .query(Table_User, where: '$C_UserID=?', whereArgs: [data.user_id]);
+
+  //   // If the row exists in the SQLite database, update it
+  //   if (list.isNotEmpty) {
+  //     await dbClient.update(Table_User, data.toMap(),
+  //         where: '$C_UserID = ?', whereArgs: [data.user_id]);
+  //   }
+  //   // If the row does not exist in the SQLite database, insert it
+  //   else {
+  //     await dbClient.insert(Table_User, data.toMap());
+  //   }
+  // }
+
+  // Future syncEvent(Event data) async {
+  //   var dbClient = await db;
+
+  //   // Loop through the rows
+
+  //   // Check if the row exists in the SQLite database
+  //   final list = await dbClient.query(Table_Event,
+  //       where: '$recurringId=?', whereArgs: [data.recurringId]);
+
+  //   // If the row exists in the SQLite database, update it
+  //   if (list.isNotEmpty) {
+  //     await dbClient.update(Table_Event, data.toMap(),
+  //         where: '$recurringId = ?', whereArgs: [data.recurringId]);
+  //   }
+  //   // If the row does not exist in the SQLite database, insert it
+  //   else {
+  //     await dbClient.insert(Table_Event, data.toMap());
+  //   }
+  // }
+
+  // Future syncNonRecurring(nonRecurring data) async {
+  //   var dbClient = await db;
+
+  //   // Loop through the rows
+
+  //   // Check if the row exists in the SQLite database
+  //   final list = await dbClient.query(Table_NonRecurring,
+  //       where: '$nonRecurringId=?', whereArgs: [data.nonRecurringId]);
+
+  //   // If the row exists in the SQLite database, update it
+  //   if (list.isNotEmpty) {
+  //     await dbClient.update(Table_NonRecurring, data.toMap(),
+  //         where: '$nonRecurringId = ?', whereArgs: [data.nonRecurringId]);
+  //   }
+  //   // If the row does not exist in the SQLite database, insert it
+  //   else {
+  //     await dbClient.insert(Table_NonRecurring, data.toMap());
+  //   }
+  // }
+
+  // Future syncNotification(NotificationModel data) async {
+  //   var dbClient = await db;
+
+  //   // Loop through the rows
+
+  //   // Check if the row exists in the SQLite database
+  //   final list = await dbClient.query(Table_Notification,
+  //       where: '$notificationId=?', whereArgs: [data.id]);
+
+  //   // If the row exists in the SQLite database, update it
+  //   if (list.isNotEmpty) {
+  //     await dbClient.update(Table_Notification, data.toMap(),
+  //         where: '$notificationId = ?', whereArgs: [data.id]);
+  //   }
+  //   // If the row does not exist in the SQLite database, insert it
+  //   else {
+  //     await dbClient.insert(Table_Notification, data.toMap());
+  //   }
+  // }
 }

@@ -1,7 +1,8 @@
-import 'dart:convert';
-
+//@dart=2.9
+import 'dart:math';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/event.dart';
 import '../../model/selection.dart';
 import '../../util/checkInternet.dart';
+import '../../util/conMysql.dart';
 import '../../util/datetime.dart';
 import '../../util/selection.dart';
 import '../recurrring.dart';
@@ -19,141 +21,120 @@ import 'package:http/http.dart' as http;
 class EventEdit extends StatefulWidget {
   final String id;
   final List<String> user_list;
-  EventEdit({Key? key, required this.id, required this.user_list})
-      : super(key: key);
+  const EventEdit({Key key, this.id, this.user_list}) : super(key: key);
 
   @override
   State<EventEdit> createState() => _EventEditState();
 }
 
-final _formkey = GlobalKey<FormState>();
-late DateTime fromDate = DateTime.now();
-late DateTime toDate = DateTime.now();
-DateTime? recurringDate;
-DateTime? completeDate;
-TextEditingController taskController = TextEditingController();
-TextEditingController durationController = TextEditingController();
-TextEditingController recurringController = TextEditingController();
-final remarkController = TextEditingController();
-String _selectedVal = '';
-String _selectedPriority = '';
-String _selectedStatus = '';
-String _selectedRecurring = '';
-String _selectedSite = '';
-List<Map<String, dynamic>> event_edit = [];
-
-List<String> siteList = <String>[];
-List<String> priorityList = <String>['Low', 'Moderate', 'High'];
-List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
-List<String> _selectedUser = <String>[];
-
 class _EventEditState extends State<EventEdit> {
   DbHelper dbHelper = DbHelper();
-  late int recurringId;
-  DateTime? recurringDate;
-  DateTime? completeDate;
+  int recurringId;
+  DateTime recurringDate;
+  DateTime completeDate;
   String _selectedStatus = '';
-
-  final _formkey = GlobalKey<FormState>();
-  late DateTime fromDate = DateTime.now();
-  late DateTime toDate = DateTime.now();
 
   TextEditingController taskController = TextEditingController();
   TextEditingController durationController = TextEditingController();
   TextEditingController recurringController = TextEditingController();
   final remarkController = TextEditingController();
-  String _selectedVal = '';
-  String _selectedPriority = '';
 
-  String _selectedRecurring = '';
-  String _selectedSite = '';
   List<Map<String, dynamic>> event_edit = [];
 
   List<String> siteList = <String>[];
   List<String> priorityList = <String>['Low', 'Moderate', 'High'];
-  List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
-  List<String> _selectedUser = <String>[];
+  List<String> statusList = <String>['Upcoming', 'In Progress', 'Done'];
+  final _formkey = GlobalKey<FormState>();
+  DateTime fromDate = DateTime.now();
+  DateTime toDate = DateTime.now();
+  var rng = Random();
 
-  var selectedOption = ''.obs;
+  String _selectedPriority = '';
+  bool isTapped = false;
+  String _selectedRecurring = '';
+  String _selectedSite = '';
+
+  List<Map<String, dynamic>> event_data = [];
+  List<Event> event_recurring = [];
+
+  List<String> selectedUsers = <String>[];
+
+  var _selectedOption = ''.obs;
   List<String> userList = <String>[];
   bool checkUser = false;
-
+  bool internet = false;
   String _selectedType = '';
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   List categoryData = [];
   List<TypeSelect> typeList = <TypeSelect>[];
-  TypeSelect? typeselect;
+  TypeSelect typeselect;
   dynamic _selectedCategory;
-  String? _selectedSubCategory;
-  List _selectedData = [];
+  String _selectedSubCategory;
+  List<String> _selectedData = [];
   @override
   void initState() {
-    getUserData();
-    getData(int.parse(widget.id));
+    getEditData(int.parse(widget.id));
+
     Future.delayed(Duration.zero, () async {
-      final SharedPreferences sp = await _pref;
-      List functionAccess = sp.getString("position")!.split(",");
-      String userRole = sp.getString("role")!;
-      final typeOptions =
-          await Selection().typeSelection(functionAccess, userRole);
-      categoryData =
-          await Selection().categorySelection(functionAccess, userRole);
+      await Internet.isInternet().then((connection) async {
+        setState(() {
+          internet = connection;
+        });
+        if (connection) {
+          await getData();
+          final SharedPreferences sp = await _pref;
+          List functionAccess = sp.getString("position").split(",");
+          String userRole = sp.getString("role");
+          final typeOptions =
+              await Selection().typeSelection(functionAccess, userRole);
+          categoryData =
+              await Selection().categorySelection(functionAccess, userRole);
 
-      //type selection
-      setState(() {
-        List typeDate = [];
-        typeDate = typeOptions;
-        for (int i = 0; i < typeDate.length; i++) {
-          typeList.add(TypeSelect(
-              id: typeDate[i]['id'],
-              value: typeDate[i]['value'],
-              bold: typeDate[i]['bold']));
-        }
+          //type selection
+          setState(() {
+            List typeDate = [];
+            typeDate = typeOptions;
+            for (int i = 0; i < typeDate.length; i++) {
+              typeList.add(TypeSelect(
+                  id: typeDate[i]['id'],
+                  value: typeDate[i]['value'],
+                  bold: typeDate[i]['bold']));
+            }
 
-        for (final val in typeList) {
-          if (val.value == _selectedType) {
-            setState(() {
-              typeselect = val;
-            });
+            for (final val in typeList) {
+              if (val.value == _selectedType) {
+                setState(() {
+                  typeselect = val;
+                });
 
-            break;
-          }
-        }
+                break;
+              }
+            }
 
-        for (final item in categoryData) {
-          // print(item['value']);
-          if (item['bold'] == false &&
-              item['value']['department'] == _selectedData[1] &&
-              item['value']['variables'] == _selectedData[0]) {
-            _selectedCategory = item['value'];
-          }
+            for (final item in categoryData) {
+              // print(item['value']);
+              if (item['bold'] == false &&
+                  item['value']['department'] == _selectedData[1] &&
+                  item['value']['variables'] == _selectedData[0]) {
+                _selectedCategory = item['value'];
+              }
+            }
+          });
         }
       });
     });
     super.initState();
   }
 
-  Future<void> getUserData() async {
+  Future<void> getEditData(int id) async {
+    final SharedPreferences sp = await _pref;
+    event_edit = await dbHelper.fetchAEvent(id);
+    event_data = await dbHelper.fetchAllEvent();
+    String userRole = sp.getString("role");
+    String currentUserSiteLead = sp.getString("siteLead");
+
     final userData = await dbHelper.getItems();
     userList = [];
-    final siteOptions = await Selection().siteSelection();
-
-    setState(() {
-      for (final val in siteOptions) {
-        siteList = val["options"];
-      }
-
-      userList = widget.user_list..removeWhere((item) => item == 'All');
-      //
-      // for (int i = 0; i < userData.length; i++) {
-      //   userList.add(userData[i]["user_name"]);
-      // }
-      //
-    });
-  }
-
-  Future<void> getData(int id) async {
-    event_edit = await dbHelper.fetchAEvent(id);
 
     setState(() {
       recurringId = event_edit[0]['recurringId'];
@@ -166,7 +147,7 @@ class _EventEditState extends State<EventEdit> {
       _selectedSite = event_edit[0]['site'];
       _selectedPriority = event_edit[0]['priority'];
       _selectedStatus = event_edit[0]['status'];
-      _selectedUser = event_edit[0]['person'].split(',');
+      selectedUsers = event_edit[0]['person'].split(',');
       taskController.text = event_edit[0]['task'];
       durationController.text = event_edit[0]['duration'];
       _selectedRecurring = event_edit[0]['recurringOpt'];
@@ -177,6 +158,64 @@ class _EventEditState extends State<EventEdit> {
       if (event_edit[0]['completeDate'] != null &&
           (event_edit[0]['completeDate']) != '') {
         completeDate = DateTime.parse(event_edit[0]['completeDate']);
+      }
+
+      //User List
+      userList.addAll(selectedUsers);
+      List functionData = sp.getString("position").split(",");
+
+      for (int i = 0; i < userData.length; i++) {
+        List siteData = userData[i]["site"].split(",");
+        List positionList = userData[i]["position"].split(",");
+        if (userRole == "Manager" || userRole == "Super Admin") {
+          userList.add(userData[i]["user_name"]);
+        } else if (userRole == "Leader" && currentUserSiteLead != "-") {
+          for (int y = 0; y < siteData.length; y++) {
+            if ((userData[i]["role"] == "Leader" ||
+                    userData[i]["role"] == "Staff") &&
+                siteData[y] == currentUserSiteLead) {
+              userList.add(userData[i]["user_name"]);
+            }
+          }
+        } else {
+          for (int y = 0; y < positionList.length; y++) {
+            for (int x = 0; x < functionData.length; x++) {
+              if (positionList[y] == functionData[x] &&
+                  (userData[i]["role"] == "Leader" ||
+                      userData[i]["role"] == "Staff")) {
+                if (userList.contains(userData[i]['user_name'])) {
+                } else {
+                  userList.add(userData[i]["user_name"]);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // List<String> modifiedList = widget.user_list
+      //   ..removeWhere((item) => item == 'All');
+
+      // print(userLists);
+    });
+
+    String uniqueNumber = event_edit[0]['uniqueNumber'];
+    String dependent = event_edit[0]['dependent'];
+
+    for (var item in event_data) {
+      if (item["recurringId"] != recurringId &&
+          uniqueNumber == item["uniqueNumber"] &&
+          dependent == item["dependent"]) {
+        event_recurring.add(Event.fromMap(item));
+      }
+    }
+  }
+
+  Future<void> getData() async {
+    final siteOptions = await Selection().siteSelection();
+    setState(() {
+      for (final val in siteOptions) {
+        siteList = val["options"];
       }
     });
   }
@@ -195,7 +234,7 @@ class _EventEditState extends State<EventEdit> {
     }
   }
 
-  Future pickFromDateTime({required bool pickdate}) async {
+  Future pickFromDateTime({bool pickdate}) async {
     final date = await pickDateTime(fromDate, pickdate: pickdate);
     if (date == null) return;
 
@@ -204,8 +243,7 @@ class _EventEditState extends State<EventEdit> {
     });
   }
 
-  Future pickToDateTime(
-      {required bool pickdate, required int durationDay}) async {
+  Future pickToDateTime({bool pickdate, int durationDay}) async {
     final date = await pickDateTime(toDate,
         pickdate: pickdate, durationDay: durationDay);
     if (date == null) return;
@@ -216,11 +254,11 @@ class _EventEditState extends State<EventEdit> {
   }
 
   //Put date and time format together in one object
-  Future<DateTime?> pickDateTime(
+  Future<DateTime> pickDateTime(
     DateTime initialDate, {
-    required bool pickdate,
-    int? durationDay,
-    DateTime? firstDate,
+    bool pickdate,
+    int durationDay,
+    DateTime firstDate,
   }) async {
     if (pickdate) {
       final date = await showDatePicker(
@@ -257,9 +295,9 @@ class _EventEditState extends State<EventEdit> {
   }
 
   Future<void> updateEvent(int recurringId) async {
-    final isValid = _formkey.currentState!.validate();
-    String selectedUser = _selectedUser.join(",");
-    String? color;
+    final isValid = _formkey.currentState.validate();
+    String selectedUser = selectedUsers.join(",");
+    String color;
     if (isValid) {
       // final event = Event(
       //     recurringId: recurringId,
@@ -285,6 +323,17 @@ class _EventEditState extends State<EventEdit> {
 
       // await dbHelper.updateEvent(event);
 
+      // get the correct toDate again ( to prevent user didnt click the end time )
+      DateTime to_date =
+          DateTime(fromDate.year, fromDate.month, fromDate.day).add(
+        Duration(
+          days: int.parse(durationController.text) - 1,
+        ),
+      );
+      toDate = to_date.add(
+        Duration(hours: toDate.hour, minutes: toDate.minute),
+      );
+
       if (_selectedPriority == "Low") {
         color = "lightgreen";
       } else if (_selectedPriority == "Moderate") {
@@ -293,7 +342,60 @@ class _EventEditState extends State<EventEdit> {
         color = "lightcoral";
       }
 
-      var url = 'http://192.168.1.111/testdb/edit.php';
+      var url =
+          'https://ipsolutions4u.com/ipsolutions/recurringMobile/edit.php';
+      int dependent_code = rng.nextInt(900000000) + 100000000;
+      // edit same recurring
+      if (event_recurring.isNotEmpty) {
+        for (var item in event_recurring) {
+          if (item.checkRecurring == "true") {
+            Map<String, dynamic> data = {
+              "dataTable": "tasks",
+              "recurringId": item.recurringId.toString(),
+              "category": _selectedCategory["variables"] +
+                  "|" +
+                  _selectedCategory["department"],
+              "subCategory": _selectedSubCategory,
+              "type": typeselect.value,
+              "site": _selectedSite,
+              "task": taskController.text,
+              "start": item.from.toString(),
+              "end": item.to.toString(),
+              "date": DateFormat("y-M-d")
+                  .format(DateTime.parse(item.from))
+                  .toString(),
+              "deadline": DateFormat("y-M-d")
+                  .format(DateTime.parse(item.to))
+                  .toString(),
+              "startTime":
+                  DateFormat.Hm().format(DateTime.parse(item.from)).toString(),
+              "dueTime":
+                  DateFormat.Hm().format(DateTime.parse(item.to)).toString(),
+              "duration": durationController.text,
+              "person": selectedUser,
+              "priority": _selectedPriority,
+              "color": color,
+              // "startDate": DateFormat("yyyy-MM-dd").format(startDate).toString(),
+              // "deadline": DateFormat("yyyy-MM-dd").format(due!).toString(),
+              "recurringOpt": _selectedRecurring,
+              "recurringEvery": recurringController.text.isEmpty
+                  ? '0'
+                  : recurringController.text,
+              "remark": remarkController.text,
+
+              "completeDate": completeDate != null
+                  ? DateFormat("yyyy-MM-dd").format(completeDate).toString()
+                  : '',
+
+              "status": _selectedStatus,
+              "dependent": dependent_code.toString(),
+            };
+            await http.post(Uri.parse(url), body: data);
+          }
+        }
+      }
+
+      // current data
       Map<String, dynamic> data = {
         "dataTable": "tasks",
         "recurringId": recurringId.toString(),
@@ -301,7 +403,7 @@ class _EventEditState extends State<EventEdit> {
             "|" +
             _selectedCategory["department"],
         "subCategory": _selectedSubCategory,
-        "type": typeselect!.value,
+        "type": typeselect.value,
         "site": _selectedSite,
         "task": taskController.text,
         "start": fromDate.toString(),
@@ -311,6 +413,7 @@ class _EventEditState extends State<EventEdit> {
         "startTime": DateFormat.Hm().format(fromDate).toString(),
         "dueTime": DateFormat.Hm().format(toDate).toString(),
         "person": selectedUser,
+        "duration": durationController.text,
         "priority": _selectedPriority,
         "color": color,
         // "startDate": DateFormat("yyyy-MM-dd").format(startDate).toString(),
@@ -321,19 +424,20 @@ class _EventEditState extends State<EventEdit> {
         "remark": remarkController.text,
 
         "completeDate": completeDate != null
-            ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+            ? DateFormat("yyyy-MM-dd").format(completeDate).toString()
             : '',
 
         "status": _selectedStatus,
+        "dependent": dependent_code.toString(),
       };
       final response = await http.post(Uri.parse(url), body: data);
 
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Updated Successfully!"),
+          content: const Text("Updated Successfully!"),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           action: SnackBarAction(
             label: 'Dismiss',
             disabledTextColor: Colors.white,
@@ -346,31 +450,45 @@ class _EventEditState extends State<EventEdit> {
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Updated Successfully!"),
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
-            action: SnackBarAction(
-              label: 'Dismiss',
-              disabledTextColor: Colors.white,
-              textColor: Colors.blue,
-              onPressed: () {
-                //Do whatever you want
-              },
-            ),
-          ),
-        );
-        Navigator.pop(context);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => Recurring()),
-        );
+        if (!mounted) return;
+
+        FocusScope.of(context).requestFocus(FocusNode());
+        await Internet.isInternet().then((connection) async {
+          if (connection) {
+            EasyLoading.show(
+              status: 'Updating and Loading Data...',
+              maskType: EasyLoadingMaskType.black,
+            );
+            await Controller().addRecurringToSqlite();
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Recurring()),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text("Updated Successfully!"),
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.all(20),
+                action: SnackBarAction(
+                  label: 'Dismiss',
+                  disabledTextColor: Colors.white,
+                  textColor: Colors.blue,
+                  onPressed: () {
+                    //Do whatever you want
+                  },
+                ),
+              ),
+            );
+            EasyLoading.showSuccess('Successfully');
+          }
+        });
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Updated Unsuccessful !"),
+          content: const Text("Updated Unsuccessful !"),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           action: SnackBarAction(
             label: 'Dismiss',
             disabledTextColor: Colors.white,
@@ -385,34 +503,61 @@ class _EventEditState extends State<EventEdit> {
   }
 
   Future<void> removeEvent(int recurring_Id) async {
-    var url = 'http://192.168.1.111/testdb/delete.php';
-    final response = await http.post(Uri.parse(url), body: {
+    var url =
+        'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
+
+    var response;
+
+    if (event_recurring.isNotEmpty) {
+      for (var item in event_recurring) {
+        if (item.checkRecurring == "true") {
+          await http.post(Uri.parse(url), body: {
+            "dataTable": "tasks",
+            "id": item.recurringId.toString(),
+          });
+        }
+      }
+    }
+
+    response = await http.post(Uri.parse(url), body: {
       "dataTable": "tasks",
       "id": recurring_Id.toString(),
     });
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Successfully deleted!'),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(20),
-        action: SnackBarAction(
-          label: 'Dismiss',
-          disabledTextColor: Colors.white,
-          textColor: Colors.blue,
-          onPressed: () {
-            //Do whatever you want
-          },
-        ),
-      ));
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Recurring()),
-      );
+      await Internet.isInternet().then((connection) async {
+        if (connection) {
+          EasyLoading.show(
+            status: 'Deleting and Loading Data...',
+            maskType: EasyLoadingMaskType.black,
+          );
+          await Controller().addRecurringToSqlite();
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Recurring()),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text('Successfully deleted!'),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
+          ));
+          EasyLoading.showSuccess('Successfully');
+        }
+      });
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Delete Unsuccessful !"),
+        content: const Text("Delete Unsuccessful !"),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         action: SnackBarAction(
           label: 'Dismiss',
           disabledTextColor: Colors.white,
@@ -452,7 +597,9 @@ class _EventEditState extends State<EventEdit> {
           child: DropdownButtonFormField2<dynamic>(
             iconSize: 30,
             isExpanded: true,
-            hint: const Text("Choose item"),
+            hint: Text(_selectedData.isNotEmpty
+                ? _selectedData[0].toString()
+                : "Choose item"),
             value: _selectedCategory,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
@@ -499,7 +646,7 @@ class _EventEditState extends State<EventEdit> {
           child: DropdownButtonFormField2<String>(
             iconSize: 30,
             isExpanded: true,
-            hint: const Text("Choose item"),
+            hint: Text(internet ? '' : _selectedSubCategory.toString()),
             value: _selectedCategory != null
                 ? _selectedCategory['options'].contains(_selectedSubCategory)
                     ? _selectedSubCategory
@@ -536,12 +683,12 @@ class _EventEditState extends State<EventEdit> {
         decoration: BoxDecoration(
             border: Border.all(color: Colors.white, width: 1),
             borderRadius: BorderRadius.circular(12),
-            color: Color(0xFFd4dce4)),
+            color: const Color(0xFFd4dce4)),
         child: DropdownButtonHideUnderline(
           child: DropdownButtonFormField2<TypeSelect>(
             iconSize: 30,
             isExpanded: true,
-            hint: Text("Choose item"),
+            hint: Text(internet ? "" : _selectedType),
             value: typeselect,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
@@ -553,7 +700,7 @@ class _EventEditState extends State<EventEdit> {
                       enabled: false,
                       child: Text(
                         e.value,
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     )
                   : DropdownMenuItem<TypeSelect>(
@@ -568,7 +715,7 @@ class _EventEditState extends State<EventEdit> {
             }).toList(),
             onChanged: (newValue) {
               setState(() {
-                typeselect = newValue!;
+                typeselect = newValue;
               });
             },
             icon: const Icon(
@@ -592,7 +739,7 @@ class _EventEditState extends State<EventEdit> {
           child: DropdownButtonFormField2<String>(
             iconSize: 30,
             isExpanded: true,
-            hint: const Text("Choose item"),
+            hint: Text(internet ? "" : _selectedSite),
             value: _selectedSite == '' ? null : _selectedSite,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
@@ -610,7 +757,7 @@ class _EventEditState extends State<EventEdit> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedSite = test;
               });
@@ -654,7 +801,7 @@ class _EventEditState extends State<EventEdit> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedPriority = test;
               });
@@ -822,6 +969,7 @@ class _EventEditState extends State<EventEdit> {
                 color: const Color(0xFFd4dce4)),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
+                decoration: const InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
@@ -829,16 +977,16 @@ class _EventEditState extends State<EventEdit> {
                 options: userList,
                 onChanged: (value) {
                   setState(() {
-                    _selectedUser = value;
-                    selectedOption.value = "";
+                    selectedUsers = value;
+                    _selectedOption.value = "";
 
-                    _selectedUser.forEach((element) {
-                      selectedOption.value =
-                          selectedOption.value + "  " + element;
-                    });
+                    for (var element in selectedUsers) {
+                      _selectedOption.value =
+                          "${_selectedOption.value}  $element";
+                    }
                   });
                 },
-                selectedValues: _selectedUser,
+                selectedValues: selectedUsers,
               ),
             ),
           ),
@@ -874,7 +1022,7 @@ class _EventEditState extends State<EventEdit> {
             color: const Color(0xFFd4dce4)),
         child: ListTile(
           title: Text(
-            completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate!),
+            completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate),
             style: const TextStyle(fontSize: 14),
           ),
           trailing: const Icon(
@@ -919,7 +1067,7 @@ class _EventEditState extends State<EventEdit> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedStatus = test;
               });
@@ -939,8 +1087,149 @@ class _EventEditState extends State<EventEdit> {
       );
     }
 
+    Widget recurringDataTable() {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 30),
+        child: Column(
+          children: [
+            Center(
+              child: Theme(
+                data: Theme.of(context).copyWith(dividerColor: Colors.white),
+                child: FittedBox(
+                  child: DataTable(
+                      horizontalMargin: 0,
+                      dividerThickness: 2,
+                      columns: const <DataColumn>[
+                        DataColumn(
+                          label: Text(
+                            'No.',
+                            style: TextStyle(
+                                color: Color(0xFFd4dce4),
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20.0),
+                            child: Text(
+                              'Date',
+                              style: TextStyle(
+                                  color: Color(0xFFd4dce4),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Text(
+                            'Update/Delete',
+                            style: TextStyle(
+                                color: Color(0xFFd4dce4),
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                      rows: event_recurring.length > 0
+                          ? List.generate(
+                              event_recurring.length,
+                              (index) => DataRow(cells: [
+                                    DataCell(
+                                      Center(
+                                        child: Text(
+                                          (index + 1).toString(),
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14),
+                                        ),
+                                      ),
+                                    ),
+                                    DataCell(Center(
+                                      child: Text(
+                                        event_recurring[index].date,
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 14),
+                                      ),
+                                    )),
+                                    DataCell(
+                                      Center(
+                                        child: Theme(
+                                          data: ThemeData(
+                                            primarySwatch: Colors.blue,
+                                            unselectedWidgetColor:
+                                                Colors.white, // Your color
+                                          ),
+                                          child: Checkbox(
+                                            value: event_recurring[index]
+                                                        .checkRecurring ==
+                                                    "false"
+                                                ? false
+                                                : true,
+                                            onChanged: (newValue) {
+                                              setState(() {
+                                                event_recurring[index]
+                                                        .checkRecurring =
+                                                    newValue.toString();
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ]))
+                          : const <DataRow>[
+                              DataRow(
+                                cells: <DataCell>[
+                                  DataCell(Text('')),
+                                  DataCell(Text('')),
+                                  DataCell(Text('')),
+                                ],
+                              ),
+                            ]
+                      // List.generate(checkListItems.length, (index) {
+                      //   return DataRow(cells: [
+                      //     DataCell(Text(checkListItems[index]["id"].toString())),
+                      //     DataCell(Text(checkListItems[index]["title"])),
+                      //     DataCell(
+                      //       Checkbox(
+                      //         value: checkListItems[index]["value"],
+                      //         onChanged: (newValue) {
+                      //           setState(() {
+                      //             checkListItems[index]["value"] = newValue!;
+                      //           });
+                      //         },
+                      //       ),
+                      //     ),
+                      //     DataCell(Text(checkListItems[index]["title"]))
+                      //   ]);
+                      // }
+                      // ),
+                      ),
+                ),
+              ),
+            ),
+            event_recurring.isEmpty
+                ? Column(
+                    children: const [
+                      Text("The associate events have been altered.",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                      Divider(color: Colors.white)
+                    ],
+                  )
+                : Container()
+          ],
+        ),
+      );
+    }
+
+    double width = MediaQuery.of(context).size.width;
+
     return Stack(children: <Widget>[
       Container(
+          width: width,
           padding: const EdgeInsets.all(20),
           margin: const EdgeInsets.only(top: 45),
           decoration: BoxDecoration(
@@ -1042,12 +1331,14 @@ class _EventEditState extends State<EventEdit> {
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                     Container(
-                      margin: EdgeInsets.only(bottom: 20, top: 5),
+                      margin: const EdgeInsets.only(top: 5),
                       child: Text(
                         "*****$_selectedRecurring*****",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                     ),
+                    recurringDataTable(),
                     const Text(
                       "Remark :",
                       style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
@@ -1090,10 +1381,11 @@ class _EventEditState extends State<EventEdit> {
                         if (connection) {
                           await removeEvent(recurringId);
                         } else {
+                          Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text("No Internet !"),
+                            content: const Text("No Internet !"),
                             behavior: SnackBarBehavior.floating,
-                            margin: EdgeInsets.all(20),
+                            margin: const EdgeInsets.all(20),
                             action: SnackBarAction(
                               label: 'Dismiss',
                               disabledTextColor: Colors.white,
@@ -1109,7 +1401,7 @@ class _EventEditState extends State<EventEdit> {
                     child: const Text(
                       "Delete",
                       style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           color: Color(0xFFd4dce4),
                           fontWeight: FontWeight.w700),
                     )),
@@ -1133,7 +1425,7 @@ class _EventEditState extends State<EventEdit> {
                           child: const Text(
                             "Cancel",
                             style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: Color(0xFF60b4b4),
                                 fontWeight: FontWeight.w700),
                           )),
@@ -1152,14 +1444,17 @@ class _EventEditState extends State<EventEdit> {
                         onPressed: () async {
                           await Internet.isInternet().then((connection) async {
                             if (connection) {
-                              await updateEvent(recurringId);
-                              ;
+                              if (!isTapped) {
+                                isTapped = true;
+                                await updateEvent(recurringId);
+                              }
                             } else {
+                              Navigator.of(context).pop();
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
-                                content: Text("No Internet !"),
+                                content: const Text("No Internet !"),
                                 behavior: SnackBarBehavior.floating,
-                                margin: EdgeInsets.all(20),
+                                margin: const EdgeInsets.all(20),
                                 action: SnackBarAction(
                                   label: 'Dismiss',
                                   disabledTextColor: Colors.white,
@@ -1175,7 +1470,7 @@ class _EventEditState extends State<EventEdit> {
                         child: const Text(
                           "Update",
                           style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               color: Color(0xFFd4dce4),
                               fontWeight: FontWeight.w700),
                         )),

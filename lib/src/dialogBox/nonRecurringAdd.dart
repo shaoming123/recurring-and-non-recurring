@@ -1,19 +1,19 @@
-import 'dart:convert';
-
-import 'package:collection/collection.dart';
+//@dart=2.9
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:ipsolution/model/user.dart';
+import 'package:ipsolution/databaseHandler/DbHelper.dart';
+
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../model/manageUser.dart';
-import '../../model/nonRecurring.dart';
 import '../../model/selection.dart';
 import '../../util/checkInternet.dart';
+import '../../util/conMysql.dart';
 import '../../util/datetime.dart';
 import '../../util/selection.dart';
 import '../non_recurring.dart';
@@ -22,8 +22,7 @@ import 'package:http/http.dart' as http;
 class addNonRecurring extends StatefulWidget {
   final String userName;
   final bool task;
-  const addNonRecurring(
-      {super.key, required this.userName, required this.task});
+  const addNonRecurring({Key key, this.userName, this.task}) : super(key: key);
 
   @override
   State<addNonRecurring> createState() => _addNonRecurringState();
@@ -33,47 +32,48 @@ Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
 class _addNonRecurringState extends State<addNonRecurring> {
   final _formkey = GlobalKey<FormState>();
-  DateTime? due;
+  DateTime due;
   DateTime startDate = DateTime.now();
-  String _selectedVal = '';
-  String? _selectedUser;
+
+  String _selectedUser;
   String _selectedSite = '';
   // String _selectedType = '';
-  DateTime? completeDate;
+  DateTime completeDate;
   final taskController = TextEditingController();
   final statusController = TextEditingController();
   final remarkController = TextEditingController();
-
+  bool isTapped = false;
   List<String> siteList = <String>[];
   List<TypeSelect> typeList = <TypeSelect>[];
   List<dynamic> user = [];
-  TypeSelect? typeselect;
+  TypeSelect typeselect;
   List<String> checkUserList = [];
   List<String> _selectedCheckUser = [];
   var selectedCheckUser = ''.obs;
 
-  dynamic? _selectedCategory;
-  String? _selectedSubCategory;
+  dynamic _selectedCategory;
+  String _selectedSubCategory;
   List<int> userid = [];
   List categoryData = [];
   bool check = false;
   String userPosition = '';
   String userRole = '';
+  DbHelper dbHelper = DbHelper();
+
   @override
   void initState() {
     super.initState();
-
+    statusController.text = '0';
     _selectedUser = widget.userName;
-
     Future.delayed(Duration.zero, () async {
       final SharedPreferences sp = await _pref;
-      String userRole = sp.getString("role")!;
-      List functionAccess = sp.getString("position")!.split(",");
+      String userRole = sp.getString("role");
+      List functionAccess = sp.getString("position").split(",");
       final typeOptions =
           await Selection().typeSelection(functionAccess, userRole);
       categoryData =
           await Selection().categorySelection(functionAccess, userRole);
-      userPosition = sp.getString("position")!;
+      userPosition = sp.getString("position");
       //type selection
       List typeDate = [];
       typeDate = typeOptions;
@@ -103,9 +103,11 @@ class _addNonRecurringState extends State<addNonRecurring> {
     final SharedPreferences sp = await _pref;
     final data = await dbHelper.getItems();
     final siteOptions = await Selection().siteSelection();
-    String currentUserSiteLead = sp.getString("siteLead")!;
-    List functionData = sp.getString("position")!.split(",");
+    String currentUserSiteLead = sp.getString("siteLead");
+    String currentUsername = sp.getString("user_name");
+    List functionData = sp.getString("position").split(",");
     userRole = sp.getString("role").toString();
+
     setState(() {
       //site selection
       for (final val in siteOptions) {
@@ -157,7 +159,8 @@ class _addNonRecurringState extends State<addNonRecurring> {
       }
 
       for (int i = 0; i < data.length; i++) {
-        if (data[i]["role"] != "Staff") {
+        if (data[i]["role"] != "Staff" &&
+            data[i]["user_name"] != currentUsername) {
           checkUserList.add(data[i]["user_name"]);
         }
       }
@@ -207,7 +210,8 @@ class _addNonRecurringState extends State<addNonRecurring> {
   }
 
   Future saveNonRecurring() async {
-    final isValid = _formkey.currentState!.validate();
+    final SharedPreferences sp = await _pref;
+    final isValid = _formkey.currentState.validate();
     if (isValid) {
       if (due == null) {
         AlertDialog alert = AlertDialog(
@@ -229,9 +233,41 @@ class _addNonRecurringState extends State<addNonRecurring> {
           },
         );
       } else {
-        var url = 'http://192.168.1.111/testdb/add.php';
+        var url =
+            'https://ipsolutions4u.com/ipsolutions/recurringMobile/add.php';
 
         String selectedCheckUser = _selectedCheckUser.join(",");
+
+        String currentUsername = sp.getString("user_name");
+
+        if (_selectedCheckUser.isNotEmpty &&
+            _selectedCheckUser != null &&
+            statusController.text == '100') {
+          for (var item in _selectedCheckUser) {
+            Map<String, dynamic> notificationData = {
+              "dataTable": "notification",
+              'owner': item,
+              'assigner': _selectedUser,
+              'type': "Checking",
+              'task': taskController.text,
+              'deadline': DateFormat("yyyy-MM-dd").format(due).toString(),
+              'noted': "No",
+            };
+            await http.post(Uri.parse(url), body: notificationData);
+          }
+        } else if (_selectedUser != currentUsername) {
+          Map<String, dynamic> notificationData = {
+            "dataTable": "notification",
+            'owner': _selectedUser,
+            'assigner': currentUsername,
+            'type': "Non-recurring",
+            'task': taskController.text,
+            'deadline': DateFormat("yyyy-MM-dd").format(due).toString(),
+            'noted': "No",
+          };
+
+          await http.post(Uri.parse(url), body: notificationData);
+        }
 
         // final nonrecurring = nonRecurring(
         //     category: _selectedVal,
@@ -255,16 +291,16 @@ class _addNonRecurringState extends State<addNonRecurring> {
               "|" +
               _selectedCategory["department"],
           "subCategory": _selectedSubCategory,
-          "type": typeselect!.value,
+          "type": typeselect.value,
           "site": _selectedSite,
           "task": taskController.text,
           "owner": _selectedUser,
           "startDate": DateFormat("yyyy-MM-dd").format(startDate).toString(),
-          "due": DateFormat("yyyy-MM-dd").format(due!).toString(),
+          "due": DateFormat("yyyy-MM-dd").format(due).toString(),
           "modify": DateFormat("yyyy-MM-dd").format(DateTime.now()).toString(),
           "remark": remarkController.text,
           "completeDate": completeDate != null
-              ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+              ? DateFormat("yyyy-MM-dd").format(completeDate).toString()
               : '',
           "checked": check == false ? "-" : "Pending Review",
           "personCheck": selectedCheckUser.isEmpty ? "-" : selectedCheckUser,
@@ -275,17 +311,46 @@ class _addNonRecurringState extends State<addNonRecurring> {
         final response = await http.post(Uri.parse(url), body: data);
 
         if (response.statusCode == 200) {
-          Navigator.pop(context);
+          if (!mounted) return;
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const NonRecurring()),
-          );
+          FocusScope.of(context).requestFocus(FocusNode());
+          await Internet.isInternet().then((connection) async {
+            if (connection) {
+              EasyLoading.show(
+                status: 'Adding and Loading Data ...',
+                maskType: EasyLoadingMaskType.black,
+              );
+              // await Controller().syncdata();
+              await Controller().addNonRecurringToSqlite();
+
+              if (!mounted) return;
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const NonRecurring()),
+              );
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: const Text("Adding Successful !"),
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.all(20),
+                action: SnackBarAction(
+                  label: 'Dismiss',
+                  disabledTextColor: Colors.white,
+                  textColor: Colors.blue,
+                  onPressed: () {
+                    //Do whatever you want
+                  },
+                ),
+              ));
+              EasyLoading.showSuccess('Successfully');
+            }
+          });
         } else {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Adding Unsuccessful !"),
+            content: const Text("Adding Unsuccessful !"),
             behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(20),
+            margin: const EdgeInsets.all(20),
             action: SnackBarAction(
               label: 'Dismiss',
               disabledTextColor: Colors.white,
@@ -315,11 +380,8 @@ class _addNonRecurringState extends State<addNonRecurring> {
   }
 
   contentBox(context) {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
-
     Widget buildTextField(String labelText, String placeholder,
-        TextEditingController? controllerText) {
+        TextEditingController controllerText) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -346,11 +408,19 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 onFieldSubmitted: (_) {},
                 controller: controllerText,
                 validator: labelText != "Remark"
-                    ? (data) {
-                        return data != null && data.isEmpty
-                            ? 'Field cannot be empty'
-                            : null;
-                      }
+                    ? labelText == "Status"
+                        ? (data) {
+                            if (double.parse(data) < 0.0 ||
+                                double.parse(data) > 100.0) {
+                              return 'Value must be between 0 and 100';
+                            }
+                            return null;
+                          }
+                        : (data) {
+                            return data != null && data.isEmpty
+                                ? 'Field cannot be empty'
+                                : null;
+                          }
                     : null),
           ),
         ],
@@ -416,9 +486,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Category',
-            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
           const Gap(10),
           Container(
@@ -474,9 +544,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Type',
-            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
           const Gap(10),
           Container(
@@ -485,12 +555,12 @@ class _addNonRecurringState extends State<addNonRecurring> {
             decoration: BoxDecoration(
                 border: Border.all(color: Colors.white, width: 1),
                 borderRadius: BorderRadius.circular(12),
-                color: Color(0xFFd4dce4)),
+                color: const Color(0xFFd4dce4)),
             child: DropdownButtonHideUnderline(
               child: DropdownButtonFormField2<TypeSelect>(
                 iconSize: 30,
                 isExpanded: true,
-                hint: Text("Choose item"),
+                hint: const Text("Choose item"),
                 value: typeselect,
                 selectedItemHighlightColor: Colors.grey,
                 validator: (value) {
@@ -502,7 +572,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                           enabled: false,
                           child: Text(
                             e.value,
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         )
                       : DropdownMenuItem<TypeSelect>(
@@ -518,7 +588,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 }).toList(),
                 onChanged: (newValue) {
                   setState(() {
-                    typeselect = newValue!;
+                    typeselect = newValue;
                   });
                 },
                 icon: const Icon(
@@ -537,9 +607,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
+          const Text(
             'Site',
-            style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+            style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
           ),
           const Gap(10),
           Container(
@@ -571,7 +641,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                     )
                     .toList(),
                 onChanged: (val) {
-                  String test = val as String;
+                  String test = val;
                   setState(() {
                     _selectedSite = test;
                   });
@@ -626,7 +696,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 ),
                 onChanged: (val) {
                   setState(() {
-                    _selectedUser = val!;
+                    _selectedUser = val;
                   });
                 },
                 icon: const Icon(
@@ -651,9 +721,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 "Required Checking?",
                 style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
               ),
-              Gap(10),
+              const Gap(10),
               Container(
-                padding: EdgeInsets.all(0),
+                padding: const EdgeInsets.all(0),
                 width: 14,
                 height: 14,
                 color: Colors.white,
@@ -663,25 +733,25 @@ class _addNonRecurringState extends State<addNonRecurring> {
                   value: check,
                   onChanged: (value) {
                     setState(() {
-                      check = value!;
+                      check = value;
                     });
                   },
                 ),
               ),
             ],
           ),
-          Gap(10),
+          const Gap(10),
           Container(
             margin: const EdgeInsets.only(bottom: 20),
             padding: const EdgeInsets.symmetric(horizontal: 5),
             decoration: BoxDecoration(
                 border: Border.all(color: Colors.white, width: 1),
                 borderRadius: BorderRadius.circular(12),
-                color: check == true ? Color(0xFFd4dce4) : Colors.grey),
+                color: check == true ? const Color(0xFFd4dce4) : Colors.grey),
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
                 enabled: check == true ? true : false,
-                decoration: InputDecoration(border: InputBorder.none),
+                decoration: const InputDecoration(border: InputBorder.none),
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
@@ -694,10 +764,10 @@ class _addNonRecurringState extends State<addNonRecurring> {
                     _selectedCheckUser = value;
                     selectedCheckUser.value = "";
 
-                    _selectedCheckUser.forEach((element) {
+                    for (var element in _selectedCheckUser) {
                       selectedCheckUser.value =
-                          selectedCheckUser.value + "  " + element;
-                    });
+                          "${selectedCheckUser.value}  $element";
+                    }
 
                     // if (selectedPosition.isNotEmpty) {
                     //   checkFunctionAccess = true;
@@ -731,7 +801,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 color: const Color(0xFFd4dce4)),
             child: ListTile(
               title: Text(
-                due == null ? 'dd/mm/yy' : Utils.toDate(due!),
+                due == null ? 'dd/mm/yy' : Utils.toDate(due),
                 style: const TextStyle(fontSize: 14),
               ),
               trailing: const Icon(
@@ -811,7 +881,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 color: const Color(0xFFd4dce4)),
             child: ListTile(
               title: Text(
-                completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate!),
+                completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate),
                 style: const TextStyle(fontSize: 14),
               ),
               trailing: const Icon(
@@ -836,8 +906,8 @@ class _addNonRecurringState extends State<addNonRecurring> {
               shape: BoxShape.rectangle,
               color: const Color(0xFF384464),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                const BoxShadow(
+              boxShadow: const [
+                BoxShadow(
                     color: Colors.black, offset: Offset(0, 10), blurRadius: 10),
               ]),
           child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
@@ -902,13 +972,16 @@ class _addNonRecurringState extends State<addNonRecurring> {
                   onPressed: () async {
                     await Internet.isInternet().then((connection) async {
                       if (connection) {
-                        await saveNonRecurring();
-                        ;
+                        if (!isTapped) {
+                          isTapped = true;
+                          await saveNonRecurring();
+                        }
                       } else {
+                        Navigator.of(context).pop();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text("No Internet !"),
+                          content: const Text("No Internet !"),
                           behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.all(20),
+                          margin: const EdgeInsets.all(20),
                           action: SnackBarAction(
                             label: 'Dismiss',
                             disabledTextColor: Colors.white,

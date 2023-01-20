@@ -1,42 +1,39 @@
-// ignore: file_names
-import 'dart:convert';
+//@dart=2.9
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/src/recurrring.dart';
-import 'package:ipsolution/util/app_styles.dart';
+
 import 'package:ipsolution/util/recurringTasks.dart';
 import 'package:multiselect/multiselect.dart';
-import 'package:provider/provider.dart';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
-import '../../model/eventDataSource.dart';
-import '../../model/manageUser.dart';
 import '../../model/selection.dart';
-import '../../provider/event_provider.dart';
+
 import '../../util/checkInternet.dart';
+import '../../util/conMysql.dart';
 import '../../util/datetime.dart';
 import 'package:http/http.dart' as http;
 
 import '../../util/selection.dart';
 
 class EventAdd extends StatefulWidget {
-  final Event? event;
-  const EventAdd({Key? key, this.event}) : super(key: key);
+  final Event event;
+  const EventAdd({Key key, this.event}) : super(key: key);
   @override
   State<EventAdd> createState() => _EventAddState();
 }
 
 Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class _EventAddState extends State<EventAdd> {
   final taskController = TextEditingController();
@@ -45,23 +42,22 @@ class _EventAddState extends State<EventAdd> {
   final remarkController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
   double _animatedHeight = 0.0;
-  late DateTime fromDate = DateTime.now();
-  late DateTime toDate;
-  DateTime? recurringDate;
-  DateTime? completeDate;
+  DateTime fromDate = DateTime.now();
+  DateTime toDate;
+  DateTime recurringDate;
+  DateTime completeDate;
 
   bool checkDuration = true;
   List<String> _selectedUser = [];
-  String _selectedVal = '';
   String _selectedPriority = '';
   String _selectedStatus = 'Upcoming';
   String _selectedRecurring = '';
   String _selectedSite = '';
-
+  var rng = Random();
   List<String> siteList = <String>[];
   List<Map<String, dynamic>> category = [];
   List<String> priorityList = <String>['Low', 'Moderate', 'High'];
-  List<String> statusList = <String>['Upcoming', 'In-Progress', 'Done'];
+  List<String> statusList = <String>['Upcoming', 'In Progress', 'Done'];
   List<String> recurringOption = <String>[
     'Once',
     'Daily',
@@ -73,28 +69,28 @@ class _EventAddState extends State<EventAdd> {
   bool checkUser = false;
   DbHelper dbHelper = DbHelper();
   var selectedOption = ''.obs;
-
+  bool isTapped = false;
   List categoryData = [];
   String userPosition = '';
 
-  TypeSelect? typeselect;
+  TypeSelect typeselect;
   List<TypeSelect> typeList = <TypeSelect>[];
 
-  dynamic? _selectedCategory;
-  String? _selectedSubCategory;
+  dynamic _selectedCategory;
+  String _selectedSubCategory;
   @override
   void initState() {
     super.initState();
 
     Future.delayed(Duration.zero, () async {
       final SharedPreferences sp = await _pref;
-      String userRole = sp.getString("role")!;
-      List functionAccess = sp.getString("position")!.split(",");
+      String userRole = sp.getString("role");
+      List functionAccess = sp.getString("position").split(",");
       final typeOptions =
           await Selection().typeSelection(functionAccess, userRole);
       categoryData =
           await Selection().categorySelection(functionAccess, userRole);
-      userPosition = sp.getString("position")!;
+      userPosition = sp.getString("position");
       //type selection
       List typeDate = [];
       typeDate = typeOptions;
@@ -129,13 +125,14 @@ class _EventAddState extends State<EventAdd> {
     final data = await dbHelper.getItems();
     final SharedPreferences sp = await _pref;
 
-    String user = sp.getString("user_name")!;
-    String userRole = sp.getString("role")!;
-    String currentUserSiteLead = sp.getString("siteLead")!;
-    userList = [];
+    String user = sp.getString("user_name");
+    String userRole = sp.getString("role");
+    String currentUserSiteLead = sp.getString("siteLead");
+
     final siteOptions = await Selection().siteSelection();
 
     setState(() {
+      userList = [];
       for (final val in siteOptions) {
         siteList = val["options"];
       }
@@ -162,12 +159,16 @@ class _EventAddState extends State<EventAdd> {
             for (int x = 0; x < functionData.length; x++) {
               if (positionList[y] == functionData[x] &&
                   (data[i]["role"] == "Leader" || data[i]["role"] == "Staff")) {
-                userList.add(data[i]["user_name"]);
+                if (userList.contains(data[i]['user_name'])) {
+                } else {
+                  userList.add(data[i]["user_name"]);
+                }
               }
             }
           }
         }
       }
+
       //
     });
   }
@@ -200,7 +201,7 @@ class _EventAddState extends State<EventAdd> {
     }
   }
 
-  Future pickFromDateTime({required bool pickdate}) async {
+  Future pickFromDateTime({bool pickdate}) async {
     final date = await pickDateTime(fromDate, pickdate: pickdate);
     if (date == null) return;
 
@@ -209,8 +210,7 @@ class _EventAddState extends State<EventAdd> {
     });
   }
 
-  Future pickToDateTime(
-      {required bool pickdate, required int durationDay}) async {
+  Future pickToDateTime({bool pickdate, int durationDay}) async {
     final date = await pickDateTime(toDate,
         pickdate: pickdate, durationDay: durationDay);
     if (date == null) return;
@@ -244,11 +244,11 @@ class _EventAddState extends State<EventAdd> {
   // }
 
   //Put date and time format together in one object
-  Future<DateTime?> pickDateTime(
+  Future<DateTime> pickDateTime(
     DateTime initialDate, {
-    required bool pickdate,
-    int? durationDay,
-    DateTime? firstDate,
+    bool pickdate,
+    int durationDay,
+    DateTime firstDate,
   }) async {
     if (pickdate) {
       final date = await showDatePicker(
@@ -285,9 +285,12 @@ class _EventAddState extends State<EventAdd> {
   }
 
   Future saveEvent() async {
-    final isValid = _formkey.currentState!.validate();
-    String? color;
-    String? _recurrenceRule;
+    var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/add.php';
+    final isValid = _formkey.currentState.validate();
+    final SharedPreferences sp = await _pref;
+    String currentUsername = sp.getString("user_name");
+    String color;
+
     if (isValid) {
       String selectedUser = _selectedUser.join(",");
 
@@ -297,6 +300,23 @@ class _EventAddState extends State<EventAdd> {
         color = "palegoldenrod";
       } else if (_selectedPriority == "High") {
         color = "lightcoral";
+      }
+
+      if (_selectedUser.isNotEmpty && _selectedUser != null) {
+        for (var item in _selectedUser) {
+          if (item != currentUsername) {
+            Map<String, dynamic> notificationData = {
+              "dataTable": "notification",
+              'owner': item,
+              'assigner': currentUsername,
+              'type': "Recurring",
+              'task': taskController.text,
+              'deadline': _selectedRecurring,
+              'noted': "No",
+            };
+            await http.post(Uri.parse(url), body: notificationData);
+          }
+        }
       }
 
       // get the correct toDate again ( to prevent user didnt click the end time )
@@ -361,7 +381,15 @@ class _EventAddState extends State<EventAdd> {
       // Navigator.pushReplacement(
       //     context, MaterialPageRoute(builder: (context) => const Recurring()));
 
-      var url = 'http://192.168.1.111/testdb/add.php';
+      var url_add =
+          'https://ipsolutions4u.com/ipsolutions/recurringMobile/add.php';
+      int dependent_code = rng.nextInt(900000000) + 100000000;
+
+      const availableChars =
+          'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+      final unique_code = List.generate(
+              6, (index) => availableChars[rng.nextInt(availableChars.length)])
+          .join();
 
       var response;
       for (int i = 0; i < _startDate.length; i++) {
@@ -382,7 +410,7 @@ class _EventAddState extends State<EventAdd> {
               "|" +
               _selectedCategory["department"],
           "subCategory": _selectedSubCategory,
-          "type": typeselect!.value,
+          "type": typeselect.value,
           "site": _selectedSite,
           "task": taskController.text,
           "start": _startDate[i].toString(),
@@ -402,27 +430,56 @@ class _EventAddState extends State<EventAdd> {
               recurringController.text.isEmpty ? '0' : recurringController.text,
           // "modify": DateFormat("yyyy-MM-dd").format(DateTime.now()).toString(),
           "remark": remarkController.text,
-
+          "uniqueNumber": unique_code.toString(),
+          "dependent": dependent_code.toString(),
           "completeDate": completeDate != null
-              ? DateFormat("yyyy-MM-dd").format(completeDate!).toString()
+              ? DateFormat("yyyy-MM-dd").format(completeDate).toString()
               : '',
 
           "status": _selectedStatus,
         };
-        response = await http.post(Uri.parse(url), body: data);
+
+        response = await http.post(Uri.parse(url_add), body: data);
       }
       if (response.statusCode == 200) {
-        Navigator.pop(context);
+        if (!mounted) return;
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Recurring()),
-        );
+        FocusScope.of(context).requestFocus(FocusNode());
+        await Internet.isInternet().then((connection) async {
+          if (connection) {
+            EasyLoading.show(
+              status: 'Adding and Loading Data...',
+              maskType: EasyLoadingMaskType.black,
+            );
+            await Controller().addRecurringToSqlite();
+            if (!mounted) return;
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Recurring()),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text("Event has been added."),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(20),
+              action: SnackBarAction(
+                label: 'Dismiss',
+                disabledTextColor: Colors.white,
+                textColor: Colors.blue,
+                onPressed: () {
+                  //Do whatever you want
+                },
+              ),
+            ));
+            EasyLoading.showSuccess('Successfully');
+          }
+        });
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Adding Unsuccessful !"),
+          content: const Text("Adding Unsuccessful !"),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
           action: SnackBarAction(
             label: 'Dismiss',
             disabledTextColor: Colors.white,
@@ -452,7 +509,7 @@ class _EventAddState extends State<EventAdd> {
 
   contentBox(context) {
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
+
     Widget categoryDropdown() {
       return Container(
         margin: const EdgeInsets.only(bottom: 30),
@@ -549,12 +606,12 @@ class _EventAddState extends State<EventAdd> {
         decoration: BoxDecoration(
             border: Border.all(color: Colors.white, width: 1),
             borderRadius: BorderRadius.circular(12),
-            color: Color(0xFFd4dce4)),
+            color: const Color(0xFFd4dce4)),
         child: DropdownButtonHideUnderline(
           child: DropdownButtonFormField2<TypeSelect>(
             iconSize: 30,
             isExpanded: true,
-            hint: Text("Choose item"),
+            hint: const Text("Choose item"),
             value: typeselect,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
@@ -566,7 +623,7 @@ class _EventAddState extends State<EventAdd> {
                       enabled: false,
                       child: Text(
                         e.value,
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     )
                   : DropdownMenuItem<TypeSelect>(
@@ -581,7 +638,7 @@ class _EventAddState extends State<EventAdd> {
             }).toList(),
             onChanged: (newValue) {
               setState(() {
-                typeselect = newValue!;
+                typeselect = newValue;
               });
             },
             icon: const Icon(
@@ -620,10 +677,10 @@ class _EventAddState extends State<EventAdd> {
                     _selectedUser = value;
                     selectedOption.value = "";
 
-                    _selectedUser.forEach((element) {
+                    for (var element in _selectedUser) {
                       selectedOption.value =
-                          selectedOption.value + "  " + element;
-                    });
+                          "${selectedOption.value}  $element";
+                    }
                   });
                 },
                 selectedValues: _selectedUser,
@@ -664,7 +721,7 @@ class _EventAddState extends State<EventAdd> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedSite = test;
               });
@@ -708,7 +765,7 @@ class _EventAddState extends State<EventAdd> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedPriority = test;
               });
@@ -752,7 +809,7 @@ class _EventAddState extends State<EventAdd> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedStatus = test;
               });
@@ -796,7 +853,7 @@ class _EventAddState extends State<EventAdd> {
                 )
                 .toList(),
             onChanged: (val) {
-              String test = val as String;
+              String test = val;
               setState(() {
                 _selectedRecurring = test;
                 if (_selectedRecurring == 'Once') {
@@ -973,7 +1030,7 @@ class _EventAddState extends State<EventAdd> {
             color: const Color(0xFFd4dce4)),
         child: ListTile(
           title: Text(
-            completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate!),
+            completeDate == null ? 'dd/mm/yy' : Utils.toDate(completeDate),
             style: const TextStyle(fontSize: 14),
           ),
           trailing: const Icon(
@@ -1045,7 +1102,7 @@ class _EventAddState extends State<EventAdd> {
                             controller: recurringController,
                             validator: (data) {
                               return data == null &&
-                                      data!.isEmpty &&
+                                      data.isEmpty &&
                                       _selectedRecurring != 'Once'
                                   ? 'Field cannot be empty'
                                   : null;
@@ -1076,7 +1133,7 @@ class _EventAddState extends State<EventAdd> {
                       title: Text(
                         recurringDate == null
                             ? 'dd/mm/yy'
-                            : Utils.toDate(recurringDate!),
+                            : Utils.toDate(recurringDate),
                         style: const TextStyle(fontSize: 14),
                       ),
                       trailing: const Icon(
@@ -1105,8 +1162,8 @@ class _EventAddState extends State<EventAdd> {
               shape: BoxShape.rectangle,
               color: const Color(0xFF384464),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                const BoxShadow(
+              boxShadow: const [
+                BoxShadow(
                     color: Colors.black, offset: Offset(0, 10), blurRadius: 10),
               ]),
           child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
@@ -1256,13 +1313,16 @@ class _EventAddState extends State<EventAdd> {
                   onPressed: () async {
                     await Internet.isInternet().then((connection) async {
                       if (connection) {
-                        await saveEvent();
-                        ;
+                        if (!isTapped) {
+                          isTapped = true;
+                          await saveEvent();
+                        }
                       } else {
+                        Navigator.of(context).pop();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text("No Internet !"),
+                          content: const Text("No Internet !"),
                           behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.all(20),
+                          margin: const EdgeInsets.all(20),
                           action: SnackBarAction(
                             label: 'Dismiss',
                             disabledTextColor: Colors.white,

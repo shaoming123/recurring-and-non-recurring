@@ -11,7 +11,7 @@ class Styles {
   static Color activeColor = const Color(0xFFcaf2eb);
   static Color todayColor = const Color(0xFFfff4d4);
   static TextStyle title =
-      TextStyle(fontSize: 26, color: textColor, fontWeight: FontWeight.bold);
+      TextStyle(fontSize: 22, color: textColor, fontWeight: FontWeight.bold);
   static TextStyle subtitle =
       TextStyle(fontSize: 20, color: textColor, fontWeight: FontWeight.bold);
   static TextStyle dayLeftActive =

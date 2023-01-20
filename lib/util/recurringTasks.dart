@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+//@dart=2.9
 import 'package:intl/intl.dart';
 
 int daysBetween(DateTime from, DateTime to) {
@@ -8,17 +8,17 @@ int daysBetween(DateTime from, DateTime to) {
 }
 
 class Rule {
-  String? rule;
+  String rule;
   String recurringRule(_selectedRecurring, recurringDate, recurringController,
       fromDate, toDate, durationController) {
     String freq = _selectedRecurring.toUpperCase();
-    String recurring_date = DateFormat('yyyyMMdd').format(recurringDate!);
+    String recurring_date = DateFormat('yyyyMMdd').format(recurringDate);
     String recurringEvery =
         recurringController.isEmpty ? '0' : recurringController;
 
     // Once
     if (_selectedRecurring == 'Once') {
-      String difference = daysBetween(toDate, recurringDate!).toString();
+      String difference = daysBetween(toDate, recurringDate).toString();
 
       rule = 'FREQ=DAILY;INTERVAL=$difference;UNTIL=$recurring_date';
 
@@ -45,9 +45,12 @@ class Rule {
 
       // Yearly
     } else if (_selectedRecurring == 'Yearly') {
-      //  rule = 'FREQ=YEARLY;BYMONTHDAY=17;BYMONTH=10;INTERVAL=1;UNTIL=20231229';
+      String dateNumber = DateFormat('dd').format(fromDate);
+      String monthNumber = DateFormat('MM').format(fromDate);
+      rule =
+          'FREQ=YEARLY;BYMONTHDAY=$dateNumber;BYMONTH=$monthNumber;INTERVAL=$recurringEvery;UNTIL=$recurring_date';
     }
 
-    return rule!;
+    return rule;
   }
 }

@@ -1,8 +1,8 @@
+//@dart=2.9
 import 'package:flutter/material.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/account.dart';
-import 'package:ipsolution/src/dialogBox/addMember.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../src/member.dart';
@@ -10,27 +10,24 @@ import '../src/member.dart';
 DbHelper dbHelper = DbHelper();
 Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
-Future updateSP(UserModel? user, bool add) async {
+Future updateSP(UserModel user) async {
   final SharedPreferences sp = await _pref;
 
-  if (add) {
-    sp.setInt("user_id", user!.user_id!);
-    sp.setString("user_name", user.user_name);
-    sp.setString("password", user.password);
-    sp.setString("email", user.email);
-    sp.setString("role", user.role);
-    sp.setString("position", user.position);
-    sp.setString("leadFunc", user.leadFunc!);
-    sp.setString("site", user.site!);
-    sp.setString("siteLead", user.siteLead!);
-    sp.setString("phone", user.phone!);
-    sp.setString("active", user.active);
-  }
+  sp.setInt("user_id", user.user_id);
+  sp.setString("phone", user.phone);
+  sp.setString("user_name", user.user_name);
+  sp.setString("password", user.password);
+  sp.setString("email", user.email);
+  sp.setString("role", user.role);
+  sp.setString("position", user.position);
+  sp.setString("leadFunc", user.leadFunc);
+  sp.setString("site", user.site);
+  sp.setString("siteLead", user.siteLead);
+  sp.setString("active", user.active);
 }
 
 Future updateAccount(UserModel user, context) async {
-  print(user);
-  var url = 'http://192.168.1.111/testdb/edit.php';
+  var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/edit.php';
 
   Map<String, dynamic> data = {
     "dataTable": "user_details",
@@ -50,9 +47,9 @@ Future updateAccount(UserModel user, context) async {
   if (response.statusCode == 200) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("Updated Successfully!"),
+        content: const Text("Updated Successfully!"),
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(20),
+        margin: const EdgeInsets.all(20),
         action: SnackBarAction(
           label: 'Dismiss',
           disabledTextColor: Colors.white,
@@ -63,15 +60,15 @@ Future updateAccount(UserModel user, context) async {
         ),
       ),
     );
-    updateSP(user, true).whenComplete(() {
+    updateSP(user).whenComplete(() {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => const Account()));
     });
   } else {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Updated Unsuccessful !"),
+      content: const Text("Updated Unsuccessful !"),
       behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.all(20),
+      margin: const EdgeInsets.all(20),
       action: SnackBarAction(
         label: 'Dismiss',
         disabledTextColor: Colors.white,
@@ -113,16 +110,16 @@ Future updateAccount(UserModel user, context) async {
 
 // Delete an item
 Future removeUser(int id, context) async {
-  var url = 'http://192.168.1.111/testdb/delete.php';
+  var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
   final response = await http.post(Uri.parse(url), body: {
     "dataTable": "user_details",
     "id": id.toString(),
   });
   if (response.statusCode == 200) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Successfully deleted!'),
+      content: const Text('Successfully deleted!'),
       behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.all(20),
+      margin: const EdgeInsets.all(20),
       action: SnackBarAction(
         label: 'Dismiss',
         disabledTextColor: Colors.white,
@@ -138,9 +135,9 @@ Future removeUser(int id, context) async {
     );
   } else {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Delete Unsuccessful !"),
+      content: const Text("Delete Unsuccessful !"),
       behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.all(20),
+      margin: const EdgeInsets.all(20),
       action: SnackBarAction(
         label: 'Dismiss',
         disabledTextColor: Colors.white,

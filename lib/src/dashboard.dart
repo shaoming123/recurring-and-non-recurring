@@ -1,20 +1,19 @@
-// ignore: file_names
+//@dart=2.9
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
-import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/src/dashboardDetails.dart';
+import 'package:ipsolution/src/footer.dart';
 import 'package:ipsolution/src/navbar.dart';
-import 'package:ipsolution/src/non_recurring.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../util/appbar.dart';
+import 'appbar.dart';
 
 class Dashboard extends StatefulWidget {
-  Dashboard({super.key});
+  const Dashboard({
+    Key key,
+  }) : super(key: key);
 
   @override
   State<Dashboard> createState() => _DashboardState();
@@ -22,7 +21,7 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
   List<Map<String, dynamic>> completed = [];
   List<Map<String, dynamic>> late = [];
@@ -34,20 +33,21 @@ class _DashboardState extends State<Dashboard> {
   List<Map<String, dynamic>> progressNon = [];
   List<Map<String, dynamic>> upcomingNon = [];
   DateTime dateNow = DateTime.now();
-  DateTime? startDate;
-  DateTime? endDate;
+  DateTime startDate;
+  DateTime endDate;
   @override
   void initState() {
     super.initState();
+
     startDate = DateTime(dateNow.year, dateNow.month, 1);
     endDate = DateTime(dateNow.year, dateNow.month + 1, 0);
 
-    print(startDate);
-    print(endDate);
     refresh();
   }
 
   Future<void> refresh() async {
+    final SharedPreferences sp = await _pref;
+
     final taskData = await dbHelper.fetchAllEvent();
     final nonRecurringData = await dbHelper.fetchAllNonRecurring();
 
@@ -60,10 +60,11 @@ class _DashboardState extends State<Dashboard> {
     lateNon = [];
     progressNon = [];
     upcomingNon = [];
-    final SharedPreferences sp = await _pref;
-    String userName = sp.getString("user_name")!;
-    String username = sp.getString("user_name")!;
+
+    String userName = sp.getString("user_name");
+    String username = sp.getString("user_name");
     List<String> personList = [];
+
     setState(() {
       for (int x = 0; x < taskData.length; x++) {
         personList = taskData[x]["person"].split(',');
@@ -76,15 +77,21 @@ class _DashboardState extends State<Dashboard> {
                 DateFormat.yMd().format(dateStart) ==
                     DateFormat.yMd().format(dateEnd);
 
-            if ((dateEnd.isAfter(startDate!) ||
-                    dateEnd.compareTo(startDate!) == 0) &&
-                (dateEnd.isBefore(endDate!) ||
-                    dateEnd.compareTo(endDate!) == 0)) {
+            if ((dateEnd.isAfter(startDate) ||
+                    DateFormat.yMd()
+                            .format(dateEnd)
+                            .compareTo(DateFormat.yMd().format(startDate)) ==
+                        0) &&
+                (dateEnd.isBefore(endDate) ||
+                    DateFormat.yMd()
+                            .format(dateEnd)
+                            .compareTo(DateFormat.yMd().format(endDate)) ==
+                        0)) {
               if (taskData[x]["status"] == "Done") {
                 completed.add(taskData[x]);
               } else if (isValidDate == false) {
                 late.add(taskData[x]);
-              } else if (taskData[x]["status"] == "In-Progress") {
+              } else if (taskData[x]["status"] == "In Progress") {
                 progress.add(taskData[x]);
               } else {
                 upcoming.add(taskData[x]);
@@ -101,10 +108,16 @@ class _DashboardState extends State<Dashboard> {
           bool isValidDate = dateStart.isBefore(dateEnd) ||
               DateFormat.yMd().format(dateStart) ==
                   DateFormat.yMd().format(dateEnd); // YOUR DATE GOES HERE
-          if ((dateEnd.isAfter(startDate!) ||
-                  dateEnd.compareTo(startDate!) == 0) &&
-              (dateEnd.isBefore(endDate!) ||
-                  dateEnd.compareTo(endDate!) == 0)) {
+          if ((dateEnd.isAfter(startDate) ||
+                  DateFormat.yMd()
+                          .format(dateEnd)
+                          .compareTo(DateFormat.yMd().format(startDate)) ==
+                      0) &&
+              (dateEnd.isBefore(endDate) ||
+                  DateFormat.yMd()
+                          .format(dateEnd)
+                          .compareTo(DateFormat.yMd().format(endDate)) ==
+                      0)) {
             if (nonRecurringData[x]["status"] == "100") {
               completedNon.add(nonRecurringData[x]);
             } else if (isValidDate == false) {
@@ -121,7 +134,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void _show() async {
-    final DateTimeRange? result = await showDateRangePicker(
+    final DateTimeRange result = await showDateRangePicker(
       context: context,
       firstDate: DateTime(DateTime.now().year - 50),
       lastDate: DateTime(DateTime.now().year + 50),
@@ -178,9 +191,9 @@ class _DashboardState extends State<Dashboard> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Icon(Icons.calendar_month),
+                        const Icon(Icons.calendar_month),
                         Text(
-                          "${DateFormat.yMMMMd('en_US').format(startDate!).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate!).toString()}",
+                          "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
                           style:
                               TextStyle(color: Styles.textColor, fontSize: 14),
                         ),
@@ -251,7 +264,7 @@ class _DashboardState extends State<Dashboard> {
                                     subtitle: Text(
                                       (upcoming.length + upcomingNon.length)
                                           .toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
                                           fontWeight: FontWeight.w800),
@@ -299,7 +312,7 @@ class _DashboardState extends State<Dashboard> {
                 Card(
                   // ignore: sort_child_properties_last
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
                     height: 100,
                     color: Colors.white,
                     child: Row(
@@ -343,10 +356,10 @@ class _DashboardState extends State<Dashboard> {
                                 Expanded(
                                   flex: 5,
                                   child: ListTile(
-                                    title: Padding(
+                                    title: const Padding(
                                       padding: EdgeInsets.only(bottom: 8.0),
                                       child: Text(
-                                        "In-Progress",
+                                        "In Progress",
                                         style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500),
@@ -355,7 +368,7 @@ class _DashboardState extends State<Dashboard> {
                                     subtitle: Text(
                                       (progress.length + progressNon.length)
                                           .toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
                                           fontWeight: FontWeight.w800),
@@ -380,7 +393,7 @@ class _DashboardState extends State<Dashboard> {
                                                     DashboardDetails(
                                                       task: progress,
                                                       nonRecurring: progressNon,
-                                                      detailName: 'In-Progress',
+                                                      detailName: 'In Progress',
                                                     )),
                                           );
                                         },
@@ -449,7 +462,7 @@ class _DashboardState extends State<Dashboard> {
                                 Expanded(
                                   flex: 5,
                                   child: ListTile(
-                                    title: Padding(
+                                    title: const Padding(
                                       padding: EdgeInsets.only(bottom: 8.0),
                                       child: Text(
                                         "Late",
@@ -460,7 +473,7 @@ class _DashboardState extends State<Dashboard> {
                                     ),
                                     subtitle: Text(
                                       (late.length + lateNon.length).toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
                                           fontWeight: FontWeight.w800),
@@ -510,7 +523,7 @@ class _DashboardState extends State<Dashboard> {
                 Card(
                   // ignore: sort_child_properties_last
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
                     height: 100,
                     color: Colors.white,
                     child: Row(
@@ -554,7 +567,7 @@ class _DashboardState extends State<Dashboard> {
                                 Expanded(
                                   flex: 5,
                                   child: ListTile(
-                                    title: Padding(
+                                    title: const Padding(
                                       padding: EdgeInsets.only(bottom: 8.0),
                                       child: Text(
                                         "Completed",
@@ -566,7 +579,7 @@ class _DashboardState extends State<Dashboard> {
                                     subtitle: Text(
                                       (completed.length + completedNon.length)
                                           .toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontSize: 20,
                                           color: Colors.black,
                                           fontWeight: FontWeight.w800),
@@ -613,6 +626,7 @@ class _DashboardState extends State<Dashboard> {
                   elevation: 8,
                   margin: const EdgeInsets.all(10),
                 ),
+                const Footer()
               ],
             ),
           ),

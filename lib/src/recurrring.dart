@@ -1,27 +1,22 @@
+//@dart=2.9
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/model/event.dart';
-import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/src/navbar.dart';
-import 'package:ipsolution/util/appbar.dart';
-import 'package:provider/provider.dart';
+import 'package:ipsolution/src/appbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-
 import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
-import '../provider/event_provider.dart';
 import '../util/app_styles.dart';
-import '../util/checkInternet.dart';
-import '../util/conMysql.dart';
 import 'dialogBox/eventAdd.dart';
 
 class Recurring extends StatefulWidget {
-  const Recurring({super.key});
+  const Recurring({
+    Key key,
+  }) : super(key: key);
 
   @override
   State<Recurring> createState() => _RecurringState();
@@ -35,13 +30,14 @@ List<String> functionData = [];
 List<String> currentUserSite = [];
 DbHelper dbHelper = DbHelper();
 List<String> userList = [];
+List<String> userLists = [];
 
 class _RecurringState extends State<Recurring> {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   String _selectedUser = '';
   String _selectedFunction = '';
   String _selectedSite = '';
-  String userRole = '';
+  String userRole = 'Staff';
   @override
   void initState() {
     super.initState();
@@ -49,13 +45,6 @@ class _RecurringState extends State<Recurring> {
   }
 
   Future<void> _refreshEvent() async {
-    await Internet.isInternet().then((connection) async {
-      if (connection) {
-        EasyLoading.show(status: 'Fetching Data...');
-        await Controller().addRecurringToSqlite();
-        EasyLoading.showSuccess('Successfully');
-      }
-    });
     final data = await dbHelper.fetchAllEvent();
     final userData = await dbHelper.getItems();
 
@@ -68,12 +57,12 @@ class _RecurringState extends State<Recurring> {
     userList = [];
     siteList = [];
     setState(() {
-      String username = sp.getString("user_name")!;
-      userRole = sp.getString("role")!;
-      functionData = sp.getString("position")!.split(",");
-      String currentUserSiteLead = sp.getString("siteLead")!;
+      String username = sp.getString("user_name");
+      userRole = sp.getString("role");
+      functionData = sp.getString("position").split(",");
+      String currentUserSiteLead = sp.getString("siteLead");
 
-      currentUserSite = sp.getString("site")!.split(",");
+      currentUserSite = sp.getString("site").split(",");
 
       _selectedUser = username;
 
@@ -97,6 +86,7 @@ class _RecurringState extends State<Recurring> {
         if (userRole == "Manager" || userRole == "Super Admin") {
           functionList = functionData;
           userList.add(item['user_name']);
+
           siteList = [
             'HQ',
             'CRZ',
@@ -127,7 +117,7 @@ class _RecurringState extends State<Recurring> {
           }
         } else {
           functionList = functionData;
-          print(positionList);
+
           for (int i = 0; i < positionList.length; i++) {
             for (int x = 0; x < functionData.length; x++) {
               if (positionList[i] == functionData[x] &&
@@ -142,74 +132,79 @@ class _RecurringState extends State<Recurring> {
         }
       }
 
+      // userList.insert(0, "All");
       functionList.insert(0, "All");
       if (userRole == 'Super Admin' || userRole == 'Manager') {
         functionList.insert(1, "Manager");
       }
       siteList.insert(0, "All");
+
+      userLists = userList;
     });
   }
 
   Future runFilter() async {
     final data = await dbHelper.fetchAllEvent();
     allEvents = [];
-    setState(() {
-      if (siteList.length == 2) {
-        _selectedSite = siteList[1];
-      }
-
-      if (functionList.length == 2) {
-        _selectedFunction = functionList[1];
-      }
-
-      for (int i = 0; i < data.length; i++) {
-        personList = [];
-
-        personList = data[i]["person"].split(',');
-        String functionCategory = data[i]['category'].split('|')[1];
-
-        for (int x = 0; x < personList.length; x++) {
-          if (userList.contains(personList[x])) {
-            // if (!allEvents.contains(Event.fromMap(data[i]))) {
-            if (_selectedSite == data[i]['site'] &&
-                _selectedUser == personList[x] &&
-                _selectedFunction == functionCategory) {
-              allEvents.add(Event.fromMap(data[i]));
-            } else if (_selectedUser == 'All' &&
-                _selectedFunction == 'All' &&
-                _selectedSite == data[i]['site']) {
-              allEvents.add(Event.fromMap(data[i]));
-            } else if (_selectedUser == 'All' &&
-                _selectedFunction == functionCategory &&
-                _selectedSite == 'All') {
-              allEvents.add(Event.fromMap(data[i]));
-            } else if (_selectedUser == personList[x] &&
-                _selectedFunction == 'All' &&
-                _selectedSite == 'All') {
-              allEvents.add(Event.fromMap(data[i]));
-            } else if (_selectedUser == personList[x] &&
-                _selectedFunction == functionCategory &&
-                _selectedSite == 'All') {
-              allEvents.add(Event.fromMap(data[i]));
-            } else if (_selectedUser == personList[x] &&
-                _selectedFunction == 'All' &&
-                _selectedSite == data[i]['site']) {
-              allEvents.add(Event.fromMap(data[i]));
-            } else if (_selectedUser == 'All' &&
-                _selectedFunction == functionCategory &&
-                _selectedSite == data[i]['site']) {
-              allEvents.add(Event.fromMap(data[i]));
-            } else if (_selectedSite == 'All' &&
-                _selectedUser == 'All' &&
-                _selectedFunction == 'All') {
-              allEvents.add(Event.fromMap(data[i]));
-            }
-          }
-          // }
+    if (mounted) {
+      setState(() {
+        if (siteList.length == 2) {
+          _selectedSite = siteList[1];
         }
-      }
-      allEvents = removeDuplicates(allEvents);
-    });
+
+        if (functionList.length == 2) {
+          _selectedFunction = functionList[1];
+        }
+
+        for (int i = 0; i < data.length; i++) {
+          personList = [];
+
+          personList = data[i]["person"].split(',');
+          String functionCategory = data[i]['category'].split('|')[1];
+
+          for (int x = 0; x < personList.length; x++) {
+            if (userList.contains(personList[x])) {
+              // if (!allEvents.contains(Event.fromMap(data[i]))) {
+              if (_selectedSite == data[i]['site'] &&
+                  _selectedUser == personList[x] &&
+                  _selectedFunction == functionCategory) {
+                allEvents.add(Event.fromMap(data[i]));
+              } else if (_selectedUser == 'All' &&
+                  _selectedFunction == 'All' &&
+                  _selectedSite == data[i]['site']) {
+                allEvents.add(Event.fromMap(data[i]));
+              } else if (_selectedUser == 'All' &&
+                  _selectedFunction == functionCategory &&
+                  _selectedSite == 'All') {
+                allEvents.add(Event.fromMap(data[i]));
+              } else if (_selectedUser == personList[x] &&
+                  _selectedFunction == 'All' &&
+                  _selectedSite == 'All') {
+                allEvents.add(Event.fromMap(data[i]));
+              } else if (_selectedUser == personList[x] &&
+                  _selectedFunction == functionCategory &&
+                  _selectedSite == 'All') {
+                allEvents.add(Event.fromMap(data[i]));
+              } else if (_selectedUser == personList[x] &&
+                  _selectedFunction == 'All' &&
+                  _selectedSite == data[i]['site']) {
+                allEvents.add(Event.fromMap(data[i]));
+              } else if (_selectedUser == 'All' &&
+                  _selectedFunction == functionCategory &&
+                  _selectedSite == data[i]['site']) {
+                allEvents.add(Event.fromMap(data[i]));
+              } else if (_selectedSite == 'All' &&
+                  _selectedUser == 'All' &&
+                  _selectedFunction == 'All') {
+                allEvents.add(Event.fromMap(data[i]));
+              }
+            }
+            // }
+          }
+        }
+        allEvents = removeDuplicates(allEvents);
+      });
+    }
   }
 
   List<Event> removeDuplicates(List<Event> items) {
@@ -217,36 +212,37 @@ class _RecurringState extends State<Recurring> {
     var uniqueIDs = items
         .map((e) => e.recurringId)
         .toSet(); //list if UniqueID to remove duplicates
-    uniqueIDs.forEach((e) {
+    for (var e in uniqueIDs) {
       uniqueItems.add(items.firstWhere((i) => i.recurringId == e));
-    });
+    }
     return uniqueItems;
   }
 
   @override
   void dispose() {
     super.dispose();
-    personList = [];
+    _selectedUser = '';
+    userList = [];
     allEvents = [];
   }
 
   @override
   Widget build(BuildContext context) {
-    final CalendarController _calendarController = CalendarController();
+    // final CalendarController _calendarController = CalendarController();
     GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
 
-    void calendarTapped(CalendarTapDetails calendarTapDetails) {
-      if (_calendarController.view == CalendarView.month &&
-          calendarTapDetails.targetElement == CalendarElement.calendarCell) {
-        _calendarController.view = CalendarView.day;
-      } else if ((_calendarController.view == CalendarView.week ||
-              _calendarController.view == CalendarView.workWeek) &&
-          calendarTapDetails.targetElement == CalendarElement.viewHeader) {
-        _calendarController.view = CalendarView.day;
-      }
-    }
+    // void calendarTapped(CalendarTapDetails calendarTapDetails) {
+    //   if (_calendarController.view == CalendarView.month &&
+    //       calendarTapDetails.targetElement == CalendarElement.calendarCell) {
+    //     _calendarController.view = CalendarView.day;
+    //   } else if ((_calendarController.view == CalendarView.week ||
+    //           _calendarController.view == CalendarView.workWeek) &&
+    //       calendarTapDetails.targetElement == CalendarElement.viewHeader) {
+    //     _calendarController.view = CalendarView.day;
+    //   }
+    // }
 
     return Scaffold(
       backgroundColor: Styles.bgColor,
@@ -346,7 +342,7 @@ class _RecurringState extends State<Recurring> {
                   userRole != 'Staff'
                       ? Container(
                           height: 30,
-                          margin: const EdgeInsets.only(bottom: 10, top: 10),
+                          margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
                               border: Border.all(color: Colors.white, width: 1),
@@ -358,7 +354,7 @@ class _RecurringState extends State<Recurring> {
                               isExpanded: true,
                               value: _selectedUser == '' ? null : _selectedUser,
                               selectedItemHighlightColor: Colors.grey,
-                              hint: Text(
+                              hint: const Text(
                                 'User',
                                 style: TextStyle(fontSize: 12),
                               ),
@@ -370,17 +366,18 @@ class _RecurringState extends State<Recurring> {
                                       value: e,
                                       child: Text(
                                         e,
-                                        style: TextStyle(fontSize: 12),
+                                        style: const TextStyle(fontSize: 12),
                                       ),
                                     ),
                                   )
                                   .toList(),
                               onChanged: (val) async {
                                 setState(() {
-                                  _selectedUser = val!;
+                                  _selectedUser = val;
                                 });
                                 await runFilter();
                               },
+
                               icon: const Icon(
                                 Icons.arrow_drop_down,
                                 color: Colors.black,
@@ -411,7 +408,7 @@ class _RecurringState extends State<Recurring> {
                                     ? null
                                     : _selectedFunction,
                                 selectedItemHighlightColor: Colors.grey,
-                                hint: Text(
+                                hint: const Text(
                                   'Function',
                                   style: TextStyle(fontSize: 12),
                                 ),
@@ -422,16 +419,18 @@ class _RecurringState extends State<Recurring> {
                                         value: e,
                                         child: Text(
                                           e,
-                                          style: TextStyle(fontSize: 12),
+                                          style: const TextStyle(fontSize: 12),
                                         ),
                                       ),
                                     )
                                     .toList(),
                                 onChanged: (val) {
-                                  setState(() {
-                                    _selectedFunction = val!;
-                                    runFilter();
-                                  });
+                                  if (mounted) {
+                                    setState(() {
+                                      _selectedFunction = val;
+                                      runFilter();
+                                    });
+                                  }
                                 },
                                 icon: const Icon(
                                   Icons.arrow_drop_down,
@@ -456,7 +455,7 @@ class _RecurringState extends State<Recurring> {
                                 dropdownMaxHeight: 300,
                                 iconSize: 25,
                                 isExpanded: true,
-                                hint: Text(
+                                hint: const Text(
                                   'Site',
                                   style: TextStyle(fontSize: 12),
                                 ),
@@ -469,16 +468,18 @@ class _RecurringState extends State<Recurring> {
                                         value: e,
                                         child: Text(
                                           e,
-                                          style: TextStyle(fontSize: 12),
+                                          style: const TextStyle(fontSize: 12),
                                         ),
                                       ),
                                     )
                                     .toList(),
                                 onChanged: (val) {
-                                  setState(() {
-                                    _selectedSite = val!;
-                                    runFilter();
-                                  });
+                                  if (mounted) {
+                                    setState(() {
+                                      _selectedSite = val;
+                                      runFilter();
+                                    });
+                                  }
                                 },
                                 icon: const Icon(
                                   Icons.arrow_drop_down,
@@ -492,8 +493,11 @@ class _RecurringState extends State<Recurring> {
 
                   Expanded(
                     child: SfCalendar(
+                      resourceViewSettings:
+                          const ResourceViewSettings(size: 120),
                       dataSource: EventDataSource(allEvents),
                       backgroundColor: Colors.white,
+                      headerHeight: 30,
                       view: CalendarView.month,
                       allowViewNavigation: true,
                       showDatePickerButton: true,
@@ -510,12 +514,11 @@ class _RecurringState extends State<Recurring> {
                         timelineAppointmentHeight: height / 5,
                       ),
 
-                      // controller: _calendarController,
-
                       monthViewSettings: MonthViewSettings(
                         showAgenda: true,
-                        agendaItemHeight: height / 5,
-                        monthCellStyle: MonthCellStyle(
+                        agendaItemHeight: height / 5.5,
+                        agendaViewHeight: 180,
+                        monthCellStyle: const MonthCellStyle(
                             textStyle: TextStyle(
                                 fontStyle: FontStyle.normal,
                                 fontSize: 10,
@@ -530,7 +533,7 @@ class _RecurringState extends State<Recurring> {
                         appointmentItemHeight: height / 5,
                       ),
 
-                      onTap: calendarTapped,
+                      // onTap: calendarTapped,
                       todayHighlightColor: Styles.buttonColor,
                       todayTextStyle: const TextStyle(
                           color: Colors.black,
@@ -545,15 +548,15 @@ class _RecurringState extends State<Recurring> {
                         shape: BoxShape.rectangle,
                       ),
                       appointmentBuilder: appointBuilder,
-                      onLongPress: (details) {
-                        final provider =
-                            Provider.of<EventProvider>(context, listen: false);
+                      // onLongPress: (details) {
+                      //   final provider =
+                      //       Provider.of<EventProvider>(context, listen: false);
 
-                        provider.setDate(details.date!);
+                      //   provider.setDate(details.date!);
 
-                        // showModalBottomSheet(
-                        //     context: context, builder: (context) => RecurringEvent());
-                      },
+                      //   // showModalBottomSheet(
+                      //   //     context: context, builder: (context) => RecurringEvent());
+                      // },
                     ),
                   )
                 ])),
@@ -651,6 +654,14 @@ class _RecurringState extends State<Recurring> {
   //     ),
   //   );
   // }
+  Color darken(Color color, [double amount = .1]) {
+    assert(amount >= 0 && amount <= 1);
+
+    final hsl = HSLColor.fromColor(color);
+    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+
+    return hslDark.toColor();
+  }
 
   Widget appointBuilder(
       BuildContext context, CalendarAppointmentDetails details) {
@@ -660,11 +671,11 @@ class _RecurringState extends State<Recurring> {
     if (event.status == "Done") {
       cardColor = Colors.grey;
     } else if (event.color == "lightcoral") {
-      cardColor = Color(0xFFf08080);
+      cardColor = const Color(0xFFf08080);
     } else if (event.color == "palegoldenrod") {
-      cardColor = Color(0xFFeee8aa);
+      cardColor = const Color(0xFFeee8aa);
     } else {
-      cardColor = Colors.lightGreen;
+      cardColor = const Color(0xFF94ec94);
     }
 
     return GestureDetector(
@@ -673,16 +684,21 @@ class _RecurringState extends State<Recurring> {
             context: context,
             builder: (BuildContext context) {
               return EventEdit(
-                  id: event.recurringId.toString(), user_list: userList);
+                  id: event.recurringId.toString(), user_list: userLists);
             });
       },
       child: Container(
         // width: details.bounds.width,
 
         padding: const EdgeInsets.all(10),
+
         decoration: BoxDecoration(
+          border: Border.all(
+              color: darken(cardColor, .2),
+              width: 4.0,
+              style: BorderStyle.solid),
           color: cardColor,
-          borderRadius: BorderRadius.all(
+          borderRadius: const BorderRadius.all(
             Radius.circular(10),
           ),
           boxShadow: [
@@ -701,42 +717,41 @@ class _RecurringState extends State<Recurring> {
               flex: 1,
               child: Padding(
                 padding: const EdgeInsets.all(2.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("(" + event.status + ")",
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF5b5b5c),
-                            fontWeight: FontWeight.w700,
-                            fontStyle: FontStyle.italic)),
-                    Text(
-                        DateFormat('d/M/y').format(DateTime.parse(event.from)) +
-                            ' - ' +
-                            DateFormat('d/M/y')
-                                .format(DateTime.parse(event.to)),
+                child: SizedBox.expand(
+                  child: Wrap(
+                    direction: Axis.horizontal,
+                    alignment: WrapAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text("(" + event.status + ")",
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF5b5b5c),
+                              fontWeight: FontWeight.w700,
+                              fontStyle: FontStyle.italic)),
+                      Text(
+                        '${DateFormat('d/M/y').format(DateTime.parse(event.from))} - ${DateFormat('d/M/y').format(DateTime.parse(event.to))}',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 12,
                             color: Styles.textColor,
-                            fontWeight: FontWeight.w700)),
-                  ],
+                            fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
             Expanded(
               flex: 1,
               child: Padding(
-                padding: const EdgeInsets.all(2.0),
+                padding: const EdgeInsets.only(right: 2.0, left: 2.0, top: 4.0),
                 child: Text(
-                    DateFormat('hh:mm a').format(DateTime.parse(event.from)) +
-                        ' - ' +
-                        DateFormat('hh:mm a').format(DateTime.parse(event.to)),
+                    '${DateFormat('hh:mm a').format(DateTime.parse(event.from))} - ${DateFormat('hh:mm a').format(DateTime.parse(event.to))}',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         color: Styles.textColor,
                         fontWeight: FontWeight.w700)),
               ),
@@ -744,10 +759,10 @@ class _RecurringState extends State<Recurring> {
             Expanded(
               flex: 3,
               child: Padding(
-                padding: const EdgeInsets.all(5.0),
+                padding: const EdgeInsets.all(4.0),
                 child: Text(event.task,
                     style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Styles.textColor,
                         fontWeight: FontWeight.w700)),
               ),

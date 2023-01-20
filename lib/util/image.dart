@@ -1,7 +1,7 @@
 import 'dart:typed_data';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:flutter/material.dart';
-import 'dart:async';
+
 import 'dart:convert';
 
 class Utility {

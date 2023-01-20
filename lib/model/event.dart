@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
-
 class Event {
   late String category;
+  late String? uniqueNumber;
   late int? recurringId;
   late String subCategory;
   late String type;
@@ -9,6 +8,10 @@ class Event {
   late String task;
   late String from;
   late String to;
+  late String date;
+  late String deadline;
+  late String startTime;
+  late String dueTime;
   late String person;
   late String duration;
   late String priority;
@@ -19,29 +22,38 @@ class Event {
   String? completeDate;
   late String status;
   late String color;
+  String? checkRecurring;
+  String? dependent;
   // final String rule;
 
-  Event({
-    this.recurringId,
-    required this.category,
-    required this.subCategory,
-    required this.type,
-    required this.site,
-    required this.task,
-    required this.from,
-    required this.to,
-    required this.person,
-    required this.duration,
-    required this.priority,
-    required this.recurringOpt,
-    required this.recurringEvery,
-    // this.recurringUntil,
-    this.remark,
-    this.completeDate,
-    required this.status,
-    required this.color,
-    // required this.rule
-  });
+  Event(
+      {this.recurringId,
+      this.uniqueNumber,
+      required this.category,
+      required this.subCategory,
+      required this.type,
+      required this.site,
+      required this.task,
+      required this.from,
+      required this.to,
+      required this.date,
+      required this.deadline,
+      required this.startTime,
+      required this.dueTime,
+      required this.person,
+      required this.duration,
+      required this.priority,
+      required this.recurringOpt,
+      required this.recurringEvery,
+      // this.recurringUntil,
+      this.remark,
+      this.completeDate,
+      required this.status,
+      required this.color,
+      this.checkRecurring,
+      this.dependent
+      // required this.rule
+      });
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
@@ -53,6 +65,10 @@ class Event {
       'task': task,
       'fromD': from,
       'toD': to,
+      'date': date,
+      'deadline': deadline,
+      'startTime': startTime,
+      'dueTime': dueTime,
       'person': person,
       'duration': duration,
       'priority': priority,
@@ -63,6 +79,9 @@ class Event {
       'completeDate': completeDate,
       'status': status,
       'color': color,
+      'uniqueNumber': uniqueNumber,
+      'dependent': dependent,
+      'checkRecurring': checkRecurring,
     };
     return map;
   }
@@ -76,6 +95,10 @@ class Event {
     task = map['task'];
     from = map['fromD'];
     to = map['toD'];
+    date = map['date'];
+    deadline = map['deadline'];
+    startTime = map['startTime'];
+    dueTime = map['dueTime'];
     person = map['person'];
     duration = map['duration'];
     priority = map['priority'];
@@ -86,6 +109,10 @@ class Event {
     completeDate = map['completeDate'];
     status = map['status'];
     color = map['color'];
+    uniqueNumber = map['uniqueNumber'];
+    dependent = map['dependent'];
+    checkRecurring = map['checkRecurring'];
+
     // photoName = map['photoName'];
   }
 }
