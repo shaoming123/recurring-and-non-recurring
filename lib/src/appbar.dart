@@ -13,7 +13,7 @@ import '../util/app_styles.dart';
 import '../util/checkInternet.dart';
 import '../util/conMysql.dart';
 import 'member.dart';
-import 'non_recurring.dart';
+import 'nonRecurringTask.dart';
 import 'notificationList.dart';
 
 class Appbar extends StatefulWidget {
@@ -102,6 +102,7 @@ class _AppbarState extends State<Appbar> {
                             );
                           } else if (widget.title == "Non-Recurring") {
                             await Controller().addNonRecurringToSqlite();
+
                             if (!mounted) return;
                             Navigator.pushReplacement(
                               context,

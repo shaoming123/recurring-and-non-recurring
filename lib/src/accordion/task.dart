@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 
 import 'package:ipsolution/src/dialogBox/nonRecurringAdd.dart';
 import 'package:ipsolution/src/dialogBox/nonRecurringEdit.dart';
-import 'package:ipsolution/src/non_recurring.dart';
+import 'package:ipsolution/src/nonRecurringTask.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,7 +18,6 @@ import 'package:http/http.dart' as http;
 import '../../util/conMysql.dart';
 
 class Task extends StatefulWidget {
-
   List<Map<String, dynamic>> foundNonRecurring;
   List<Map<String, dynamic>> LatenonRecurring;
   List<Map<String, dynamic>> ActivenonRecurring;
@@ -26,7 +25,6 @@ class Task extends StatefulWidget {
 
   Task({
     Key key,
-  
     @required this.foundNonRecurring,
     @required this.LatenonRecurring,
     @required this.ActivenonRecurring,
@@ -37,7 +35,6 @@ class Task extends StatefulWidget {
 }
 
 class _TaskState extends State<Task> {
- 
   List<Map<String, dynamic>> foundNonRecurring;
   List<Map<String, dynamic>> LatenonRecurring;
   List<Map<String, dynamic>> ActivenonRecurring;

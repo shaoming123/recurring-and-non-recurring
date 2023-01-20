@@ -16,7 +16,7 @@ import '../../util/checkInternet.dart';
 import '../../util/conMysql.dart';
 import '../../util/datetime.dart';
 import '../../util/selection.dart';
-import '../non_recurring.dart';
+import '../nonRecurringTask.dart';
 import 'package:http/http.dart' as http;
 
 class addNonRecurring extends StatefulWidget {

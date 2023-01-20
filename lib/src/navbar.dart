@@ -9,7 +9,8 @@ import 'package:ipsolution/src/Login.dart';
 import 'package:ipsolution/src/account.dart';
 import 'package:ipsolution/src/dashboard.dart';
 import 'package:ipsolution/src/member.dart';
-import 'package:ipsolution/src/non_recurring.dart';
+import 'package:ipsolution/src/nonRecurringTask.dart';
+import 'package:ipsolution/src/nonRecurringTeam.dart';
 import 'package:ipsolution/src/recurrring.dart';
 
 import 'package:ipsolution/util/app_styles.dart';
@@ -18,6 +19,8 @@ import 'package:http/http.dart' as http;
 import '../databaseHandler/DbHelper.dart';
 
 import 'package:url_launcher/url_launcher.dart';
+
+import 'card/teamTask.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({Key key}) : super(key: key);
@@ -191,15 +194,40 @@ class _NavbarState extends State<Navbar> {
               title: const Text('Recurring'),
               onTap: () => Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (context) => const Recurring()))),
-          ListTile(
+          ExpansionTile(
             leading: const Icon(Icons.low_priority),
             title: const Text('Non-Recurring'),
-            onTap: () {
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const NonRecurring()));
-            },
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(left: 20.0),
+                child: ListTile(
+                  leading: const Icon(Icons.task),
+                  title: const Text('Task Overview'),
+                  onTap: () {
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const NonRecurring()));
+                  },
+                ),
+              ),
+              userRole != 'Staff'
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: 20.0),
+                      child: ListTile(
+                        leading: const Icon(Icons.multiple_stop),
+                        title: const Text('Team Status Overview'),
+                        onTap: () {
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const NonRecurringTeam()));
+                        },
+                      ),
+                    )
+                  : Container(),
+            ],
           ),
           ListTile(
             leading: const Icon(Icons.receipt_long),

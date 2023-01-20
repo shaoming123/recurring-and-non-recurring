@@ -56,17 +56,17 @@ class nonRecurring {
 
   nonRecurring.fromMap(Map<String, dynamic> map) {
     category = map['category'];
-    subCategory = map['subCategory'];
-    nonRecurringId = map['nonRecurringId'];
+    subCategory = map['subcategory'];
+    nonRecurringId = int.parse(map['id']);
     type = map['type'];
     site = map['site'];
     task = map['task'];
     owner = map['owner'];
-    startDate = map['startDate'];
-    due = map['due'];
-    modify = map['modify'];
-    remark = map['remark'];
-    completeDate = map['completeDate'];
+    startDate = map['createdDate'];
+    due = map['deadline'];
+    modify = map['lastMod'];
+    remark = map['remarks'];
+    completeDate = map['completedDate'];
 
     checked = map['checked'];
     personCheck = map['personCheck'];

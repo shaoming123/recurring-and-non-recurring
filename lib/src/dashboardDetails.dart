@@ -269,7 +269,9 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                                                       "$dayLeft DAYS LEFT",
                                                       style:
                                                           Styles.dayLeftActive,
-                                                    )))
+                                                    )
+                                                    
+                                                    ))
                                   : null,
                               children: <Widget>[
                                 Container(

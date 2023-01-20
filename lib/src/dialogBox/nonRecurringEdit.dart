@@ -17,7 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../util/checkInternet.dart';
 import '../../util/conMysql.dart';
 import '../../util/datetime.dart';
-import '../non_recurring.dart';
+import '../nonRecurringTask.dart';
 
 class editNonRecurring extends StatefulWidget {
   final String id;

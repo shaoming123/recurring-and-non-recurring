@@ -14,7 +14,7 @@ import '../../util/checkInternet.dart';
 import '../../util/conMysql.dart';
 import '../dialogBox/nonRecurringAdd.dart';
 import '../dialogBox/nonRecurringEdit.dart';
-import '../non_recurring.dart';
+import '../nonRecurringTask.dart';
 
 class TeamTask extends StatefulWidget {
   const TeamTask({Key key}) : super(key: key);

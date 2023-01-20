@@ -96,6 +96,7 @@ class DbHelper {
 
   initDb() async {
     io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
+
     String path = join(documentsDirectory.path, DB_Name);
 
     var db = await openDatabase(path, version: Version, onCreate: _onCreate);

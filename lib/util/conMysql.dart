@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/model/user.dart';
+import 'package:ipsolution/src/nonRecurringTask.dart';
 
 import '../databaseHandler/DbHelper.dart';
 import '../model/nonRecurring.dart';
@@ -107,7 +108,7 @@ class Controller {
           checked: nonrecurringData[i]["checked"],
           personCheck: nonrecurringData[i]["personCheck"]);
 
-      // await dbHelper.addNonRecurring(datanonRecurring);
+      await dbHelper.addNonRecurring(datanonRecurring);
     }
   }
 
@@ -148,50 +149,53 @@ class Controller {
     // }
   }
 
-  // var receivePort = ReceivePort();
-  // Future getNonRecurring() async {
-  //   final receivePort = ReceivePort();
+//   Future syncData() async {
+//     var response = await http.post(
+//         Uri.parse(
+//             'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php'),
+//         body: {'tableName': 'nonrecurring'});
 
-  //   List nonrecurringData = [];
-  //   await Internet.isInternet().then((connection) async {
-  //     if (connection) {
-  //       var url =
-  //           'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
+//     if (response.statusCode == 200) {
+//       List sqliteIdsList = [];
+//       List mysqlIdslist = [];
+//       List deletedIds = [];
 
-  //       var response = await http
-  //           .post(Uri.parse(url), body: {"tableName": "nonrecurring"});
-  //       nonrecurringData = await json.decode(response.body);
-  //       for (int i = 0; i < nonrecurringData.length; i++) {
-  //         nonrecurringData[i]['nonRecurringId'] = nonrecurringData[i]['id'];
-  //         nonrecurringData[i]['startDate'] = nonrecurringData[i]['createdDate'];
-  //         nonrecurringData[i]['subCategory'] =
-  //             nonrecurringData[i]['subcategory'];
-  //         nonrecurringData[i]['due'] = nonrecurringData[i]['deadline'];
-  //         nonrecurringData[i]['remark'] = nonrecurringData[i]['remarks'];
-  //         nonrecurringData[i]['modify'] = nonrecurringData[i]['lastMod'];
-  //         nonrecurringData[i]['completeDate'] =
-  //             nonrecurringData[i]['completedDate'];
-  //         nonrecurringData[i].remove('id');
-  //         nonrecurringData[i].remove('createdDate');
-  //         nonrecurringData[i].remove('deadline');
-  //         nonrecurringData[i].remove('remarks');
-  //         nonrecurringData[i].remove('lastMod');
-  //         nonrecurringData[i].remove('completedDate');
-  //       }
-  //       await Isolate.spawn(
-  //           insertData, [receivePort.sendPort, nonrecurringData]);
-  //     } else {
-  //       nonrecurringData = await dbHelper.fetchAllNonRecurring();
-  //     }
-  //   });
-  //   return nonrecurringData;
-  // }
+// // Parse JSON data
+//       final data = json.decode(response.body);
 
-  // void insertData(List<dynamic> args) async {
-  //   ReceivePort receivePort = ReceivePort();
-  //   var sendPort = args[0] as SendPort;
+//       final sqliteIds = await dbHelper.fetchAllNonRecurring();
 
-  //   DbHelper().addNonRecurring(args[1]);
-  //   Isolate.exit(sendPort, args);
-  // }
+//       var mysqlResponse = await http.post(
+//           Uri.parse(
+//               'https://ipsolutions4u.com/ipsolutions/recurringMobile/get_ids.php'),
+//           body: {'tableName': 'nonrecurring'});
+
+//       if (mysqlResponse.statusCode == 200) {
+//         sqliteIdsList = sqliteIds.map((e) => e['nonRecurringId']).toList();
+//         mysqlIdslist = await json.decode(mysqlResponse.body);
+
+//         // Insert or update data in SQLite database
+//         for (var item in data) {
+//           final existing =
+//               await dbHelper.fetchANonRecurring(int.parse(item['id']));
+
+//           if (existing.length > 0) {
+//             await dbHelper.updateNonRecurring(nonRecurring.fromMap(item));
+//             sqliteIdsList.remove(item);
+//           } else {
+//             await dbHelper.addNonRecurring(nonRecurring.fromMap(item));
+//           }
+//         }
+
+//         deletedIds = sqliteIdsList
+//             .where((i) => !mysqlIdslist.contains(i.toString()))
+//             .toList();
+
+//         // delete the missing ids from SQLite
+//         for (var id in deletedIds) {
+//           await dbHelper.deleteNonRecurring(id);
+//         }
+//       }
+//     }
+//   }
 }
