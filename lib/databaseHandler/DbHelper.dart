@@ -1,12 +1,11 @@
 //@dart=2.9
-import 'package:ipsolution/model/event.dart';
+
 import 'package:ipsolution/model/user.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:io' as io;
-import '../model/nonRecurring.dart';
-import '../model/notification.dart';
+
 
 class DbHelper {
   static Database _db;
@@ -119,34 +118,6 @@ class DbHelper {
         " $C_File TEXT, "
         " $C_Active TEXT "
         ")");
-    await db.execute("CREATE TABLE $Table_Event ("
-        " $recurringId INTEGER PRIMARY KEY, "
-        " $category TEXT, "
-        " $subCategory TEXT, "
-        " $type TEXT, "
-        " $site TEXT, "
-        " $task TEXT, "
-        " $date TEXT, "
-        " $deadline TEXT, "
-        " $start TEXT, "
-        " $end TEXT, "
-        " $from TEXT, "
-        " $to TEXT, "
-        " $duration TEXT, "
-        " $priority TEXT, "
-        " $color TEXT, "
-        " $recurringOpt TEXT, "
-        " $recurringEvery TEXT, "
-        " $remark TEXT, "
-        " $completeDate TEXT, "
-        " $dependent TEXT, "
-        " $uniqueNumber TEXT, "
-        " $checkRecurring TEXT, "
-        " $status TEXT, "
-        " $person TEXT "
-        ")");
-    await db.execute(
-        "CREATE TABLE $Table_NonRecurring($nonRecurringId INTEGER PRIMARY KEY, $noncategory TEXT, $nonsubCategory TEXT, $nontype TEXT,$nonsite TEXT,$nontask TEXT ,$owner TEXT ,$startDate TEXT,$due TEXT,$modify TEXT, $nonremark TEXT, $noncompleteDate TEXT, $checked TEXT, $personCheck TEXT, $nonstatus TEXT)");
     await db.execute(
         "CREATE TABLE $Table_Notification($notificationId INTEGER PRIMARY KEY, $notificationOwner TEXT, $assigner TEXT, $notificationTask TEXT,$notificationDeadline TEXT,$notificationType TEXT ,$noted TEXT)");
     await db.execute(
@@ -253,106 +224,106 @@ class DbHelper {
   }
 
   // Recurring
-  Future<int> addEvent(Event item) async {
-    var dbClient = await db;
-    //open database
+  // Future<int> addEvent(Event item) async {
+  //   var dbClient = await db;
+  //   //open database
 
-    var res = await dbClient.insert(
-      Table_Event, item.toMap(), //toMap() function from MemoModel
-      conflictAlgorithm:
-          ConflictAlgorithm.ignore, //ignores conflicts due to duplicate entries
-    );
+  //   var res = await dbClient.insert(
+  //     Table_Event, item.toMap(), //toMap() function from MemoModel
+  //     conflictAlgorithm:
+  //         ConflictAlgorithm.ignore, //ignores conflicts due to duplicate entries
+  //   );
 
-    return res;
-  }
+  //   return res;
+  // }
 
-  Future<List<Map<String, dynamic>>> fetchAEvent(int id) async {
-    var dbClient = await db;
-    return dbClient.query(Table_Event,
-        where: "$recurringId = ?", whereArgs: [id], limit: 1);
-  }
+  // Future<List<Map<String, dynamic>>> fetchAEvent(int id) async {
+  //   var dbClient = await db;
+  //   return dbClient.query(Table_Event,
+  //       where: "$recurringId = ?", whereArgs: [id], limit: 1);
+  // }
 
-  Future<List<Map<String, dynamic>>> fetchAllEvent() async {
-    var dbClient = await db;
-    return dbClient.query(Table_Event, orderBy: recurringId);
-  }
+  // Future<List<Map<String, dynamic>>> fetchAllEvent() async {
+  //   var dbClient = await db;
+  //   return dbClient.query(Table_Event, orderBy: recurringId);
+  // }
 
-  Future<int> deleteEvent(int recurring_Id) async {
-    //returns number of items deleted
-    final dbClient = await db; //open database
+  // Future<int> deleteEvent(int recurring_Id) async {
+  //   //returns number of items deleted
+  //   final dbClient = await db; //open database
 
-    var res = await dbClient.delete(Table_Event,
-        where: '$recurringId = ?', whereArgs: [recurring_Id]);
+  //   var res = await dbClient.delete(Table_Event,
+  //       where: '$recurringId = ?', whereArgs: [recurring_Id]);
 
-    return res;
-  }
+  //   return res;
+  // }
 
-  Future<int> updateEvent(Event item) async {
-    // returns the number of rows updated
+  // Future<int> updateEvent(Event item) async {
+  //   // returns the number of rows updated
 
-    final dbClient = await db; //open database
+  //   final dbClient = await db; //open database
 
-    var res = await dbClient.update(Table_Event, item.toMap(),
-        where: '$recurringId = ?', whereArgs: [item.recurringId]);
-    return res;
-  }
+  //   var res = await dbClient.update(Table_Event, item.toMap(),
+  //       where: '$recurringId = ?', whereArgs: [item.recurringId]);
+  //   return res;
+  // }
 
-  Future<int> deleteAllEvent() async {
-    var dbClient = await db;
-    var res = await dbClient.delete(Table_Event);
-    return res;
-  }
+  // Future<int> deleteAllEvent() async {
+  //   var dbClient = await db;
+  //   var res = await dbClient.delete(Table_Event);
+  //   return res;
+  // }
 
-  /*end recurring*/
+  // /*end recurring*/
 
-  // Non-Recurring
-  Future<int> addNonRecurring(nonRecurring item) async {
-    var dbClient = await db;
-    var res = await dbClient.insert(
-      Table_NonRecurring, item.toMap(), //toMap() function from MemoModel
-      conflictAlgorithm:
-          ConflictAlgorithm.ignore, //ignores conflicts due to duplicate entries
-    );
+  // // Non-Recurring
+  // Future<int> addNonRecurring(nonRecurring item) async {
+  //   var dbClient = await db;
+  //   var res = await dbClient.insert(
+  //     Table_NonRecurring, item.toMap(), //toMap() function from MemoModel
+  //     conflictAlgorithm:
+  //         ConflictAlgorithm.ignore, //ignores conflicts due to duplicate entries
+  //   );
 
-    return res;
-  }
+  //   return res;
+  // }
 
-  Future<List<Map<String, dynamic>>> fetchANonRecurring(int id) async {
-    var dbClient = await db;
-    return dbClient.query(Table_NonRecurring,
-        where: "$nonRecurringId = ?", whereArgs: [id], limit: 1);
-  }
+  // Future<List<Map<String, dynamic>>> fetchANonRecurring(int id) async {
+  //   var dbClient = await db;
+  //   return dbClient.query(Table_NonRecurring,
+  //       where: "$nonRecurringId = ?", whereArgs: [id], limit: 1);
+  // }
 
-  Future<List<Map<String, dynamic>>> fetchAllNonRecurring() async {
-    var dbClient = await db;
-    return dbClient.query(Table_NonRecurring, orderBy: nonRecurringId);
-  }
+  // Future<List<Map<String, dynamic>>> fetchAllNonRecurring() async {
+  //   var dbClient = await db;
+  //   return dbClient.query(Table_NonRecurring, orderBy: nonRecurringId);
+  // }
 
-  Future<int> deleteNonRecurring(int id) async {
-    //returns number of items deleted
-    final dbClient = await db; //open database
+  // Future<int> deleteNonRecurring(int id) async {
+  //   //returns number of items deleted
+  //   final dbClient = await db; //open database
 
-    var res = await dbClient.delete(Table_NonRecurring,
-        where: '$nonRecurringId = ?', whereArgs: [id]);
+  //   var res = await dbClient.delete(Table_NonRecurring,
+  //       where: '$nonRecurringId = ?', whereArgs: [id]);
 
-    return res;
-  }
+  //   return res;
+  // }
 
-  Future<int> deleteAllNonRecurring() async {
-    var dbClient = await db;
-    var res = await dbClient.delete(Table_NonRecurring);
-    return res;
-  }
+  // Future<int> deleteAllNonRecurring() async {
+  //   var dbClient = await db;
+  //   var res = await dbClient.delete(Table_NonRecurring);
+  //   return res;
+  // }
 
-  Future<int> updateNonRecurring(nonRecurring item) async {
-    // returns the number of rows updated
+  // Future<int> updateNonRecurring(nonRecurring item) async {
+  //   // returns the number of rows updated
 
-    final dbClient = await db; //open database
+  //   final dbClient = await db; //open database
 
-    var res = await dbClient.update(Table_NonRecurring, item.toMap(),
-        where: '$nonRecurringId = ?', whereArgs: [item.nonRecurringId]);
-    return res;
-  }
+  //   var res = await dbClient.update(Table_NonRecurring, item.toMap(),
+  //       where: '$nonRecurringId = ?', whereArgs: [item.nonRecurringId]);
+  //   return res;
+  // }
   /*end non-recurring*/
 
   /*start notification*/

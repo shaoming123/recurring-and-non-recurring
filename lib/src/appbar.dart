@@ -1,19 +1,15 @@
 //@dart=2.9
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
+
 import 'package:gap/gap.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/notification.dart';
-import 'package:ipsolution/src/dashboard.dart';
-import 'package:ipsolution/src/recurrring.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../util/app_styles.dart';
-import '../util/checkInternet.dart';
-import '../util/conMysql.dart';
-import 'member.dart';
-import 'nonRecurringTask.dart';
+
 import 'notificationList.dart';
 
 class Appbar extends StatefulWidget {
@@ -72,74 +68,73 @@ class _AppbarState extends State<Appbar> {
             ),
             onPressed: () => widget.scaffoldKey.currentState.openDrawer(),
           ),
-          const Gap(20),
           Text(widget.title, style: Styles.title),
           Row(
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  InkWell(
-                    child:
-                        const Icon(Icons.sync, color: Colors.black, size: 20),
-                    onTap: () async {
-                      await Internet.isInternet().then((connection) async {
-                        if (connection) {
-                          EasyLoading.show(
-                            status: 'Sync data...',
-                            maskType: EasyLoadingMaskType.black,
-                          );
-                          await Controller().addNotificationDateToSqlite();
+              // Column(
+              //   mainAxisSize: MainAxisSize.min,
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     InkWell(
+              //       child:
+              //           const Icon(Icons.sync, color: Colors.black, size: 20),
+              //       onTap: () async {
+              //         await Internet.isInternet().then((connection) async {
+              //           if (connection) {
+              //             EasyLoading.show(
+              //               status: 'Sync data...',
+              //               maskType: EasyLoadingMaskType.black,
+              //             );
+              //             await Controller().addNotificationDateToSqlite();
 
-                          if (widget.title == "Recurring") {
-                            await Controller().addRecurringToSqlite();
-                            if (!mounted) return;
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const Recurring()),
-                            );
-                          } else if (widget.title == "Non-Recurring") {
-                            await Controller().addNonRecurringToSqlite();
+              //             if (widget.title == "Recurring") {
+              //               await Controller().addRecurringToSqlite();
+              //               if (!mounted) return;
+              //               Navigator.pushReplacement(
+              //                 context,
+              //                 MaterialPageRoute(
+              //                     builder: (context) => const Recurring()),
+              //               );
+              //             } else if (widget.title == "Non-Recurring") {
+              //               await Controller().addNonRecurringToSqlite();
 
-                            if (!mounted) return;
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const NonRecurring()),
-                            );
-                          } else if (widget.title == "Dashboard") {
-                            await Controller().addRecurringToSqlite();
-                            await Controller().addNonRecurringToSqlite();
+              //               if (!mounted) return;
+              //               Navigator.pushReplacement(
+              //                 context,
+              //                 MaterialPageRoute(
+              //                     builder: (context) => const NonRecurring()),
+              //               );
+              //             } else if (widget.title == "Dashboard") {
+              //               await Controller().addRecurringToSqlite();
+              //               await Controller().addNonRecurringToSqlite();
 
-                            if (!mounted) return;
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const Dashboard()),
-                            );
-                          } else if (widget.title == "Member") {
-                            await Controller().addDataToSqlite();
-                            if (!mounted) return;
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const Member()),
-                            );
-                          }
+              //               if (!mounted) return;
+              //               Navigator.pushReplacement(
+              //                 context,
+              //                 MaterialPageRoute(
+              //                     builder: (context) => const Dashboard()),
+              //               );
+              //             } else if (widget.title == "Member") {
+              //               await Controller().addDataToSqlite();
+              //               if (!mounted) return;
+              //               Navigator.pushReplacement(
+              //                 context,
+              //                 MaterialPageRoute(
+              //                     builder: (context) => const Member()),
+              //               );
+              //             }
 
-                          EasyLoading.showSuccess('Done');
-                        }
-                      });
-                    },
-                  ),
-                  const Text(
-                    "Sync data",
-                    style: TextStyle(fontSize: 10),
-                  )
-                ],
-              ),
+              //             EasyLoading.showSuccess('Done');
+              //           }
+              //         });
+              //       },
+              //     ),
+              //     const Text(
+              //       "Sync data",
+              //       style: TextStyle(fontSize: 10),
+              //     )
+              //   ],
+              // ),
               const Gap(15),
               Container(
                 margin: const EdgeInsets.only(right: 10),

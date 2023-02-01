@@ -1,5 +1,4 @@
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/material.dart';
+
 
 class Search {
   List<List<Map<String, dynamic>>> searchResult(
@@ -23,7 +22,7 @@ class Search {
               data["category"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["subCategory"]
+              data["subcategory"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
               data["type"]
@@ -38,16 +37,16 @@ class Search {
               data["owner"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["due"]
+              data["deadline"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["startDate"]
+              data["createdDate"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["modify"]
+              data["lastMod"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["remark"]
+              data["remarks"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
               data["status"]
@@ -60,7 +59,7 @@ class Search {
               data["category"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["subCategory"]
+              data["subcategory"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
               data["type"]
@@ -75,16 +74,16 @@ class Search {
               data["owner"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["due"]
+              data["deadline"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["startDate"]
+              data["createdDate"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["modify"]
+              data["lastMod"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["remark"]
+              data["remarks"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
               data["status"]
@@ -98,7 +97,7 @@ class Search {
               data["category"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["subCategory"]
+              data["subcategory"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
               data["type"]
@@ -113,16 +112,16 @@ class Search {
               data["owner"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["due"]
+              data["deadline"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["startDate"]
+              data["createdDate"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["modify"]
+              data["lastMod"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["remark"]
+              data["remarks"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
               data["personCheck"]
@@ -139,7 +138,7 @@ class Search {
               data["category"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["subCategory"]
+              data["subcategory"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
               data["type"]
@@ -154,16 +153,16 @@ class Search {
               data["owner"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["due"]
+              data["deadline"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["startDate"]
+              data["createdDate"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["modify"]
+              data["lastMod"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
-              data["remark"]
+              data["remarks"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
               data["status"]

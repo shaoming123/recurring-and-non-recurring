@@ -6,13 +6,15 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:ipsolution/databaseHandler/CloneHelper.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/event.dart';
 import '../../model/selection.dart';
 import '../../util/checkInternet.dart';
-import '../../util/conMysql.dart';
+
+import '../../util/cloneData.dart';
 import '../../util/datetime.dart';
 import '../../util/selection.dart';
 import '../recurrring.dart';
@@ -29,7 +31,8 @@ class EventEdit extends StatefulWidget {
 
 class _EventEditState extends State<EventEdit> {
   DbHelper dbHelper = DbHelper();
-  int recurringId;
+  CloneHelper cloneHelper = CloneHelper();
+  String recurringId;
   DateTime recurringDate;
   DateTime completeDate;
   String _selectedStatus = '';
@@ -69,13 +72,12 @@ class _EventEditState extends State<EventEdit> {
   List<TypeSelect> typeList = <TypeSelect>[];
   TypeSelect typeselect;
   dynamic _selectedCategory;
-  String _selectedSubCategory;
+  String _selectedSubCategory = '';
   List<String> _selectedData = [];
   @override
   void initState() {
-    getEditData(int.parse(widget.id));
-
     Future.delayed(Duration.zero, () async {
+      await getEditData(int.parse(widget.id));
       await Internet.isInternet().then((connection) async {
         setState(() {
           internet = connection;
@@ -128,8 +130,21 @@ class _EventEditState extends State<EventEdit> {
 
   Future<void> getEditData(int id) async {
     final SharedPreferences sp = await _pref;
-    event_edit = await dbHelper.fetchAEvent(id);
-    event_data = await dbHelper.fetchAllEvent();
+
+    List event_edit = [];
+    List event_data = [];
+
+    await Internet.isInternet().then((connection) async {
+      if (connection) {
+        event_edit = await Controller().getAOnlineRecurring(id);
+        event_data = await Controller().getOnlineRecurring();
+      } else {
+        event_edit = await cloneHelper.fetchARecurring(id);
+
+        event_data = await cloneHelper.fetchRecurringData();
+      }
+    });
+
     String userRole = sp.getString("role");
     String currentUserSiteLead = sp.getString("siteLead");
 
@@ -137,12 +152,13 @@ class _EventEditState extends State<EventEdit> {
     userList = [];
 
     setState(() {
-      recurringId = event_edit[0]['recurringId'];
-      fromDate = DateTime.parse(event_edit[0]['fromD']);
-      toDate = DateTime.parse(event_edit[0]['toD']);
+      recurringId = event_edit[0]['id'].toString();
+
+      fromDate = DateTime.parse(event_edit[0]['start']);
+      toDate = DateTime.parse(event_edit[0]['end']);
       _selectedData = event_edit[0]['category'].split("|");
 
-      _selectedSubCategory = event_edit[0]['subCategory'];
+      _selectedSubCategory = event_edit[0]['subcategory'];
       _selectedType = event_edit[0]['type'];
       _selectedSite = event_edit[0]['site'];
       _selectedPriority = event_edit[0]['priority'];
@@ -150,18 +166,19 @@ class _EventEditState extends State<EventEdit> {
       selectedUsers = event_edit[0]['person'].split(',');
       taskController.text = event_edit[0]['task'];
       durationController.text = event_edit[0]['duration'];
-      _selectedRecurring = event_edit[0]['recurringOpt'];
-      recurringController.text = event_edit[0]['recurringEvery'];
-      remarkController.text = event_edit[0]['remark'];
+      _selectedRecurring = event_edit[0]['recurring'];
+      recurringController.text = event_edit[0]['recurringGap'];
+      remarkController.text = event_edit[0]['remarks'];
       // recurringDate = DateTime.parse(event_edit[0]['recurringUntil']);
 
-      if (event_edit[0]['completeDate'] != null &&
-          (event_edit[0]['completeDate']) != '') {
-        completeDate = DateTime.parse(event_edit[0]['completeDate']);
+      if (event_edit[0]['completedDate'] != null &&
+          (event_edit[0]['completedDate']) != '') {
+        completeDate = DateTime.parse(event_edit[0]['completedDate']);
       }
-
+      // print(selectedUsers);
       //User List
       userList.addAll(selectedUsers);
+
       List functionData = sp.getString("position").split(",");
 
       for (int i = 0; i < userData.length; i++) {
@@ -192,19 +209,18 @@ class _EventEditState extends State<EventEdit> {
           }
         }
       }
+      userList = userList.toSet().toList();
 
       // List<String> modifiedList = widget.user_list
       //   ..removeWhere((item) => item == 'All');
-
-      // print(userLists);
     });
 
-    String uniqueNumber = event_edit[0]['uniqueNumber'];
+    String uniqueNumber = event_edit[0]['unique'];
     String dependent = event_edit[0]['dependent'];
 
     for (var item in event_data) {
-      if (item["recurringId"] != recurringId &&
-          uniqueNumber == item["uniqueNumber"] &&
+      if (item["id"].toString() != recurringId &&
+          uniqueNumber == item["unique"] &&
           dependent == item["dependent"]) {
         event_recurring.add(Event.fromMap(item));
       }
@@ -294,7 +310,7 @@ class _EventEditState extends State<EventEdit> {
     }
   }
 
-  Future<void> updateEvent(int recurringId) async {
+  Future<void> updateEvent(String recurringId) async {
     final isValid = _formkey.currentState.validate();
     String selectedUser = selectedUsers.join(",");
     String color;
@@ -453,36 +469,27 @@ class _EventEditState extends State<EventEdit> {
         if (!mounted) return;
 
         FocusScope.of(context).requestFocus(FocusNode());
-        await Internet.isInternet().then((connection) async {
-          if (connection) {
-            EasyLoading.show(
-              status: 'Updating and Loading Data...',
-              maskType: EasyLoadingMaskType.black,
-            );
-            await Controller().addRecurringToSqlite();
-            if (!mounted) return;
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const Recurring()),
-            );
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text("Updated Successfully!"),
-                behavior: SnackBarBehavior.floating,
-                margin: const EdgeInsets.all(20),
-                action: SnackBarAction(
-                  label: 'Dismiss',
-                  disabledTextColor: Colors.white,
-                  textColor: Colors.blue,
-                  onPressed: () {
-                    //Do whatever you want
-                  },
-                ),
-              ),
-            );
-            EasyLoading.showSuccess('Successfully');
-          }
-        });
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Recurring()),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Updated Successfully!"),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
+          ),
+        );
+        EasyLoading.showSuccess('Successfully');
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -502,7 +509,7 @@ class _EventEditState extends State<EventEdit> {
     }
   }
 
-  Future<void> removeEvent(int recurring_Id) async {
+  Future<void> removeEvent(String recurring_Id) async {
     var url =
         'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
 
@@ -524,34 +531,24 @@ class _EventEditState extends State<EventEdit> {
       "id": recurring_Id.toString(),
     });
     if (response.statusCode == 200) {
-      await Internet.isInternet().then((connection) async {
-        if (connection) {
-          EasyLoading.show(
-            status: 'Deleting and Loading Data...',
-            maskType: EasyLoadingMaskType.black,
-          );
-          await Controller().addRecurringToSqlite();
-          if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const Recurring()),
-          );
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: const Text('Successfully deleted!'),
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(20),
-            action: SnackBarAction(
-              label: 'Dismiss',
-              disabledTextColor: Colors.white,
-              textColor: Colors.blue,
-              onPressed: () {
-                //Do whatever you want
-              },
-            ),
-          ));
-          EasyLoading.showSuccess('Successfully');
-        }
-      });
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Recurring()),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Successfully deleted!'),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(20),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          disabledTextColor: Colors.white,
+          textColor: Colors.blue,
+          onPressed: () {
+            //Do whatever you want
+          },
+        ),
+      ));
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -646,7 +643,7 @@ class _EventEditState extends State<EventEdit> {
           child: DropdownButtonFormField2<String>(
             iconSize: 30,
             isExpanded: true,
-            hint: Text(internet ? '' : _selectedSubCategory.toString()),
+            hint: Text(_selectedSubCategory.toString()),
             value: _selectedCategory != null
                 ? _selectedCategory['options'].contains(_selectedSubCategory)
                     ? _selectedSubCategory

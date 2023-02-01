@@ -45,6 +45,7 @@ class _AccountState extends State<Account> {
   String filepath;
   final function = TextEditingController();
   List userData = [];
+  bool isOnline;
   @override
   void initState() {
     super.initState();
@@ -53,6 +54,7 @@ class _AccountState extends State<Account> {
 
   Future<void> getUserData() async {
     final SharedPreferences sp = await _pref;
+    isOnline = await Internet.isInternet();
 
     setState(() {
       userid = sp.getInt("user_id");
@@ -228,8 +230,8 @@ class _AccountState extends State<Account> {
                                     shape: BoxShape.circle,
                                     image: DecorationImage(
                                       fit: BoxFit.cover,
-                                      image: filepath != null
-                                          ? filepath.isNotEmpty
+                                      image: filepath != null && isOnline
+                                          ? filepath.isNotEmpty && isOnline
                                               ? NetworkImage(
                                                       "https://ipsolutions4u.com/ipsolutions/recurring/upload/$filepath")
                                                   as ImageProvider

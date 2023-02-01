@@ -2,17 +2,18 @@
 import 'package:flutter/material.dart';
 
 import 'dart:async';
-import 'dart:math';
 
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
+import 'package:ipsolution/databaseHandler/CloneHelper.dart';
 import 'package:ipsolution/src/card/task.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
-import '../util/conMysql.dart';
+import '../util/checkInternet.dart';
+import '../util/cloneData.dart';
 import 'appbar.dart';
 
 class NonRecurring extends StatefulWidget {
@@ -37,6 +38,7 @@ class _NonRecurringState extends State<NonRecurring> {
   int pendingReview = 0;
   bool arrowChange = false;
   DbHelper dbHelper = DbHelper();
+  CloneHelper cloneHelper = CloneHelper();
   List<Map<String, dynamic>> allNonRecurring = [];
   List<Map<String, dynamic>> foundNonRecurring = [];
   List<Map<String, dynamic>> LatenonRecurring = [];
@@ -50,6 +52,7 @@ class _NonRecurringState extends State<NonRecurring> {
   @override
   void initState() {
     super.initState();
+    cloneHelper.initDb();
     _refresh();
     if (widget.start != null && widget.end != null) {
       startDate = widget.start;
@@ -58,7 +61,15 @@ class _NonRecurringState extends State<NonRecurring> {
   }
 
   Future<void> _refresh() async {
-    final data = await dbHelper.fetchAllNonRecurring();
+    List data = [];
+    await Internet.isInternet().then((connection) async {
+      if (connection) {
+        data = await Controller().getOnlineNonRecurring();
+      } else {
+        data = await cloneHelper.fetchNonrecurringData();
+      }
+    });
+
     // List data;
     // final data = await Controller().getNonRecurring();
 
@@ -75,7 +86,7 @@ class _NonRecurringState extends State<NonRecurring> {
       if (data.isNotEmpty) {
         for (int x = 0; x < data.length; x++) {
           if (data[x]["owner"] == userName) {
-            DateTime dateEnd = DateTime.parse(data[x]["due"]);
+            DateTime dateEnd = DateTime.parse(data[x]["deadline"]);
 
             if ((dateEnd.isAfter(startDate) ||
                     DateFormat.yMd()
@@ -90,7 +101,7 @@ class _NonRecurringState extends State<NonRecurring> {
               final dayLeft = daysBetween(
                   DateTime.parse(
                       DateFormat('yyyy-MM-dd').format(DateTime.now())),
-                  DateTime.parse(data[x]["due"]));
+                  DateTime.parse(data[x]["deadline"]));
               allNonRecurring.add(data[x]);
               foundNonRecurring.add(data[x]);
               if (data[x]["status"] == '100') {

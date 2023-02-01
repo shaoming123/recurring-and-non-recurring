@@ -1,7 +1,9 @@
 //@dart=2.9
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
+import 'package:ipsolution/databaseHandler/CloneHelper.dart';
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/src/dialogBox/eventEdit.dart';
 import 'package:ipsolution/src/navbar.dart';
@@ -11,6 +13,8 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../databaseHandler/DbHelper.dart';
 import '../model/eventDataSource.dart';
 import '../util/app_styles.dart';
+import '../util/checkInternet.dart';
+import '../util/cloneData.dart';
 import 'dialogBox/eventAdd.dart';
 
 class Recurring extends StatefulWidget {
@@ -31,6 +35,7 @@ List<String> currentUserSite = [];
 DbHelper dbHelper = DbHelper();
 List<String> userList = [];
 List<String> userLists = [];
+bool isOnline;
 
 class _RecurringState extends State<Recurring> {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
@@ -38,16 +43,33 @@ class _RecurringState extends State<Recurring> {
   String _selectedFunction = '';
   String _selectedSite = '';
   String userRole = 'Staff';
+  CloneHelper cloneHelper = CloneHelper();
+  List data;
   @override
   void initState() {
     super.initState();
+    cloneHelper.initDb();
     _refreshEvent();
   }
 
   Future<void> _refreshEvent() async {
-    final data = await dbHelper.fetchAllEvent();
-    final userData = await dbHelper.getItems();
+    isOnline = await Internet.isInternet();
+    data = [];
 
+    await Internet.isInternet().then((connection) async {
+      EasyLoading.show(
+        status: 'Loading...',
+        maskType: EasyLoadingMaskType.black,
+      );
+      if (connection) {
+        data = await Controller().getOnlineRecurring();
+      } else {
+        data = await cloneHelper.fetchRecurringData();
+      }
+    });
+
+    final userData = await dbHelper.getItems();
+    EasyLoading.showSuccess('Done');
     final SharedPreferences sp = await _pref;
 
     _selectedFunction = "All";
@@ -144,7 +166,9 @@ class _RecurringState extends State<Recurring> {
   }
 
   Future runFilter() async {
-    final data = await dbHelper.fetchAllEvent();
+    // final data = isOnline
+    //     ? await Controller().getOnlineRecurring()
+    //     : await cloneHelper.fetchRecurringData();
     allEvents = [];
     if (mounted) {
       setState(() {
@@ -340,156 +364,177 @@ class _RecurringState extends State<Recurring> {
                   //         }))
 
                   userRole != 'Staff'
-                      ? Container(
-                          height: 30,
-                          margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white, width: 1),
-                              borderRadius: BorderRadius.circular(5),
-                              color: Colors.white),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton2(
-                              iconSize: 25,
-                              isExpanded: true,
-                              value: _selectedUser == '' ? null : _selectedUser,
-                              selectedItemHighlightColor: Colors.grey,
-                              hint: const Text(
-                                'User',
-                                style: TextStyle(fontSize: 12),
+                      ? Column(
+                          children: [
+                            Container(
+                              height: 30,
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              decoration: BoxDecoration(
+                                  border:
+                                      Border.all(color: Colors.white, width: 1),
+                                  borderRadius: BorderRadius.circular(5),
+                                  color: Colors.white),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton2(
+                                  iconSize: 25,
+                                  isExpanded: true,
+                                  value: _selectedUser == ''
+                                      ? null
+                                      : _selectedUser,
+                                  selectedItemHighlightColor: Colors.grey,
+                                  hint: const Text(
+                                    'User',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  // value: ,
+                                  dropdownMaxHeight: 300,
+                                  items: userList
+                                      .map(
+                                        (e) => DropdownMenuItem(
+                                          value: e,
+                                          child: Text(
+                                            e,
+                                            style:
+                                                const TextStyle(fontSize: 12),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (val) async {
+                                    setState(() {
+                                      _selectedUser = val;
+                                    });
+                                    await runFilter();
+                                  },
+
+                                  icon: const Icon(
+                                    Icons.arrow_drop_down,
+                                    color: Colors.black,
+                                  ),
+                                ),
                               ),
-                              // value: ,
-                              dropdownMaxHeight: 300,
-                              items: userList
-                                  .map(
-                                    (e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(
-                                        e,
-                                        style: const TextStyle(fontSize: 12),
+                            ),
+                            Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      height: 30,
+                                      margin: const EdgeInsets.only(
+                                          bottom: 10, right: 5),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10),
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: Colors.white, width: 1),
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          color: Colors.white),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton2(
+                                          dropdownMaxHeight: 300,
+                                          iconSize: 25,
+                                          isExpanded: true,
+                                          value: _selectedFunction == ''
+                                              ? null
+                                              : _selectedFunction,
+                                          selectedItemHighlightColor:
+                                              Colors.grey,
+                                          hint: const Text(
+                                            'Function',
+                                            style: TextStyle(fontSize: 12),
+                                          ),
+                                          // value: ,
+                                          items: functionList
+                                              .map(
+                                                (e) => DropdownMenuItem(
+                                                  value: e,
+                                                  child: Text(
+                                                    e,
+                                                    style: const TextStyle(
+                                                        fontSize: 12),
+                                                  ),
+                                                ),
+                                              )
+                                              .toList(),
+                                          onChanged: (val) {
+                                            if (mounted) {
+                                              setState(() {
+                                                _selectedFunction = val;
+                                                runFilter();
+                                              });
+                                            }
+                                          },
+                                          icon: const Icon(
+                                            Icons.arrow_drop_down,
+                                            color: Colors.black,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  )
-                                  .toList(),
-                              onChanged: (val) async {
-                                setState(() {
-                                  _selectedUser = val;
-                                });
-                                await runFilter();
-                              },
-
-                              icon: const Icon(
-                                Icons.arrow_drop_down,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
+                                  ),
+                                  Expanded(
+                                    child: Container(
+                                      height: 30,
+                                      margin: const EdgeInsets.only(
+                                          bottom: 10, left: 5),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10),
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: Colors.white, width: 1),
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          color: Colors.white),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton2(
+                                          dropdownMaxHeight: 300,
+                                          iconSize: 25,
+                                          isExpanded: true,
+                                          hint: const Text(
+                                            'Site',
+                                            style: TextStyle(fontSize: 12),
+                                          ),
+                                          value: _selectedSite == ''
+                                              ? null
+                                              : _selectedSite,
+                                          selectedItemHighlightColor:
+                                              Colors.grey,
+                                          items: siteList
+                                              .map(
+                                                (e) => DropdownMenuItem(
+                                                  value: e,
+                                                  child: Text(
+                                                    e,
+                                                    style: const TextStyle(
+                                                        fontSize: 12),
+                                                  ),
+                                                ),
+                                              )
+                                              .toList(),
+                                          onChanged: (val) {
+                                            if (mounted) {
+                                              setState(() {
+                                                _selectedSite = val;
+                                                runFilter();
+                                              });
+                                            }
+                                          },
+                                          icon: const Icon(
+                                            Icons.arrow_drop_down,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ])
+                          ],
                         )
                       : Container(),
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Container(
-                            height: 30,
-                            margin: const EdgeInsets.only(bottom: 10, right: 5),
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.white, width: 1),
-                                borderRadius: BorderRadius.circular(5),
-                                color: Colors.white),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton2(
-                                dropdownMaxHeight: 300,
-                                iconSize: 25,
-                                isExpanded: true,
-                                value: _selectedFunction == ''
-                                    ? null
-                                    : _selectedFunction,
-                                selectedItemHighlightColor: Colors.grey,
-                                hint: const Text(
-                                  'Function',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                // value: ,
-                                items: functionList
-                                    .map(
-                                      (e) => DropdownMenuItem(
-                                        value: e,
-                                        child: Text(
-                                          e,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (val) {
-                                  if (mounted) {
-                                    setState(() {
-                                      _selectedFunction = val;
-                                      runFilter();
-                                    });
-                                  }
-                                },
-                                icon: const Icon(
-                                  Icons.arrow_drop_down,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            height: 30,
-                            margin: const EdgeInsets.only(bottom: 10, left: 5),
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.white, width: 1),
-                                borderRadius: BorderRadius.circular(5),
-                                color: Colors.white),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton2(
-                                dropdownMaxHeight: 300,
-                                iconSize: 25,
-                                isExpanded: true,
-                                hint: const Text(
-                                  'Site',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                value:
-                                    _selectedSite == '' ? null : _selectedSite,
-                                selectedItemHighlightColor: Colors.grey,
-                                items: siteList
-                                    .map(
-                                      (e) => DropdownMenuItem(
-                                        value: e,
-                                        child: Text(
-                                          e,
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (val) {
-                                  if (mounted) {
-                                    setState(() {
-                                      _selectedSite = val;
-                                      runFilter();
-                                    });
-                                  }
-                                },
-                                icon: const Icon(
-                                  Icons.arrow_drop_down,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ]),
 
                   Expanded(
                     child: SfCalendar(

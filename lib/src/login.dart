@@ -3,15 +3,17 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:ipsolution/databaseHandler/CloneHelper.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/dashboard.dart';
 
 import 'package:ipsolution/util/app_styles.dart';
-import 'package:ipsolution/util/conMysql.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../util/checkInternet.dart';
+import '../util/cloneData.dart';
 import '../util/fade_animation.dart';
 import 'footer.dart';
 
@@ -33,11 +35,6 @@ class _LoginState extends State<Login> {
   DbHelper dbHelper = DbHelper();
   String username;
   String password;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   Future loginForm() async {
     if (_formKey.currentState.validate()) {
@@ -77,28 +74,30 @@ class _LoginState extends State<Login> {
               // await Controller().addNonRecurringToSqlite();
 
               bool firsttimeSetup = await dbHelper.getfirst();
-              if (firsttimeSetup) {
-                if (!mounted) return;
+              EasyLoading.show(
+                status: 'loading...',
+                maskType: EasyLoadingMaskType.black,
+              );
+              await Internet.isInternet().then((connection) async {
+                if (firsttimeSetup) {
+                  if (!mounted) return;
+                  print(firsttimeSetup);
+                  FocusScope.of(context).requestFocus(FocusNode());
 
-                FocusScope.of(context).requestFocus(FocusNode());
-                await Internet.isInternet().then((connection) async {
                   if (connection) {
-                    EasyLoading.show(
-                      status: 'loading...',
-                      maskType: EasyLoadingMaskType.black,
-                    );
                     await dbHelper.addfirst();
                     await Controller().addDataToSqlite();
                     await Controller().addNotificationDateToSqlite();
-                    await Controller().addRecurringToSqlite();
-                    await Controller().addNonRecurringToSqlite();
+                    await CloneHelper().initDb();
+                    // await Controller().addRecurringToSqlite();
+                    // await Controller().addNonRecurringToSqlite();
 
                     // sp.setString("updateTime", DateTime.now().toString());
-                    EasyLoading.showSuccess('Done');
-                  }
-                });
-              }
 
+                  }
+                }
+              });
+              EasyLoading.showSuccess('Done');
               if (!mounted) return;
               Navigator.pushAndRemoveUntil(
                   context,

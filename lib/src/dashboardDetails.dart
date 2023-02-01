@@ -85,7 +85,7 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                   child: ListView(padding: const EdgeInsets.all(8), children: [
                     ...task.map((e) {
                       final dayLeft =
-                          daysBetween(DateTime.now(), DateTime.parse(e["toD"]));
+                          daysBetween(DateTime.now(), DateTime.parse(e["end"]));
                       return Container(
                         margin: const EdgeInsets.only(bottom: 20),
                         padding: const EdgeInsets.all(8),
@@ -157,7 +157,7 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
-                                          "Start Date: ${DateFormat('dd-MM-yyyy hh:mm:ss').format(DateTime.parse(e["fromD"]))}",
+                                          "Start Date: ${DateFormat('dd-MM-yyyy hh:mm:ss').format(DateTime.parse(e["start"]))}",
                                           style: TextStyle(
                                               color: Styles.textColor),
                                         ),
@@ -165,7 +165,7 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
-                                          "Due Date: ${DateFormat('dd-MM-yyyy hh:mm:ss').format(DateTime.parse(e["toD"]))}",
+                                          "Due Date: ${DateFormat('dd-MM-yyyy hh:mm:ss').format(DateTime.parse(e["end"]))}",
                                           style: TextStyle(
                                               color: Styles.textColor),
                                         ),
@@ -197,7 +197,7 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
-                                          "Recurring : ${e["recurringOpt"]}",
+                                          "Recurring : ${e["recurring"]}",
                                           style: TextStyle(
                                               color: Styles.textColor),
                                         ),
@@ -213,8 +213,8 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                     }),
                     // non recurring
                     ...nonRecurring.map((e) {
-                      final dayLeft =
-                          daysBetween(DateTime.now(), DateTime.parse(e["due"]));
+                      final dayLeft = daysBetween(
+                          DateTime.now(), DateTime.parse(e["deadline"]));
                       return Container(
                         margin: const EdgeInsets.only(bottom: 20),
                         padding: const EdgeInsets.all(8),
@@ -269,9 +269,7 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                                                       "$dayLeft DAYS LEFT",
                                                       style:
                                                           Styles.dayLeftActive,
-                                                    )
-                                                    
-                                                    ))
+                                                    )))
                                   : null,
                               children: <Widget>[
                                 Container(
@@ -296,7 +294,7 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
-                                          "Subcategory:  ${e["subCategory"]}",
+                                          "Subcategory:  ${e["subcategory"]}",
                                           style: TextStyle(
                                               color: Styles.textColor),
                                         ),
@@ -320,7 +318,7 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
-                                          "Deadline: ${DateFormat('dd-MM-yyyy').format(DateTime.parse(e["due"]))}",
+                                          "Deadline: ${DateFormat('dd-MM-yyyy').format(DateTime.parse(e["deadline"]))}",
                                           style: TextStyle(
                                               color: Styles.textColor),
                                         ),

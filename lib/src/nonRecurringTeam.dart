@@ -7,8 +7,11 @@ import 'package:ipsolution/databaseHandler/DbHelper.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../databaseHandler/CloneHelper.dart';
 import '../model/eventDataSource.dart';
 import '../util/app_styles.dart';
+import '../util/checkInternet.dart';
+import '../util/cloneData.dart';
 import 'appbar.dart';
 import 'card/teamTask.dart';
 import 'navbar.dart';
@@ -36,6 +39,7 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   DbHelper dbHelper = DbHelper();
+  CloneHelper cloneHelper = CloneHelper();
   DateTime startDate = DateTime(DateTime.now().year, 1, 1);
   DateTime endDate = DateTime(DateTime.now().year + 1, 1, 0);
   String userRole = 'Staff';
@@ -56,6 +60,7 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
   @override
   void initState() {
     super.initState();
+    cloneHelper.initDb();
     // allTeamNonRecurring = [];
     // completedTeamNonRecurring = [];
     // lateTeamNonRecurring = [];
@@ -206,7 +211,14 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
   }
 
   Future<void> getTeamData() async {
-    final data = await dbHelper.fetchAllNonRecurring();
+    List data = [];
+    await Internet.isInternet().then((connection) async {
+      if (connection) {
+        data = await Controller().getOnlineNonRecurring();
+      } else {
+        data = await cloneHelper.fetchNonrecurringData();
+      }
+    });
 
     allTeamNonRecurring = [];
     completedTeamNonRecurring = [];
@@ -215,7 +227,7 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
 
     setState(() {
       for (int x = 0; x < data.length; x++) {
-        DateTime dateEnd = DateTime.parse(data[x]["due"]);
+        DateTime dateEnd = DateTime.parse(data[x]["deadline"]);
         if ((dateEnd.isAfter(startDate) ||
                 DateFormat.yMd()
                         .format(dateEnd)
@@ -227,8 +239,8 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
                         .compareTo(DateFormat.yMd().format(endDate)) ==
                     0)) {
           if (userRole == "Super Admin" || userRole == 'Manager') {
-            final dayLeft =
-                daysBetween(DateTime.now(), DateTime.parse(data[x]["due"]));
+            final dayLeft = daysBetween(
+                DateTime.now(), DateTime.parse(data[x]["deadline"]));
 
             if (data[x]["owner"] == _selectedUser) {
               if (data[x]["site"] == _selectedPosition) {
@@ -255,8 +267,8 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
           } else if (userRole == "Leader" && currentUserSiteLead != '-') {
             if (data[x]["site"] == currentUserSiteLead) {
               if (data[x]["owner"] == _selectedUser) {
-                final dayLeft =
-                    daysBetween(DateTime.now(), DateTime.parse(data[x]["due"]));
+                final dayLeft = daysBetween(
+                    DateTime.now(), DateTime.parse(data[x]["deadline"]));
 
                 allTeamNonRecurring.add(data[x]);
                 if (data[x]["status"] == '100') {
@@ -270,8 +282,8 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
             }
           } else {
             if (data[x]["owner"] == _selectedUser) {
-              final dayLeft =
-                  daysBetween(DateTime.now(), DateTime.parse(data[x]["due"]));
+              final dayLeft = daysBetween(
+                  DateTime.now(), DateTime.parse(data[x]["deadline"]));
 
               allTeamNonRecurring.add(data[x]);
               if (data[x]["status"] == '100') {

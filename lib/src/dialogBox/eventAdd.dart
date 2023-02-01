@@ -20,7 +20,7 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../../model/selection.dart';
 
 import '../../util/checkInternet.dart';
-import '../../util/conMysql.dart';
+
 import '../../util/datetime.dart';
 import 'package:http/http.dart' as http;
 
@@ -445,35 +445,25 @@ class _EventAddState extends State<EventAdd> {
         if (!mounted) return;
 
         FocusScope.of(context).requestFocus(FocusNode());
-        await Internet.isInternet().then((connection) async {
-          if (connection) {
-            EasyLoading.show(
-              status: 'Adding and Loading Data...',
-              maskType: EasyLoadingMaskType.black,
-            );
-            await Controller().addRecurringToSqlite();
-            if (!mounted) return;
 
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const Recurring()),
-            );
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: const Text("Event has been added."),
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.all(20),
-              action: SnackBarAction(
-                label: 'Dismiss',
-                disabledTextColor: Colors.white,
-                textColor: Colors.blue,
-                onPressed: () {
-                  //Do whatever you want
-                },
-              ),
-            ));
-            EasyLoading.showSuccess('Successfully');
-          }
-        });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Recurring()),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text("Event has been added."),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(20),
+          action: SnackBarAction(
+            label: 'Dismiss',
+            disabledTextColor: Colors.white,
+            textColor: Colors.blue,
+            onPressed: () {
+              //Do whatever you want
+            },
+          ),
+        ));
+        EasyLoading.showSuccess('Successfully');
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

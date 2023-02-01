@@ -9,7 +9,6 @@ class Internet {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile) {
       if (await DataConnectionChecker().hasConnection) {
-        // print("Mobile data detected & internet connection confirmed.");
         return true;
       } else {
         // print('No internet :( Reason:');
@@ -18,6 +17,7 @@ class Internet {
     } else if (connectivityResult == ConnectivityResult.wifi) {
       if (await DataConnectionChecker().hasConnection) {
         // print("wifi data detected & internet connection confirmed.");
+
         return true;
       } else {
         // print('No internet :( Reason:');

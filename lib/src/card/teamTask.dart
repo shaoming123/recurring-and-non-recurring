@@ -2,11 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
-
+import 'package:http/http.dart' as http;
 import '../../model/eventDataSource.dart';
 import '../../util/app_styles.dart';
+import '../../util/checkInternet.dart';
 import '../dialogBox/nonRecurringAdd.dart';
 import '../dialogBox/nonRecurringEdit.dart';
+import '../nonRecurringTeam.dart';
 import '../search/nonRecurring.dart';
 
 class Teamtask extends StatefulWidget {
@@ -151,7 +153,7 @@ class _TeamtaskState extends State<Teamtask>
                         context: context,
                         builder: (BuildContext context) {
                           return addNonRecurring(
-                              userName: widget.selectedUser, task: true);
+                              userName: widget.selectedUser, task: false);
                         });
                   }),
                   child: Ink(
@@ -191,6 +193,37 @@ class _TeamtaskState extends State<Teamtask>
         ],
       ),
     );
+  }
+}
+
+Future<void> deleteNonRecurring(int id, context) async {
+  var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
+  final response = await http.post(Uri.parse(url), body: {
+    "dataTable": "nonrecurring",
+    "id": id.toString(),
+  });
+  if (response.statusCode == 200) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const NonRecurringTeam()),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Successfully deleted!'),
+    ));
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: const Text("Delete Unsuccessful !"),
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.all(20),
+      action: SnackBarAction(
+        label: 'Dismiss',
+        disabledTextColor: Colors.white,
+        textColor: Colors.blue,
+        onPressed: () {
+          //Do whatever you want
+        },
+      ),
+    ));
   }
 }
 
@@ -246,7 +279,7 @@ Widget page(label, screenHeight, nonRecurring) {
                 itemCount: nonRecurring.length,
                 itemBuilder: (BuildContext context, int index) {
                   final dayLeft = daysBetween(DateTime.now(),
-                      DateTime.parse(nonRecurring[index]["due"]));
+                      DateTime.parse(nonRecurring[index]["deadline"]));
                   return Container(
                     margin: const EdgeInsets.only(bottom: 20),
                     padding: const EdgeInsets.all(8),
@@ -348,8 +381,8 @@ Widget page(label, screenHeight, nonRecurring) {
                                                     builder:
                                                         (BuildContext context) {
                                                       return editNonRecurring(
-                                                        id: nonRecurring[index][
-                                                                "nonRecurringId"]
+                                                        id: nonRecurring[index]
+                                                                ["id"]
                                                             .toString(),
                                                       );
                                                     });
@@ -359,17 +392,37 @@ Widget page(label, screenHeight, nonRecurring) {
                                               icon: const Icon(
                                                   Icons.delete_outline,
                                                   size: 20),
-                                              onPressed: () {
-                                                showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return editNonRecurring(
-                                                        id: nonRecurring[index][
-                                                                "nonRecurringId"]
-                                                            .toString(),
-                                                      );
-                                                    });
+                                              onPressed: () async {
+                                                await Internet.isInternet()
+                                                    .then((connection) async {
+                                                  if (connection) {
+                                                    await deleteNonRecurring(
+                                                        nonRecurring[index]
+                                                            ["id"],
+                                                        context);
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(SnackBar(
+                                                      content: const Text(
+                                                          "No Internet !"),
+                                                      behavior: SnackBarBehavior
+                                                          .floating,
+                                                      margin:
+                                                          const EdgeInsets.all(
+                                                              20),
+                                                      action: SnackBarAction(
+                                                        label: 'Dismiss',
+                                                        disabledTextColor:
+                                                            Colors.white,
+                                                        textColor: Colors.blue,
+                                                        onPressed: () {
+                                                          //Do whatever you want
+                                                        },
+                                                      ),
+                                                    ));
+                                                  }
+                                                });
                                               },
                                             ),
                                           ],
@@ -381,7 +434,7 @@ Widget page(label, screenHeight, nonRecurring) {
                                                 .split("|")[0]),
                                         const Gap(20),
                                         buildField('Sub-Category	',
-                                            nonRecurring[index]['subCategory']),
+                                            nonRecurring[index]['subcategory']),
                                         const Gap(20),
                                         buildField('Type',
                                             nonRecurring[index]['type']),
@@ -389,17 +442,17 @@ Widget page(label, screenHeight, nonRecurring) {
                                         buildField('Site',
                                             nonRecurring[index]['site']),
                                         const Gap(20),
-                                        buildField(
-                                            'Due', nonRecurring[index]['due']),
+                                        buildField('Due',
+                                            nonRecurring[index]['deadline']),
                                         const Gap(20),
                                         buildField('Stages',
                                             nonRecurring[index]['status']),
                                         const Gap(20),
                                         buildField('Remark',
-                                            nonRecurring[index]['remark']),
+                                            nonRecurring[index]['remarks']),
                                         const Gap(20),
                                         buildField('Last Mod',
-                                            nonRecurring[index]['modify']),
+                                            nonRecurring[index]['lastMod']),
                                         const Gap(10),
                                       ],
                                     ),

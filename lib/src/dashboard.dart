@@ -1,13 +1,17 @@
 //@dart=2.9
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
-import 'package:ipsolution/model/manageUser.dart';
+import 'package:ipsolution/databaseHandler/CloneHelper.dart';
+
 import 'package:ipsolution/src/dashboardDetails.dart';
 import 'package:ipsolution/src/footer.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../util/checkInternet.dart';
+import '../util/cloneData.dart';
 import 'appbar.dart';
 
 class Dashboard extends StatefulWidget {
@@ -35,6 +39,8 @@ class _DashboardState extends State<Dashboard> {
   DateTime dateNow = DateTime.now();
   DateTime startDate;
   DateTime endDate;
+  bool isOnline;
+  CloneHelper cloneHelper = CloneHelper();
   @override
   void initState() {
     super.initState();
@@ -46,11 +52,27 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Future<void> refresh() async {
+    isOnline = await Internet.isInternet();
+    // final data = await CloneHelper().fetchNonrecurringData();
+    // print(data.length);
+
     final SharedPreferences sp = await _pref;
-
-    final taskData = await dbHelper.fetchAllEvent();
-    final nonRecurringData = await dbHelper.fetchAllNonRecurring();
-
+    EasyLoading.show(
+      status: 'loading...',
+      maskType: EasyLoadingMaskType.black,
+    );
+    if (isOnline) {
+      await Controller().addDataToSqlite();
+      await Controller().addNotificationDateToSqlite();
+      await cloneHelper.initDb();
+    }
+    final taskData = isOnline
+        ? await Controller().getOnlineRecurring()
+        : await cloneHelper.fetchRecurringData();
+    final nonRecurringData = isOnline
+        ? await Controller().getOnlineNonRecurring()
+        : await cloneHelper.fetchNonrecurringData();
+    EasyLoading.showSuccess('Done');
     completed = [];
     late = [];
     progress = [];
@@ -72,7 +94,7 @@ class _DashboardState extends State<Dashboard> {
         for (int i = 0; i < personList.length; i++) {
           if (personList[i] == username) {
             DateTime dateStart = DateTime.now(); //YOUR DATE GOES HERE
-            DateTime dateEnd = DateTime.parse(taskData[x]["toD"]);
+            DateTime dateEnd = DateTime.parse(taskData[x]["end"]);
             bool isValidDate = dateStart.isBefore(dateEnd) ||
                 DateFormat.yMd().format(dateStart) ==
                     DateFormat.yMd().format(dateEnd);
@@ -104,7 +126,7 @@ class _DashboardState extends State<Dashboard> {
       for (int x = 0; x < nonRecurringData.length; x++) {
         if (nonRecurringData[x]["owner"] == userName) {
           DateTime dateStart = DateTime.now(); //YOUR DATE GOES HERE
-          DateTime dateEnd = DateTime.parse(nonRecurringData[x]["due"]);
+          DateTime dateEnd = DateTime.parse(nonRecurringData[x]["deadline"]);
           bool isValidDate = dateStart.isBefore(dateEnd) ||
               DateFormat.yMd().format(dateStart) ==
                   DateFormat.yMd().format(dateEnd); // YOUR DATE GOES HERE

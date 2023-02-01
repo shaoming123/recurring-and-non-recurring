@@ -14,8 +14,10 @@ import 'package:ipsolution/util/selection.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../databaseHandler/CloneHelper.dart';
 import '../../util/checkInternet.dart';
-import '../../util/conMysql.dart';
+
+import '../../util/cloneData.dart';
 import '../../util/datetime.dart';
 import '../nonRecurringTask.dart';
 
@@ -39,7 +41,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
   String _selectedType = '';
   DateTime completeDate;
   DateTime modify;
-  List<Map<String, dynamic>> nonRecurring_edit = [];
+  List nonRecurring_edit = [];
   TextEditingController taskController = TextEditingController();
   TextEditingController statusController = TextEditingController();
   TextEditingController remarkController = TextEditingController();
@@ -56,17 +58,19 @@ class _editNonRecurringState extends State<editNonRecurring> {
   List<TypeSelect> typeList = <TypeSelect>[];
   TypeSelect typeselect;
   dynamic _selectedCategory;
-  String _selectedSubCategory;
+  String _selectedSubCategory = '';
   List _selectedData = [];
   String userPosition;
   DbHelper dbHelper = DbHelper();
+  CloneHelper cloneHelper = CloneHelper();
   Future _future;
+  bool isOnline;
   @override
   void initState() {
     super.initState();
 
     _future = Future.delayed(Duration.zero, () async {
-      getDataDetails(int.parse(widget.id));
+      await getDataDetails(int.parse(widget.id));
       await Internet.isInternet().then((connection) async {
         setState(() {
           internet = connection;
@@ -144,7 +148,11 @@ class _editNonRecurringState extends State<editNonRecurring> {
   }
 
   Future<void> getDataDetails(int id) async {
-    nonRecurring_edit = await dbHelper.fetchANonRecurring(id);
+    isOnline = await Internet.isInternet();
+    nonRecurring_edit = isOnline
+        ? await Controller().getAOnlineNonRecurring(id)
+        : await cloneHelper.fetchANonRecurring(id);
+
     final data = await dbHelper.getItems();
 
     setState(() {
@@ -160,30 +168,30 @@ class _editNonRecurringState extends State<editNonRecurring> {
       }
 
       _selectedData = nonRecurring_edit[0]['category'].split("|");
-      _selectedSubCategory = nonRecurring_edit[0]['subCategory'];
+      _selectedSubCategory = nonRecurring_edit[0]['subcategory'];
       _selectedType = nonRecurring_edit[0]['type'];
       _selectedSite = nonRecurring_edit[0]['site'];
       _selectedUser = nonRecurring_edit[0]['owner'];
       statusController.text = nonRecurring_edit[0]['status'];
       taskController.text = nonRecurring_edit[0]['task'];
-      remarkController.text = nonRecurring_edit[0]['remark'];
-      due = DateTime.parse(nonRecurring_edit[0]['due']);
+      remarkController.text = nonRecurring_edit[0]['remarks'];
+      due = DateTime.parse(nonRecurring_edit[0]['deadline']);
 
       if (nonRecurring_edit[0]['personCheck'] != '-') {
         _selectedCheckUser = nonRecurring_edit[0]['personCheck'].split(",");
       }
-      if (nonRecurring_edit[0]['completeDate'] != null &&
-          nonRecurring_edit[0]['completeDate'].isNotEmpty) {
-        completeDate = DateTime.parse(nonRecurring_edit[0]['completeDate']);
+      if (nonRecurring_edit[0]['completedDate'] != null &&
+          nonRecurring_edit[0]['completedDate'].isNotEmpty) {
+        completeDate = DateTime.parse(nonRecurring_edit[0]['completedDate']);
       }
-      if (nonRecurring_edit[0]['startDate'] != null &&
-          nonRecurring_edit[0]['startDate'].isNotEmpty) {
-        startDate = DateTime.parse(nonRecurring_edit[0]['startDate']);
+      if (nonRecurring_edit[0]['createdDate'] != null &&
+          nonRecurring_edit[0]['createdDate'].isNotEmpty) {
+        startDate = DateTime.parse(nonRecurring_edit[0]['createdDate']);
       }
 
-      if (nonRecurring_edit[0]['modify'] != null &&
-          nonRecurring_edit[0]['modify'].isNotEmpty) {
-        modify = DateTime.parse(nonRecurring_edit[0]['modify']);
+      if (nonRecurring_edit[0]['lastMod'] != null &&
+          nonRecurring_edit[0]['lastMod'].isNotEmpty) {
+        modify = DateTime.parse(nonRecurring_edit[0]['lastMod']);
       }
 
       // for (final val in categoryData) {
@@ -334,9 +342,6 @@ class _editNonRecurringState extends State<editNonRecurring> {
               maskType: EasyLoadingMaskType.black,
             );
 
-            // await Controller().syncdata();
-            await Controller().addNonRecurringToSqlite();
-            // if (!mounted) return;
             if (!mounted) return;
 
             Navigator.pushReplacement(

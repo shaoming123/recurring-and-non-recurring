@@ -20,7 +20,7 @@ import '../databaseHandler/DbHelper.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
-import 'card/teamTask.dart';
+import '../util/checkInternet.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({Key key}) : super(key: key);
@@ -38,7 +38,7 @@ class _NavbarState extends State<Navbar> {
   String filepath;
   int userid;
   List userData = [];
-
+  bool isOnline;
   final Uri ipsolutionUrl = Uri.parse('https://ipsolutions4u.com/ipsolutions/');
 
   TapGestureRecognizer _ipsolutionTapRecognizer;
@@ -69,6 +69,7 @@ class _NavbarState extends State<Navbar> {
 
   Future<void> getUserData() async {
     final SharedPreferences sp = await _pref;
+    isOnline = await Internet.isInternet();
     // await Internet.isInternet().then((connection) async {
     //   if (connection) {
     //     await getImage();
@@ -149,8 +150,8 @@ class _NavbarState extends State<Navbar> {
                           //   width: 90,
                           //   height: 90,
                           // ),
-                          filepath != null
-                              ? filepath.isNotEmpty
+                          filepath != null && isOnline
+                              ? filepath.isNotEmpty && isOnline
                                   ? ClipRRect(
                                       borderRadius:
                                           BorderRadius.circular(100.0),

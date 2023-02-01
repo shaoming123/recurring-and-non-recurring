@@ -1,7 +1,7 @@
 class Event {
   late String category;
   late String? uniqueNumber;
-  late int? recurringId;
+  late String recurringId;
   late String subCategory;
   late String type;
   late String site;
@@ -22,12 +22,12 @@ class Event {
   String? completeDate;
   late String status;
   late String color;
-  String? checkRecurring;
+  String checkRecurring = 'false';
   String? dependent;
   // final String rule;
 
   Event(
-      {this.recurringId,
+      {required this.recurringId,
       this.uniqueNumber,
       required this.category,
       required this.subCategory,
@@ -50,7 +50,7 @@ class Event {
       this.completeDate,
       required this.status,
       required this.color,
-      this.checkRecurring,
+      required this.checkRecurring,
       this.dependent
       // required this.rule
       });
@@ -88,13 +88,13 @@ class Event {
 
   Event.fromMap(Map<String, dynamic> map) {
     category = map['category'];
-    subCategory = map['subCategory'];
-    recurringId = map['recurringId'];
+    subCategory = map['subcategory'];
+    recurringId = map['id'].toString();
     type = map['type'];
     site = map['site'];
     task = map['task'];
-    from = map['fromD'];
-    to = map['toD'];
+    from = map['start'];
+    to = map['end'];
     date = map['date'];
     deadline = map['deadline'];
     startTime = map['startTime'];
@@ -102,16 +102,16 @@ class Event {
     person = map['person'];
     duration = map['duration'];
     priority = map['priority'];
-    recurringOpt = map['recurringOpt'];
-    recurringEvery = map['recurringEvery'];
+    recurringOpt = map['recurring'];
+    recurringEvery = map['recurringGap'];
     // recurringUntil = map['recurringUntil'];
-    remark = map['remark'];
-    completeDate = map['completeDate'];
+    remark = map['remarks'];
+    completeDate = map['completedDate'];
     status = map['status'];
     color = map['color'];
-    uniqueNumber = map['uniqueNumber'];
+    uniqueNumber = map['unique'];
     dependent = map['dependent'];
-    checkRecurring = map['checkRecurring'];
+    checkRecurring = 'false';
 
     // photoName = map['photoName'];
   }

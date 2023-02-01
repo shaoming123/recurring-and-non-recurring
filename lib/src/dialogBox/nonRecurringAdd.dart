@@ -2,7 +2,7 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
-import 'package:flutter_easyloading/flutter_easyloading.dart';
+
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -13,7 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/selection.dart';
 import '../../util/checkInternet.dart';
-import '../../util/conMysql.dart';
+
+
 import '../../util/datetime.dart';
 import '../../util/selection.dart';
 import '../nonRecurringTask.dart';
@@ -314,37 +315,24 @@ class _addNonRecurringState extends State<addNonRecurring> {
           if (!mounted) return;
 
           FocusScope.of(context).requestFocus(FocusNode());
-          await Internet.isInternet().then((connection) async {
-            if (connection) {
-              EasyLoading.show(
-                status: 'Adding and Loading Data ...',
-                maskType: EasyLoadingMaskType.black,
-              );
-              // await Controller().syncdata();
-              await Controller().addNonRecurringToSqlite();
 
-              if (!mounted) return;
-
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const NonRecurring()),
-              );
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: const Text("Adding Successful !"),
-                behavior: SnackBarBehavior.floating,
-                margin: const EdgeInsets.all(20),
-                action: SnackBarAction(
-                  label: 'Dismiss',
-                  disabledTextColor: Colors.white,
-                  textColor: Colors.blue,
-                  onPressed: () {
-                    //Do whatever you want
-                  },
-                ),
-              ));
-              EasyLoading.showSuccess('Successfully');
-            }
-          });
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const NonRecurring()),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text("Adding Successful !"),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
+          ));
         } else {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
