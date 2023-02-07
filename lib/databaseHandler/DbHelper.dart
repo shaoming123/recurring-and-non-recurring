@@ -6,14 +6,13 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:io' as io;
 
-
 class DbHelper {
   static Database _db;
 
   final DB_Name = 'sqlite.db';
   final Table_User = 'user_account';
-  final Table_Event = 'recurring_table';
-  final Table_NonRecurring = 'non_recurring';
+  // final Table_Event = 'recurring_table';
+  // final Table_NonRecurring = 'non_recurring';
   final Table_Notification = 'notification';
   int Version = 1;
 
@@ -32,49 +31,49 @@ class DbHelper {
   String C_Active = 'active';
   String C_File = 'filepath';
 
-  //event
-  String recurringId = 'recurringId';
-  String category = 'category';
-  String subCategory = 'subCategory';
-  String type = 'type';
-  String site = 'site';
-  String task = 'task';
-  String from = 'fromD';
-  String to = 'toD';
-  String person = 'person';
-  String duration = 'duration';
-  String priority = 'priority';
-  String recurringOpt = 'recurringOpt';
-  String recurringEvery = 'recurringEvery';
-  String recurringUntil = 'recurringUntil';
-  String remark = 'remark';
-  String completeDate = 'completeDate';
-  String status = 'status';
-  String color = 'color';
-  String date = 'date';
-  String deadline = 'deadline';
-  String start = 'startTime';
-  String end = 'dueTime';
-  String uniqueNumber = 'uniqueNumber';
-  String dependent = 'dependent';
-  String checkRecurring = 'checkRecurring';
+  // //event
+  // String recurringId = 'recurringId';
+  // String category = 'category';
+  // String subCategory = 'subCategory';
+  // String type = 'type';
+  // String site = 'site';
+  // String task = 'task';
+  // String from = 'fromD';
+  // String to = 'toD';
+  // String person = 'person';
+  // String duration = 'duration';
+  // String priority = 'priority';
+  // String recurringOpt = 'recurringOpt';
+  // String recurringEvery = 'recurringEvery';
+  // String recurringUntil = 'recurringUntil';
+  // String remark = 'remark';
+  // String completeDate = 'completeDate';
+  // String status = 'status';
+  // String color = 'color';
+  // String date = 'date';
+  // String deadline = 'deadline';
+  // String start = 'startTime';
+  // String end = 'dueTime';
+  // String uniqueNumber = 'uniqueNumber';
+  // String dependent = 'dependent';
+  // String checkRecurring = 'checkRecurring';
 
-  //non-recurring
-  String nonRecurringId = 'nonRecurringId';
-  String noncategory = 'category';
-  String nonsubCategory = 'subCategory';
-  String nontype = 'type';
-  String nonsite = 'site';
-  String nontask = 'task';
-  String owner = 'owner';
-  String startDate = 'startDate';
-  String due = 'due';
-  String modify = 'modify';
-  String nonremark = 'remark';
-  String noncompleteDate = 'completeDate';
-  String checked = 'checked';
-  String personCheck = 'personCheck';
-  String nonstatus = 'status';
+  // //non-recurring
+  // String nonRecurringId = 'nonRecurringId';
+  // String noncategory = 'category';
+  // String nonsubCategory = 'subCategory';
+  // String nontype = 'type';
+  // String nonsite = 'site';
+  // String nontask = 'task';
+  // String owner = 'owner';
+  // String startDate = 'startDate';
+  // String due = 'due';
+  // String modify = 'modify';
+  // String nonremark = 'remark';
+  // String noncompleteDate = 'completeDate';
+  // String checked = 'checked';
+  // String personCheck = 'personCheck';
+  // String nonstatus = 'status';
 
   //notification
   String notificationId = 'id';

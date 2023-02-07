@@ -1,6 +1,7 @@
 //@dart=2.9
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/DbHelper.dart';
@@ -212,6 +213,10 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
 
   Future<void> getTeamData() async {
     List data = [];
+    EasyLoading.show(
+      status: 'loading...',
+      maskType: EasyLoadingMaskType.black,
+    );
     await Internet.isInternet().then((connection) async {
       if (connection) {
         data = await Controller().getOnlineNonRecurring();
@@ -219,7 +224,7 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
         data = await cloneHelper.fetchNonrecurringData();
       }
     });
-
+    EasyLoading.showSuccess('Done');
     allTeamNonRecurring = [];
     completedTeamNonRecurring = [];
     lateTeamNonRecurring = [];

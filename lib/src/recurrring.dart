@@ -166,9 +166,6 @@ class _RecurringState extends State<Recurring> {
   }
 
   Future runFilter() async {
-    // final data = isOnline
-    //     ? await Controller().getOnlineRecurring()
-    //     : await cloneHelper.fetchRecurringData();
     allEvents = [];
     if (mounted) {
       setState(() {

@@ -1,5 +1,6 @@
 //@dart=2.9
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import 'dart:async';
 
@@ -62,6 +63,10 @@ class _NonRecurringState extends State<NonRecurring> {
 
   Future<void> _refresh() async {
     List data = [];
+    EasyLoading.show(
+      status: 'loading...',
+      maskType: EasyLoadingMaskType.black,
+    );
     await Internet.isInternet().then((connection) async {
       if (connection) {
         data = await Controller().getOnlineNonRecurring();
@@ -70,6 +75,7 @@ class _NonRecurringState extends State<NonRecurring> {
       }
     });
 
+    EasyLoading.showSuccess('Done');
     // List data;
     // final data = await Controller().getNonRecurring();
 

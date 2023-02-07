@@ -16,7 +16,7 @@ class CloneHelper {
 
   final nonRecurringTable = 'nonrecurring';
   final recurringTable = 'tasks';
-  final _version = 1;
+  // final _version = 1;
 
   static Database _db;
 

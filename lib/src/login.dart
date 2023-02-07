@@ -79,10 +79,10 @@ class _LoginState extends State<Login> {
                 maskType: EasyLoadingMaskType.black,
               );
               await Internet.isInternet().then((connection) async {
+                FocusScope.of(context).requestFocus(FocusNode());
                 if (firsttimeSetup) {
                   if (!mounted) return;
                   print(firsttimeSetup);
-                  FocusScope.of(context).requestFocus(FocusNode());
 
                   if (connection) {
                     await dbHelper.addfirst();
@@ -95,8 +95,12 @@ class _LoginState extends State<Login> {
                     // sp.setString("updateTime", DateTime.now().toString());
 
                   }
+                } else {
+                  await CloneHelper().initDb();
+                  await Controller().addNotificationDateToSqlite();
                 }
               });
+
               EasyLoading.showSuccess('Done');
               if (!mounted) return;
               Navigator.pushAndRemoveUntil(

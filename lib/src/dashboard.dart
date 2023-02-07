@@ -61,11 +61,9 @@ class _DashboardState extends State<Dashboard> {
       status: 'loading...',
       maskType: EasyLoadingMaskType.black,
     );
-    if (isOnline) {
-      await Controller().addDataToSqlite();
-      await Controller().addNotificationDateToSqlite();
-      await cloneHelper.initDb();
-    }
+    // if (isOnline) {
+    //   await cloneHelper.initDb();
+    // }
     final taskData = isOnline
         ? await Controller().getOnlineRecurring()
         : await cloneHelper.fetchRecurringData();

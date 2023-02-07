@@ -196,7 +196,7 @@ class _TeamtaskState extends State<Teamtask>
   }
 }
 
-Future<void> deleteNonRecurring(int id, context) async {
+Future<void> deleteNonRecurring(String id, context) async {
   var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
   final response = await http.post(Uri.parse(url), body: {
     "dataTable": "nonrecurring",
@@ -225,6 +225,68 @@ Future<void> deleteNonRecurring(int id, context) async {
       ),
     ));
   }
+}
+
+Future<void> deleteItem(BuildContext context, String id) async {
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        content: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(
+              Radius.circular(10.0),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Are you sure you want to delete this item?',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  TextButton(
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  TextButton(
+                    child: Text(
+                      'Delete',
+                      style: TextStyle(
+                        color: Colors.red[600],
+                      ),
+                    ),
+                    onPressed: () async {
+                      await deleteNonRecurring(id, context);
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
 
 Widget page(label, screenHeight, nonRecurring) {
@@ -396,10 +458,11 @@ Widget page(label, screenHeight, nonRecurring) {
                                                 await Internet.isInternet()
                                                     .then((connection) async {
                                                   if (connection) {
-                                                    await deleteNonRecurring(
+                                                    await deleteItem(
+                                                        context,
                                                         nonRecurring[index]
-                                                            ["id"],
-                                                        context);
+                                                                ["id"]
+                                                            .toString());
                                                   } else {
                                                     ScaffoldMessenger.of(
                                                             context)
