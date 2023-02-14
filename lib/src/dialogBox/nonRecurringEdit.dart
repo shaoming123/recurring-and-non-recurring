@@ -8,22 +8,25 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
+
 import 'package:ipsolution/model/selection.dart';
 import 'package:ipsolution/util/selection.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../databaseHandler/Clone2Helper.dart';
 import '../../databaseHandler/CloneHelper.dart';
 import '../../util/checkInternet.dart';
 
 import '../../util/cloneData.dart';
 import '../../util/datetime.dart';
 import '../nonRecurringTask.dart';
+import '../nonRecurringTeam.dart';
 
 class editNonRecurring extends StatefulWidget {
   final String id;
-  const editNonRecurring({Key key, this.id}) : super(key: key);
+  final bool task;
+  const editNonRecurring({Key key, this.id, this.task}) : super(key: key);
 
   @override
   State<editNonRecurring> createState() => _editNonRecurringState();
@@ -61,15 +64,19 @@ class _editNonRecurringState extends State<editNonRecurring> {
   String _selectedSubCategory = '';
   List _selectedData = [];
   String userPosition;
-  DbHelper dbHelper = DbHelper();
+  // DbHelper dbHelper = DbHelper();
   CloneHelper cloneHelper = CloneHelper();
-  Future _future;
+  Clone2Helper clone2Helper = Clone2Helper();
+
   bool isOnline;
+  String userRole;
+  List functionAccess;
+  String currentUserSiteLead;
   @override
   void initState() {
     super.initState();
 
-    _future = Future.delayed(Duration.zero, () async {
+    Future.delayed(Duration.zero, () async {
       await getDataDetails(int.parse(widget.id));
       await Internet.isInternet().then((connection) async {
         setState(() {
@@ -80,26 +87,14 @@ class _editNonRecurringState extends State<editNonRecurring> {
           userPosition = sp.getString("position");
           List functionAccess = sp.getString("position").split(",");
           String userRole = sp.getString("role");
-          final typeOptions =
-              await Selection().typeSelection(functionAccess, userRole);
-          categoryData =
-              await Selection().categorySelection(functionAccess, userRole);
-
-          // user table
-          var url =
-              'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
-          var response = await http
-              .post(Uri.parse(url), body: {"tableName": "user_details"});
-
-          List userData = json.decode(response.body);
+          final typeOptions = await Selection()
+              .typeSelection(functionAccess, userRole, currentUserSiteLead);
+          categoryData = await Selection()
+              .categorySelection(functionAccess, userRole, currentUserSiteLead);
 
           // selection
           final siteOptions = await Selection().siteSelection();
-
           setState(() {
-            user = userData;
-
-            /////
             List typeDate = [];
             typeDate = typeOptions;
             for (int i = 0; i < typeDate.length; i++) {
@@ -111,9 +106,7 @@ class _editNonRecurringState extends State<editNonRecurring> {
 
             for (final val in typeList) {
               if (val.value == _selectedType) {
-                setState(() {
-                  typeselect = val;
-                });
+                typeselect = val;
 
                 break;
               }
@@ -143,22 +136,27 @@ class _editNonRecurringState extends State<editNonRecurring> {
 
   @override
   void dispose() {
-    _future.then((_) => null); // Cancel the future
     super.dispose();
   }
 
   Future<void> getDataDetails(int id) async {
+    final SharedPreferences sp = await _pref;
+
     isOnline = await Internet.isInternet();
     nonRecurring_edit = isOnline
         ? await Controller().getAOnlineNonRecurring(id)
         : await cloneHelper.fetchANonRecurring(id);
 
-    final data = await dbHelper.getItems();
-
+    final data = isOnline
+        ? await Controller().getOnlineUser()
+        : await clone2Helper.getUser();
+    currentUserSiteLead = sp.getString("siteLead");
+    List functionAccess = sp.getString("position").split(",");
+    String userRole = sp.getString("role");
     setState(() {
       for (int i = 0; i < data.length; i++) {
         if (data[i]["role"] != "Staff") {
-          checkUserList.add(data[i]["user_name"]);
+          checkUserList.add(data[i]["username"]);
         }
       }
 
@@ -208,6 +206,39 @@ class _editNonRecurringState extends State<editNonRecurring> {
       //     });
       //   }
       // }
+      user = [];
+      // owner
+      if (widget.task == false) {
+        for (int i = 0; i < data.length; i++) {
+          List positionList = data[i]["position"].split(",");
+          List siteList = data[i]["site"].split(",");
+
+          if (userRole == "Manager" || userRole == "Super Admin") {
+            user.add({'username': data[i]["username"]});
+          } else if (userRole == "Leader" && currentUserSiteLead != "-") {
+            for (int y = 0; y < siteList.length; y++) {
+              if ((data[i]["role"] == "Leader" || data[i]["role"] == "Staff") &&
+                  currentUserSiteLead.split(",").contains(siteList[y]) &&
+                  data[i]["id"] != sp.getInt("user_id").toString()) {
+                user.add({'username': data[i]["username"]});
+              }
+            }
+          } else {
+            for (int y = 0; y < positionList.length; y++) {
+              for (int x = 0; x < functionAccess.length; x++) {
+                if (positionList[y] == functionAccess[x] &&
+                    (data[i]["role"] == "Leader" ||
+                        data[i]["role"] == "Staff") &&
+                    data[i]["id"] != sp.getInt("user_id").toString()) {
+                  user.add({'username': data[i]["username"]});
+                }
+              }
+            }
+          }
+        }
+      } else {
+        user.add({'username': _selectedUser});
+      }
     });
   }
 
@@ -344,10 +375,18 @@ class _editNonRecurringState extends State<editNonRecurring> {
 
             if (!mounted) return;
 
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const NonRecurring()),
-            );
+            if (widget.task == false) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const NonRecurringTeam()),
+              );
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const NonRecurring()),
+              );
+            }
 
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

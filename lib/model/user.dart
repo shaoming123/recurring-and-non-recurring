@@ -1,5 +1,5 @@
 class UserModel {
-  late int? user_id;
+  late int user_id;
   late String user_name;
   late String password;
   late String email;
@@ -15,7 +15,7 @@ class UserModel {
   //     'https://oflutter.com/wp-content/uploads/2021/02/girl-profile.png';
 
   UserModel({
-    this.user_id,
+   required this.user_id,
     required this.user_name,
     required this.password,
     required this.email,

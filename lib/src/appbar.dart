@@ -1,14 +1,12 @@
 //@dart=2.9
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 
-import 'package:gap/gap.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
 import 'package:ipsolution/model/notification.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../databaseHandler/Clone2Helper.dart';
 import '../databaseHandler/CloneHelper.dart';
 import '../util/app_styles.dart';
 
@@ -28,8 +26,9 @@ class Appbar extends StatefulWidget {
 class _AppbarState extends State<Appbar> {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   List<NotificationModel> notification = [];
-  DbHelper dbHelper = DbHelper();
+  // DbHelper dbHelper = DbHelper();
   CloneHelper cloneHelper = CloneHelper();
+  Clone2Helper clone2Helper = Clone2Helper();
   @override
   void initState() {
     super.initState();
@@ -38,7 +37,12 @@ class _AppbarState extends State<Appbar> {
 
   Future<void> getNotification() async {
     final SharedPreferences sp = await _pref;
-    final data = await dbHelper.fetchAllNotification();
+    bool isOnline = await Internet.isInternet();
+
+    final data = isOnline
+        ? await Controller().getOnlineNotification()
+        : await clone2Helper.fetchNotificationData();
+
     if (mounted) {
       setState(() {
         for (var item in data) {
@@ -76,36 +80,36 @@ class _AppbarState extends State<Appbar> {
           Text(widget.title, style: Styles.title),
           Row(
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  InkWell(
-                    child:
-                        const Icon(Icons.sync, color: Colors.black, size: 20),
-                    onTap: () async {
-                      await Internet.isInternet().then((connection) async {
-                        if (connection) {
-                          EasyLoading.show(
-                            status: 'Sync data...',
-                            maskType: EasyLoadingMaskType.black,
-                          );
-                          await cloneHelper.initDb();
-                          await Controller().addDataToSqlite();
-                          await Controller().addNotificationDateToSqlite();
-                        }
+              // Column(
+              //   mainAxisSize: MainAxisSize.min,
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     InkWell(
+              //       child:
+              //           const Icon(Icons.sync, color: Colors.black, size: 20),
+              //       onTap: () async {
+              //         await Internet.isInternet().then((connection) async {
+              //           if (connection) {
+              //             EasyLoading.show(
+              //               status: 'Sync data...',
+              //               maskType: EasyLoadingMaskType.black,
+              //             );
+              //             await cloneHelper.initDb();
+              //             await Controller().addDataToSqlite();
+              //             await Controller().addNotificationDateToSqlite();
+              //           }
 
-                        EasyLoading.showSuccess('Done');
-                      });
-                    },
-                  ),
-                  const Text(
-                    "Sync data",
-                    style: TextStyle(fontSize: 10),
-                  )
-                ],
-              ),
-              const Gap(15),
+              //           EasyLoading.showSuccess('Done');
+              //         });
+              //       },
+              //     ),
+              //     const Text(
+              //       "Sync data",
+              //       style: TextStyle(fontSize: 10),
+              //     )
+              //   ],
+              // ),
+              // const Gap(15),
               Container(
                 margin: const EdgeInsets.only(right: 10),
                 child: GestureDetector(

@@ -3,13 +3,14 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:ipsolution/model/manageUser.dart';
+import 'package:ipsolution/databaseHandler/Clone2Helper.dart';
 
 import 'package:ipsolution/src/member.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:http/http.dart' as http;
 
 import '../../util/checkInternet.dart';
+import '../../util/cloneData.dart';
 import '../../util/constant.dart';
 
 class DialogBox extends StatefulWidget {
@@ -78,6 +79,9 @@ class _DialogBoxState extends State<DialogBox> {
     "SPP",
     "SKP",
   ];
+
+  Clone2Helper clone2Helper = Clone2Helper();
+
   @override
   void initState() {
     super.initState();
@@ -85,10 +89,13 @@ class _DialogBoxState extends State<DialogBox> {
   }
 
   Future<void> getUserData(int id) async {
-    userDetails = await dbHelper.getAUser(id);
+    bool isOnline = await Internet.isInternet();
+    userDetails = isOnline
+        ? await Controller().getAOnlineUser(id)
+        : await clone2Helper.getUser();
 
     setState(() {
-      usernameController.text = userDetails[0]['user_name'];
+      usernameController.text = userDetails[0]['username'];
       passwordController.text = userDetails[0]['password'];
       emailController.text = userDetails[0]['email'];
       userRole = userDetails[0]['role'];

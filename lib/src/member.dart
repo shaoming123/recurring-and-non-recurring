@@ -1,7 +1,8 @@
 //@dart=2.9
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
+import 'package:ipsolution/databaseHandler/Clone2Helper.dart';
+
 import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/src/dialogBox/addMember.dart';
 import 'package:ipsolution/src/dialogBox/memberDetails.dart';
@@ -41,8 +42,10 @@ class _MemberState extends State<Member> {
   TextEditingController searchController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  DbHelper dbHelper = DbHelper();
+  // DbHelper dbHelper = DbHelper();
+  Clone2Helper clone2helper = Clone2Helper();
   Future _future;
+  bool isOnline;
   @override
   void initState() {
     super.initState();
@@ -52,21 +55,18 @@ class _MemberState extends State<Member> {
 
   Future _refreshUsers() async {
     final SharedPreferences sp = await _pref;
+    isOnline = await Internet.isInternet();
 
-    await Internet.isInternet().then((connection) async {
-      if (connection) {
-        await Controller().addDataToSqlite();
-      }
-    });
-
-    final data = await dbHelper.getItems();
+    final data = isOnline
+        ? await Controller().getOnlineUser()
+        : await clone2helper.getUser();
 
     setState(() {
       userRole = sp.getString("role");
       _isLoading = false;
       List _allUsers = data;
       for (var item in _allUsers) {
-        if (item["user_id"] != sp.getInt("user_id")) {
+        if (item["id"] != sp.getInt("user_id").toString()) {
           _foundUsers.add(item);
           allUsers.add(item);
         }
@@ -84,7 +84,7 @@ class _MemberState extends State<Member> {
     } else {
       results = allUsers
           .where((user) =>
-              user["user_name"]
+              user["username"]
                   .toLowerCase()
                   .contains(enteredKeyword.toLowerCase()) ||
               user["password"]
@@ -383,7 +383,7 @@ class _MemberState extends State<Member> {
                                                                     _foundUsers[
                                                                             index]
                                                                         [
-                                                                        "user_name"]),
+                                                                        "username"]),
                                                               ),
                                                             )),
                                                             DataCell(Padding(
@@ -425,7 +425,7 @@ class _MemberState extends State<Member> {
                                                                             (BuildContext
                                                                                 context) {
                                                                           return DialogBox(
-                                                                              id: _foundUsers[index]["user_id"].toString(),
+                                                                              id: _foundUsers[index]["id"].toString(),
                                                                               isEditing: true);
                                                                         });
                                                                   },
@@ -442,7 +442,7 @@ class _MemberState extends State<Member> {
                                                                               (connection) async {
                                                                         if (connection) {
                                                                           await removeUser(
-                                                                              _foundUsers[index]["user_id"],
+                                                                              _foundUsers[index]["id"],
                                                                               context);
                                                                         } else {
                                                                           ScaffoldMessenger.of(context)
@@ -482,7 +482,7 @@ class _MemberState extends State<Member> {
                                                                       if (connection) {
                                                                         await toggleSwitch(
                                                                             value,
-                                                                            _foundUsers[index]["user_id"]);
+                                                                            _foundUsers[index]["id"]);
                                                                       } else {
                                                                         ScaffoldMessenger.of(context)
                                                                             .showSnackBar(SnackBar(
@@ -535,7 +535,7 @@ class _MemberState extends State<Member> {
                                                                   return DialogBox(
                                                                       id: _foundUsers[index]
                                                                               [
-                                                                              "user_id"]
+                                                                              "id"]
                                                                           .toString(),
                                                                       isEditing:
                                                                           false);

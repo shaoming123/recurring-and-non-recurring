@@ -10,6 +10,7 @@ import 'package:ipsolution/src/footer.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../databaseHandler/Clone2Helper.dart';
 import '../util/checkInternet.dart';
 import '../util/cloneData.dart';
 import 'appbar.dart';
@@ -41,6 +42,7 @@ class _DashboardState extends State<Dashboard> {
   DateTime endDate;
   bool isOnline;
   CloneHelper cloneHelper = CloneHelper();
+  Clone2Helper clone2Helper = Clone2Helper();
   @override
   void initState() {
     super.initState();
@@ -61,9 +63,11 @@ class _DashboardState extends State<Dashboard> {
       status: 'loading...',
       maskType: EasyLoadingMaskType.black,
     );
-    // if (isOnline) {
-    //   await cloneHelper.initDb();
-    // }
+    if (isOnline) {
+      await cloneHelper.initDb();
+      await clone2Helper.initDb();
+      // await Controller().addNotificationDateToSqlite();
+    }
     final taskData = isOnline
         ? await Controller().getOnlineRecurring()
         : await cloneHelper.fetchRecurringData();

@@ -1,6 +1,6 @@
 class nonRecurring {
   late String category;
-  late int? nonRecurringId;
+  late int nonRecurringId;
   late String subCategory;
   late String type;
   late String site;
@@ -16,7 +16,7 @@ class nonRecurring {
   String? completeDate;
 
   nonRecurring({
-    this.nonRecurringId,
+   required this.nonRecurringId,
     required this.category,
     required this.subCategory,
     required this.type,

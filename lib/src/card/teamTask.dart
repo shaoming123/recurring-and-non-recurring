@@ -1,11 +1,14 @@
 //@dart=2.9
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/eventDataSource.dart';
 import '../../util/app_styles.dart';
 import '../../util/checkInternet.dart';
+import '../../util/cloneData.dart';
 import '../dialogBox/nonRecurringAdd.dart';
 import '../dialogBox/nonRecurringEdit.dart';
 import '../nonRecurringTeam.dart';
@@ -30,10 +33,12 @@ class Teamtask extends StatefulWidget {
   State<Teamtask> createState() => _TeamtaskState();
 }
 
+String currentUsername;
+
 class _TeamtaskState extends State<Teamtask>
     with SingleTickerProviderStateMixin {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-
+  Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   List<Map<String, dynamic>> foundTeamNonRecurring;
   List<Map<String, dynamic>> lateTeamNonRecurring;
   List<Map<String, dynamic>> activeTeamNonRecurring;
@@ -45,20 +50,29 @@ class _TeamtaskState extends State<Teamtask>
   PageController controller = PageController();
   int _curr = 0;
   double screenHeight;
+
   @override
   void initState() {
     super.initState();
-    foundTeamNonRecurring = widget.foundTeamNonRecurring;
-    lateTeamNonRecurring = widget.lateTeamNonRecurring;
-    activeTeamNonRecurring = widget.activeTeamNonRecurring;
-    completedTeamNonRecurring = widget.completedTeamNonRecurring;
+
     _animationController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 300));
-
+    getUser();
     controller.addListener(() {
       setState(() {
         currentPageValue = controller.page;
       });
+    });
+    foundTeamNonRecurring = widget.foundTeamNonRecurring;
+    lateTeamNonRecurring = widget.lateTeamNonRecurring;
+    activeTeamNonRecurring = widget.activeTeamNonRecurring;
+    completedTeamNonRecurring = widget.completedTeamNonRecurring;
+  }
+
+  Future<void> getUser() async {
+    final SharedPreferences sp = await _pref;
+    setState(() {
+      currentUsername = sp.getString("user_name");
     });
   }
 
@@ -116,6 +130,7 @@ class _TeamtaskState extends State<Teamtask>
                                 border: InputBorder.none,
                               ),
                               onChanged: (value) {
+                                print(widget.foundTeamNonRecurring);
                                 List<List<Map<String, dynamic>>> results =
                                     Search().searchResult(
                                         value,
@@ -289,6 +304,53 @@ Future<void> deleteItem(BuildContext context, String id) async {
   );
 }
 
+Future<void> toggleSwitch(value, String id, context) async {
+  String checked = '';
+  String tableName = "nonrecurring";
+
+  if (value == true) {
+    checked = 'Checked';
+  } else {
+    checked = 'Pending Review';
+  }
+
+  final response = await Controller()
+      .switchToggle(checked, id.toString(), tableName, "checked");
+
+  if (response.statusCode == 200) {
+    await Internet.isInternet().then((connection) async {
+      if (connection) {
+        EasyLoading.show(
+          status: 'Updating and Loading Data...',
+          maskType: EasyLoadingMaskType.black,
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const NonRecurringTeam()),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Updated Successfully!"),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(20),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              disabledTextColor: Colors.white,
+              textColor: Colors.blue,
+              onPressed: () {
+                //Do whatever you want
+              },
+            ),
+          ),
+        );
+
+        EasyLoading.showSuccess('Successfully');
+      }
+    });
+  }
+}
+
 Widget page(label, screenHeight, nonRecurring) {
   return Container(
     color: Styles.bgColor,
@@ -391,32 +453,37 @@ Widget page(label, screenHeight, nonRecurring) {
                                 //         color: Colors.black),
                                 //   ),
                                 // ),
-                                trailing: Container(
-                                    width: 90,
-                                    height: 20,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(5),
-                                      color: dayLeft.isNegative
-                                          ? Styles.lateColor
-                                          : dayLeft == 0
-                                              ? Styles.todayColor
-                                              : Styles.activeColor,
-                                    ),
-                                    child: Center(
-                                        child: dayLeft.isNegative
-                                            ? Text(
-                                                "${dayLeft.abs()} DAYS LATE",
-                                                style: Styles.dayLeftLate,
-                                              )
-                                            : dayLeft == 0
+                                trailing: nonRecurring[index]['status'] == '100'
+                                    ? const SizedBox()
+                                    : Container(
+                                        width: 90,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          color: dayLeft.isNegative
+                                              ? Styles.lateColor
+                                              : dayLeft == 0
+                                                  ? Styles.todayColor
+                                                  : Styles.activeColor,
+                                        ),
+                                        child: Center(
+                                            child: dayLeft.isNegative
                                                 ? Text(
-                                                    "DUE TODAY",
-                                                    style: Styles.dayLeftToday,
+                                                    "${dayLeft.abs()} DAYS LATE",
+                                                    style: Styles.dayLeftLate,
                                                   )
-                                                : Text(
-                                                    "$dayLeft DAYS LEFT",
-                                                    style: Styles.dayLeftActive,
-                                                  ))),
+                                                : dayLeft == 0
+                                                    ? Text(
+                                                        "DUE TODAY",
+                                                        style:
+                                                            Styles.dayLeftToday,
+                                                      )
+                                                    : Text(
+                                                        "$dayLeft DAYS LEFT",
+                                                        style: Styles
+                                                            .dayLeftActive,
+                                                      ))),
                                 children: <Widget>[
                                   Container(
                                     width: double.infinity,
@@ -443,10 +510,10 @@ Widget page(label, screenHeight, nonRecurring) {
                                                     builder:
                                                         (BuildContext context) {
                                                       return editNonRecurring(
-                                                        id: nonRecurring[index]
-                                                                ["id"]
-                                                            .toString(),
-                                                      );
+                                                          id: nonRecurring[
+                                                                  index]["id"]
+                                                              .toString(),
+                                                          task: false);
                                                     });
                                               },
                                             ),
@@ -494,28 +561,69 @@ Widget page(label, screenHeight, nonRecurring) {
                                         buildField(
                                             'Category',
                                             nonRecurring[index]['category']
-                                                .split("|")[0]),
+                                                .split("|")[0],
+                                            null,
+                                            null,
+                                            context),
                                         const Gap(20),
-                                        buildField('Sub-Category	',
-                                            nonRecurring[index]['subcategory']),
+                                        buildField(
+                                            'Sub-Category	',
+                                            nonRecurring[index]['subcategory'],
+                                            null,
+                                            null,
+                                            context),
                                         const Gap(20),
-                                        buildField('Type',
-                                            nonRecurring[index]['type']),
+                                        buildField(
+                                            'Type',
+                                            nonRecurring[index]['type'],
+                                            null,
+                                            null,
+                                            context),
                                         const Gap(20),
-                                        buildField('Site',
-                                            nonRecurring[index]['site']),
+                                        buildField(
+                                            'Site',
+                                            nonRecurring[index]['site'],
+                                            null,
+                                            null,
+                                            context),
                                         const Gap(20),
-                                        buildField('Due',
-                                            nonRecurring[index]['deadline']),
+                                        buildField(
+                                            'Due',
+                                            nonRecurring[index]['deadline'],
+                                            null,
+                                            null,
+                                            context),
                                         const Gap(20),
-                                        buildField('Stages',
-                                            nonRecurring[index]['status']),
+                                        buildField(
+                                            'Stages',
+                                            nonRecurring[index]['status'],
+                                            null,
+                                            null,
+                                            context),
                                         const Gap(20),
-                                        buildField('Remark',
-                                            nonRecurring[index]['remarks']),
+                                        buildField(
+                                            'Remark',
+                                            nonRecurring[index]['remarks'],
+                                            null,
+                                            null,
+                                            context),
                                         const Gap(20),
-                                        buildField('Last Mod',
-                                            nonRecurring[index]['lastMod']),
+                                        buildField(
+                                            'Last Mod',
+                                            nonRecurring[index]['lastMod'],
+                                            null,
+                                            null,
+                                            context),
+                                        const Gap(10),
+                                        nonRecurring[index]['checked'] != '-'
+                                            ? buildField(
+                                                'Checked',
+                                                nonRecurring[index]['checked'],
+                                                nonRecurring[index]
+                                                    ['personCheck'],
+                                                nonRecurring[index]['id'],
+                                                context)
+                                            : const Gap(10),
                                         const Gap(10),
                                       ],
                                     ),
@@ -536,7 +644,8 @@ Widget page(label, screenHeight, nonRecurring) {
   );
 }
 
-Widget buildField(String labelText, String content) {
+Widget buildField(
+    String labelText, String content, String checkPerson, String id, context) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceAround,
     crossAxisAlignment: CrossAxisAlignment.center,
@@ -555,9 +664,8 @@ Widget buildField(String labelText, String content) {
             border: Border.all(color: Colors.grey.withOpacity(0.5), width: 1.0),
           ),
           child: Center(
-              child: labelText != 'Stages'
-                  ? Text(content, style: Styles.labelData)
-                  : Padding(
+              child: labelText == 'Stages'
+                  ? Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),
                       child: LinearPercentIndicator(
                           barRadius: const Radius.circular(5),
@@ -572,7 +680,40 @@ Widget buildField(String labelText, String content) {
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold),
                           )),
-                    )),
+                    )
+                  : labelText == 'Checked'
+                      ? Checkbox(
+                          checkColor: Colors.white,
+                          activeColor: Colors.blue,
+                          value: content == 'Checked' ? true : false,
+                          shape: const CircleBorder(),
+                          onChanged: (value) async {
+                            await Internet.isInternet()
+                                .then((connection) async {
+                              if (connection) {
+                                if (checkPerson == currentUsername) {
+                                  await toggleSwitch(value, id, context);
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: const Text("No Internet !"),
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: const EdgeInsets.all(20),
+                                  action: SnackBarAction(
+                                    label: 'Dismiss',
+                                    disabledTextColor: Colors.white,
+                                    textColor: Colors.blue,
+                                    onPressed: () {
+                                      //Do whatever you want
+                                    },
+                                  ),
+                                ));
+                              }
+                            });
+                          },
+                        )
+                      : Text(content, style: Styles.labelData)),
         ),
       )
     ],

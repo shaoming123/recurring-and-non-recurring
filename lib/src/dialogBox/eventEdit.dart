@@ -7,9 +7,10 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/CloneHelper.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
+
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../databaseHandler/Clone2Helper.dart';
 import '../../model/event.dart';
 import '../../model/selection.dart';
 import '../../util/checkInternet.dart';
@@ -30,7 +31,7 @@ class EventEdit extends StatefulWidget {
 }
 
 class _EventEditState extends State<EventEdit> {
-  DbHelper dbHelper = DbHelper();
+  // DbHelper dbHelper = DbHelper();
   CloneHelper cloneHelper = CloneHelper();
   String recurringId;
   DateTime recurringDate;
@@ -74,6 +75,8 @@ class _EventEditState extends State<EventEdit> {
   dynamic _selectedCategory;
   String _selectedSubCategory = '';
   List<String> _selectedData = [];
+  String currentUserSiteLead;
+  Clone2Helper clone2Helper = Clone2Helper();
   @override
   void initState() {
     Future.delayed(Duration.zero, () async {
@@ -87,10 +90,10 @@ class _EventEditState extends State<EventEdit> {
           final SharedPreferences sp = await _pref;
           List functionAccess = sp.getString("position").split(",");
           String userRole = sp.getString("role");
-          final typeOptions =
-              await Selection().typeSelection(functionAccess, userRole);
-          categoryData =
-              await Selection().categorySelection(functionAccess, userRole);
+          final typeOptions = await Selection()
+              .typeSelection(functionAccess, userRole, currentUserSiteLead);
+          categoryData = await Selection()
+              .categorySelection(functionAccess, userRole, currentUserSiteLead);
 
           //type selection
           setState(() {
@@ -105,9 +108,7 @@ class _EventEditState extends State<EventEdit> {
 
             for (final val in typeList) {
               if (val.value == _selectedType) {
-                setState(() {
-                  typeselect = val;
-                });
+                typeselect = val;
 
                 break;
               }
@@ -146,9 +147,11 @@ class _EventEditState extends State<EventEdit> {
     });
 
     String userRole = sp.getString("role");
-    String currentUserSiteLead = sp.getString("siteLead");
-
-    final userData = await dbHelper.getItems();
+    currentUserSiteLead = sp.getString("siteLead");
+    isOnline = await Internet.isInternet();
+    final userData = isOnline
+        ? await Controller().getOnlineUser()
+        : await clone2Helper.getUser();
     userList = [];
 
     setState(() {
@@ -185,13 +188,15 @@ class _EventEditState extends State<EventEdit> {
         List siteData = userData[i]["site"].split(",");
         List positionList = userData[i]["position"].split(",");
         if (userRole == "Manager" || userRole == "Super Admin") {
-          userList.add(userData[i]["user_name"]);
+          userList.add(userData[i]["username"]);
         } else if (userRole == "Leader" && currentUserSiteLead != "-") {
           for (int y = 0; y < siteData.length; y++) {
             if ((userData[i]["role"] == "Leader" ||
                     userData[i]["role"] == "Staff") &&
-                siteData[y] == currentUserSiteLead) {
-              userList.add(userData[i]["user_name"]);
+                currentUserSiteLead.split(",").contains(siteData[y])) {
+              if (!userList.contains(userData[i]["username"])) {
+                userList.add(userData[i]["username"]);
+              }
             }
           }
         } else {
@@ -200,9 +205,9 @@ class _EventEditState extends State<EventEdit> {
               if (positionList[y] == functionData[x] &&
                   (userData[i]["role"] == "Leader" ||
                       userData[i]["role"] == "Staff")) {
-                if (userList.contains(userData[i]['user_name'])) {
+                if (userList.contains(userData[i]['username'])) {
                 } else {
-                  userList.add(userData[i]["user_name"]);
+                  userList.add(userData[i]["username"]);
                 }
               }
             }

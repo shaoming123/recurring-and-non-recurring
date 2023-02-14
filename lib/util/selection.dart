@@ -5,6 +5,16 @@ import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 
 class Selection {
+  List functionList = [
+    "Community Management",
+    "Maintenance Management",
+    "Defect",
+    "Operations",
+    "Financial Management",
+    "Procurement",
+    "Statistic"
+  ];
+
   Future siteSelection() async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
     var response =
@@ -26,7 +36,8 @@ class Selection {
     return siteoption;
   }
 
-  Future typeSelection(List functionAccess, String role) async {
+  Future typeSelection(
+      List functionAccess, String role, String siteLead) async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "selection"});
@@ -48,6 +59,10 @@ class Selection {
           element["variables"] == "Types" &&
           (functionAccess.contains(element["department"]) ||
               element["department"] == "Manager"));
+    } else if (role == 'Leader' && siteLead != '-') {
+      data = selection.where((element) =>
+          element["variables"] == "Types" &&
+          functionList.contains(element["department"]));
     } else {
       data = selection.where((element) =>
           element["variables"] == "Types" &&
@@ -72,7 +87,8 @@ class Selection {
     return typeSelection;
   }
 
-  Future categorySelection(List functionAccess, String role) async {
+  Future categorySelection(
+      List functionAccess, String role, String siteLead) async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
     var response =
         await http.post(Uri.parse(url), body: {"tableName": "selection"});
@@ -95,6 +111,12 @@ class Selection {
           .where((element) =>
               (functionAccess.contains(element["department"]) ||
                   element["department"] == "Manager") &&
+              element["variables"] != "Types")
+          .toList();
+    } else if (role == 'Leader' && siteLead != '-') {
+      dataCategory = selection
+          .where((element) =>
+              functionList.contains(element["department"]) &&
               element["variables"] != "Types")
           .toList();
     } else {

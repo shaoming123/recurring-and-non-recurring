@@ -395,32 +395,37 @@ Widget page(label, screenHeight, nonRecurring) {
                                       fontWeight: FontWeight.w500,
                                       color: Colors.black),
                                 ),
-                                trailing: Container(
-                                    width: 90,
-                                    height: 20,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(5),
-                                      color: dayLeft.isNegative
-                                          ? Styles.lateColor
-                                          : dayLeft == 0
-                                              ? Styles.todayColor
-                                              : Styles.activeColor,
-                                    ),
-                                    child: Center(
-                                        child: dayLeft.isNegative
-                                            ? Text(
-                                                "${dayLeft.abs()} DAYS LATE",
-                                                style: Styles.dayLeftLate,
-                                              )
-                                            : dayLeft == 0
+                                trailing: nonRecurring[index]['status'] == '100'
+                                    ? const SizedBox()
+                                    : Container(
+                                        width: 90,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          color: dayLeft.isNegative
+                                              ? Styles.lateColor
+                                              : dayLeft == 0
+                                                  ? Styles.todayColor
+                                                  : Styles.activeColor,
+                                        ),
+                                        child: Center(
+                                            child: dayLeft.isNegative
                                                 ? Text(
-                                                    "DUE TODAY",
-                                                    style: Styles.dayLeftToday,
+                                                    "${dayLeft.abs()} DAYS LATE",
+                                                    style: Styles.dayLeftLate,
                                                   )
-                                                : Text(
-                                                    "$dayLeft DAYS LEFT",
-                                                    style: Styles.dayLeftActive,
-                                                  ))),
+                                                : dayLeft == 0
+                                                    ? Text(
+                                                        "DUE TODAY",
+                                                        style:
+                                                            Styles.dayLeftToday,
+                                                      )
+                                                    : Text(
+                                                        "$dayLeft DAYS LEFT",
+                                                        style: Styles
+                                                            .dayLeftActive,
+                                                      ))),
                                 children: <Widget>[
                                   Container(
                                     width: double.infinity,
@@ -447,10 +452,10 @@ Widget page(label, screenHeight, nonRecurring) {
                                                     builder:
                                                         (BuildContext context) {
                                                       return editNonRecurring(
-                                                        id: nonRecurring[index]
-                                                                ["id"]
-                                                            .toString(),
-                                                      );
+                                                          id: nonRecurring[
+                                                                  index]["id"]
+                                                              .toString(),
+                                                          task: true);
                                                     });
                                               },
                                             ),

@@ -2,11 +2,12 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
-
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
+import 'package:ipsolution/databaseHandler/Clone2Helper.dart';
+
+import 'package:ipsolution/src/nonRecurringTeam.dart';
 
 import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,7 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/selection.dart';
 import '../../util/checkInternet.dart';
 
-
+import '../../util/cloneData.dart';
 import '../../util/datetime.dart';
 import '../../util/selection.dart';
 import '../nonRecurringTask.dart';
@@ -59,7 +60,9 @@ class _addNonRecurringState extends State<addNonRecurring> {
   bool check = false;
   String userPosition = '';
   String userRole = '';
-  DbHelper dbHelper = DbHelper();
+  String currentUserSiteLead;
+  // DbHelper dbHelper = DbHelper();
+  Clone2Helper clone2Helper = Clone2Helper();
 
   @override
   void initState() {
@@ -70,10 +73,10 @@ class _addNonRecurringState extends State<addNonRecurring> {
       final SharedPreferences sp = await _pref;
       String userRole = sp.getString("role");
       List functionAccess = sp.getString("position").split(",");
-      final typeOptions =
-          await Selection().typeSelection(functionAccess, userRole);
-      categoryData =
-          await Selection().categorySelection(functionAccess, userRole);
+      final typeOptions = await Selection()
+          .typeSelection(functionAccess, userRole, currentUserSiteLead);
+      categoryData = await Selection()
+          .categorySelection(functionAccess, userRole, currentUserSiteLead);
       userPosition = sp.getString("position");
       //type selection
       List typeDate = [];
@@ -86,7 +89,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
             bold: typeDate[i]['bold']));
       }
 
-      getData();
+      await getData();
     });
   }
 
@@ -102,9 +105,12 @@ class _addNonRecurringState extends State<addNonRecurring> {
 
   Future getData() async {
     final SharedPreferences sp = await _pref;
-    final data = await dbHelper.getItems();
+    bool isOnline = await Internet.isInternet();
+    final data = isOnline
+        ? await Controller().getOnlineUser()
+        : await clone2Helper.getUser();
     final siteOptions = await Selection().siteSelection();
-    String currentUserSiteLead = sp.getString("siteLead");
+    currentUserSiteLead = sp.getString("siteLead");
     String currentUsername = sp.getString("user_name");
     List functionData = sp.getString("position").split(",");
     userRole = sp.getString("role").toString();
@@ -133,13 +139,13 @@ class _addNonRecurringState extends State<addNonRecurring> {
           List siteList = data[i]["site"].split(",");
 
           if (userRole == "Manager" || userRole == "Super Admin") {
-            user.add({'username': data[i]["user_name"]});
+            user.add({'username': data[i]["username"]});
           } else if (userRole == "Leader" && currentUserSiteLead != "-") {
             for (int y = 0; y < siteList.length; y++) {
               if ((data[i]["role"] == "Leader" || data[i]["role"] == "Staff") &&
-                  siteList[y] == currentUserSiteLead &&
-                  data[i]["user_id"] != sp.getInt("user_id")) {
-                user.add({'username': data[i]["user_name"]});
+                  currentUserSiteLead.split(",").contains(siteList[y]) &&
+                  data[i]["id"] != sp.getInt("user_id").toString()) {
+                user.add({'username': data[i]["username"]});
               }
             }
           } else {
@@ -148,8 +154,8 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 if (positionList[y] == functionData[x] &&
                     (data[i]["role"] == "Leader" ||
                         data[i]["role"] == "Staff") &&
-                    data[i]["user_id"] != sp.getInt("user_id")) {
-                  user.add({'username': data[i]["user_name"]});
+                    data[i]["id"] != sp.getInt("user_id").toString()) {
+                  user.add({'username': data[i]["username"]});
                 }
               }
             }
@@ -161,8 +167,8 @@ class _addNonRecurringState extends State<addNonRecurring> {
 
       for (int i = 0; i < data.length; i++) {
         if (data[i]["role"] != "Staff" &&
-            data[i]["user_name"] != currentUsername) {
-          checkUserList.add(data[i]["user_name"]);
+            data[i]["username"] != currentUsername) {
+          checkUserList.add(data[i]["username"]);
         }
       }
     });
@@ -222,6 +228,10 @@ class _addNonRecurringState extends State<addNonRecurring> {
             TextButton(
               child: const Text("OK"),
               onPressed: () {
+                setState(() {
+                  isTapped = false;
+                });
+
                 Navigator.pop(context);
               },
             ),
@@ -315,11 +325,18 @@ class _addNonRecurringState extends State<addNonRecurring> {
           if (!mounted) return;
 
           FocusScope.of(context).requestFocus(FocusNode());
+          if (widget.task == false) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const NonRecurringTeam()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const NonRecurring()),
+            );
+          }
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const NonRecurring()),
-          );
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: const Text("Adding Successful !"),
             behavior: SnackBarBehavior.floating,

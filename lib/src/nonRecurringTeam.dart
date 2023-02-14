@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../databaseHandler/Clone2Helper.dart';
 import '../databaseHandler/CloneHelper.dart';
 import '../model/eventDataSource.dart';
 import '../util/app_styles.dart';
@@ -39,8 +39,9 @@ List<Map<String, dynamic>> completedTeamNonRecurring = [];
 class _NonRecurringTeamState extends State<NonRecurringTeam> {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-  DbHelper dbHelper = DbHelper();
+  // DbHelper dbHelper = DbHelper();
   CloneHelper cloneHelper = CloneHelper();
+  Clone2Helper clone2Helper = Clone2Helper();
   DateTime startDate = DateTime(DateTime.now().year, 1, 1);
   DateTime endDate = DateTime(DateTime.now().year + 1, 1, 0);
   String userRole = 'Staff';
@@ -58,10 +59,12 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
   String _selectedPosition;
   String _selectedUser;
   int checkNum = 0;
+
+  bool isOnline;
   @override
   void initState() {
     super.initState();
-    cloneHelper.initDb();
+
     // allTeamNonRecurring = [];
     // completedTeamNonRecurring = [];
     // lateTeamNonRecurring = [];
@@ -77,15 +80,6 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
     }
     getUserPosition();
     fetchUsers();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    allTeamNonRecurring = [];
-    completedTeamNonRecurring = [];
-    lateTeamNonRecurring = [];
-    activeTeamNonRecurring = [];
   }
 
   Future<void> getUserPosition() async {
@@ -123,9 +117,12 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
 
   Future<void> fetchUsers() async {
     final SharedPreferences sp = await _pref;
-    final data = await dbHelper.getItems();
+    isOnline = await Internet.isInternet();
+    final data = isOnline
+        ? await Controller().getOnlineUser()
+        : await clone2Helper.getUser();
     // List userSite = currentUserSite.split(',');
-    // String userID = sp.getInt("user_id").toString();
+    // String userID = sp.getString("id").toString();
 
     userList = [];
     setState(() {
@@ -136,18 +133,18 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
         if (userRole == "Manager" || userRole == "Super Admin") {
           if (_selectedPosition == "Manager" && data[x]["role"] == "Manager") {
             userList.add({
-              'userId': data[x]["user_id"],
-              'username': data[x]["user_name"],
+              'userId': data[x]["id"],
+              'username': data[x]["username"],
               'position': data[x]["position"]
             });
           } else {
             for (int i = 0; i < positionList.length; i++) {
               if (positionList[i] == _selectedPosition &&
-                  data[x]["user_id"] != sp.getInt("user_id") &&
+                  data[x]["id"] != sp.getInt("user_id").toString() &&
                   data[x]["role"] != "Manager") {
                 userList.add({
-                  'userId': data[x]["user_id"],
-                  'username': data[x]["user_name"],
+                  'userId': data[x]["id"],
+                  'username': data[x]["username"],
                   'position': data[x]["position"]
                 });
               }
@@ -155,11 +152,11 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
 
             for (int y = 0; y < siteList.length; y++) {
               if (siteList[y] == _selectedPosition &&
-                  data[x]["user_id"] != sp.getInt("user_id") &&
+                  data[x]["id"] != sp.getInt("user_id").toString() &&
                   data[x]["role"] != "Manager") {
                 userList.add({
-                  'userId': data[x]["user_id"],
-                  'username': data[x]["user_name"],
+                  'userId': data[x]["id"],
+                  'username': data[x]["username"],
                   'position': data[x]["position"]
                 });
               }
@@ -170,10 +167,10 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
           // else if (userRole == "Leader" && currentUserLeadFunc != '-') {
           //   for (int i = 0; i < positionList.length; i++) {
           //     if (positionList[i] == _selectedPosition &&
-          //         data[x]["user_id"] != sp.getInt("user_id") &&
+          //         data[x]["id"] != sp.getString("id") &&
           //         (data[x]["role"] == "Leader" || data[x]["role"] == "Staff")) {
           //       userList.add({
-          //         'userId': data[x]["user_id"],
+          //         'userId': data[x]["id"],
           //         'username': data[x]["user_name"],
           //         'position': data[x]["position"]
           //       });
@@ -183,25 +180,29 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
           for (int y = 0; y < siteList.length; y++) {
             for (int i = 0; i < positionList.length; i++) {
               if (positionList[i] == _selectedPosition &&
-                  data[x]["user_id"] != sp.getInt("user_id") &&
+                  data[x]["id"] != sp.getInt("user_id").toString() &&
                   (data[x]["role"] == "Leader" || data[x]["role"] == "Staff") &&
-                  siteList[y] == currentUserSiteLead) {
-                userList.add({
-                  'userId': data[x]["user_id"],
-                  'username': data[x]["user_name"],
-                  'position': data[x]["position"],
-                });
+                  currentUserSiteLead.split(",").contains(siteList[y])) {
+                if (!userList.any((user) => user['userId']
+                    .toString()
+                    .contains(data[x]["id"].toString()))) {
+                  userList.add({
+                    'userId': data[x]["id"],
+                    'username': data[x]["username"],
+                    'position': data[x]["position"],
+                  });
+                }
               }
             }
           }
         } else {
           for (int i = 0; i < positionList.length; i++) {
             if (positionList[i] == _selectedPosition &&
-                data[x]["user_id"] != sp.getInt("user_id") &&
+                data[x]["id"] != sp.getInt("user_id").toString() &&
                 (data[x]["role"] == "Leader" || data[x]["role"] == "Staff")) {
               userList.add({
-                'userId': data[x]["user_id"],
-                'username': data[x]["user_name"],
+                'userId': data[x]["id"],
+                'username': data[x]["username"],
                 'position': data[x]["position"],
               });
             }
@@ -270,20 +271,20 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
               }
             }
           } else if (userRole == "Leader" && currentUserSiteLead != '-') {
-            if (data[x]["site"] == currentUserSiteLead) {
-              if (data[x]["owner"] == _selectedUser) {
-                final dayLeft = daysBetween(
-                    DateTime.now(), DateTime.parse(data[x]["deadline"]));
+            // if (data[x]["site"] == currentUserSiteLead) {
+            if (data[x]["owner"] == _selectedUser) {
+              final dayLeft = daysBetween(
+                  DateTime.now(), DateTime.parse(data[x]["deadline"]));
 
-                allTeamNonRecurring.add(data[x]);
-                if (data[x]["status"] == '100') {
-                  completedTeamNonRecurring.add(data[x]);
-                } else if (dayLeft.isNegative) {
-                  lateTeamNonRecurring.add(data[x]);
-                } else if (dayLeft >= 0) {
-                  activeTeamNonRecurring.add(data[x]);
-                }
+              allTeamNonRecurring.add(data[x]);
+              if (data[x]["status"] == '100') {
+                completedTeamNonRecurring.add(data[x]);
+              } else if (dayLeft.isNegative) {
+                lateTeamNonRecurring.add(data[x]);
+              } else if (dayLeft >= 0) {
+                activeTeamNonRecurring.add(data[x]);
               }
+              // }
             }
           } else {
             if (data[x]["owner"] == _selectedUser) {
@@ -323,7 +324,7 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
       initialDateRange: startDate != null && endDate != null
           ? DateTimeRange(start: startDate, end: endDate)
           : null,
-      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      // initialEntryMode: DatePickerEntryMode.calendarOnly,
       firstDate: DateTime(DateTime.now().year - 50),
       lastDate: DateTime(DateTime.now().year + 50),
       saveText: 'Done',

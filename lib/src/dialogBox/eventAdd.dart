@@ -6,7 +6,8 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
+import 'package:ipsolution/databaseHandler/Clone2Helper.dart';
+
 import 'package:ipsolution/model/event.dart';
 import 'package:ipsolution/src/recurrring.dart';
 
@@ -21,6 +22,7 @@ import '../../model/selection.dart';
 
 import '../../util/checkInternet.dart';
 
+import '../../util/cloneData.dart';
 import '../../util/datetime.dart';
 import 'package:http/http.dart' as http;
 
@@ -67,17 +69,20 @@ class _EventAddState extends State<EventAdd> {
   ];
   List<String> userList = [];
   bool checkUser = false;
-  DbHelper dbHelper = DbHelper();
+  // DbHelper dbHelper = DbHelper();
+  Clone2Helper clone2Helper = Clone2Helper();
   var selectedOption = ''.obs;
   bool isTapped = false;
   List categoryData = [];
   String userPosition = '';
-
+  String currentUserSiteLead;
   TypeSelect typeselect;
   List<TypeSelect> typeList = <TypeSelect>[];
 
   dynamic _selectedCategory;
   String _selectedSubCategory;
+
+  bool isOnline;
   @override
   void initState() {
     super.initState();
@@ -86,10 +91,10 @@ class _EventAddState extends State<EventAdd> {
       final SharedPreferences sp = await _pref;
       String userRole = sp.getString("role");
       List functionAccess = sp.getString("position").split(",");
-      final typeOptions =
-          await Selection().typeSelection(functionAccess, userRole);
-      categoryData =
-          await Selection().categorySelection(functionAccess, userRole);
+      final typeOptions = await Selection()
+          .typeSelection(functionAccess, userRole, currentUserSiteLead);
+      categoryData = await Selection()
+          .categorySelection(functionAccess, userRole, currentUserSiteLead);
       userPosition = sp.getString("position");
       //type selection
       List typeDate = [];
@@ -122,12 +127,15 @@ class _EventAddState extends State<EventAdd> {
   }
 
   Future<void> getData() async {
-    final data = await dbHelper.getItems();
+    isOnline = await Internet.isInternet();
+    final data = isOnline
+        ? await Controller().getOnlineUser()
+        : await clone2Helper.getUser();
     final SharedPreferences sp = await _pref;
 
     String user = sp.getString("user_name");
     String userRole = sp.getString("role");
-    String currentUserSiteLead = sp.getString("siteLead");
+    currentUserSiteLead = sp.getString("siteLead");
 
     final siteOptions = await Selection().siteSelection();
 
@@ -146,12 +154,14 @@ class _EventAddState extends State<EventAdd> {
         List siteList = data[i]["site"].split(",");
 
         if (userRole == "Manager" || userRole == "Super Admin") {
-          userList.add(data[i]["user_name"]);
+          userList.add(data[i]["username"]);
         } else if (userRole == "Leader" && currentUserSiteLead != "-") {
           for (int y = 0; y < siteList.length; y++) {
             if ((data[i]["role"] == "Leader" || data[i]["role"] == "Staff") &&
-                siteList[y] == currentUserSiteLead) {
-              userList.add(data[i]["user_name"]);
+                currentUserSiteLead.split(",").contains(siteList[y])) {
+              if (!userList.contains(data[i]["username"])) {
+                userList.add(data[i]["username"]);
+              }
             }
           }
         } else {
@@ -159,9 +169,9 @@ class _EventAddState extends State<EventAdd> {
             for (int x = 0; x < functionData.length; x++) {
               if (positionList[y] == functionData[x] &&
                   (data[i]["role"] == "Leader" || data[i]["role"] == "Staff")) {
-                if (userList.contains(data[i]['user_name'])) {
+                if (userList.contains(data[i]['username'])) {
                 } else {
-                  userList.add(data[i]["user_name"]);
+                  userList.add(data[i]["username"]);
                 }
               }
             }

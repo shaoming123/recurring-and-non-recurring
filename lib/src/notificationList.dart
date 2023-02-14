@@ -1,6 +1,5 @@
 //@dart=2.9
 import 'package:flutter/material.dart';
-import 'package:ipsolution/model/manageUser.dart';
 
 import '../model/notification.dart';
 import '../util/app_styles.dart';
@@ -23,10 +22,10 @@ class _notificationListState extends State<notificationList> {
     notification = widget.notification;
   }
 
-  Future<void> removeNotification(int id) async {
+  Future<void> removeNotification(String id) async {
     var url =
         'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
-    await dbHelper.deleteNotification(id);
+    // await dbHelper.deleteNotification(id);
     final response = await http.post(Uri.parse(url), body: {
       "dataTable": "notification",
       "id": id.toString(),

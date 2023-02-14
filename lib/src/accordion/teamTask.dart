@@ -108,7 +108,7 @@
 //     final SharedPreferences sp = await _pref;
 //     final data = await dbHelper.getItems();
 //     // List userSite = currentUserSite.split(',');
-//     // String userID = sp.getInt("user_id").toString();
+//     // String userID = sp.getString("user_id").toString();
 
 //     userList = [];
 //     setState(() {
@@ -126,7 +126,7 @@
 //           } else {
 //             for (int i = 0; i < positionList.length; i++) {
 //               if (positionList[i] == _selectedPosition &&
-//                   data[x]["user_id"] != sp.getInt("user_id") &&
+//                   data[x]["user_id"] != sp.getString("user_id") &&
 //                   data[x]["role"] != "Manager") {
 //                 userList.add({
 //                   'userId': data[x]["user_id"],
@@ -138,7 +138,7 @@
 
 //             for (int y = 0; y < siteList.length; y++) {
 //               if (siteList[y] == _selectedPosition &&
-//                   data[x]["user_id"] != sp.getInt("user_id") &&
+//                   data[x]["user_id"] != sp.getString("user_id") &&
 //                   data[x]["role"] != "Manager") {
 //                 userList.add({
 //                   'userId': data[x]["user_id"],
@@ -153,7 +153,7 @@
 //           // else if (userRole == "Leader" && currentUserLeadFunc != '-') {
 //           //   for (int i = 0; i < positionList.length; i++) {
 //           //     if (positionList[i] == _selectedPosition &&
-//           //         data[x]["user_id"] != sp.getInt("user_id") &&
+//           //         data[x]["user_id"] != sp.getString("user_id") &&
 //           //         (data[x]["role"] == "Leader" || data[x]["role"] == "Staff")) {
 //           //       userList.add({
 //           //         'userId': data[x]["user_id"],
@@ -166,7 +166,7 @@
 //           for (int y = 0; y < siteList.length; y++) {
 //             for (int i = 0; i < positionList.length; i++) {
 //               if (positionList[i] == _selectedPosition &&
-//                   data[x]["user_id"] != sp.getInt("user_id") &&
+//                   data[x]["user_id"] != sp.getString("user_id") &&
 //                   (data[x]["role"] == "Leader" || data[x]["role"] == "Staff") &&
 //                   siteList[y] == currentUserSiteLead) {
 //                 userList.add({
@@ -180,7 +180,7 @@
 //         } else {
 //           for (int i = 0; i < positionList.length; i++) {
 //             if (positionList[i] == _selectedPosition &&
-//                 data[x]["user_id"] != sp.getInt("user_id") &&
+//                 data[x]["user_id"] != sp.getString("user_id") &&
 //                 (data[x]["role"] == "Leader" || data[x]["role"] == "Staff")) {
 //               userList.add({
 //                 'userId': data[x]["user_id"],

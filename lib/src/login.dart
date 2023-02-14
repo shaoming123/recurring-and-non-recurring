@@ -3,19 +3,14 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:ipsolution/databaseHandler/CloneHelper.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
+
 import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/dashboard.dart';
 
-import 'package:ipsolution/util/app_styles.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+
 import '../util/checkInternet.dart';
-import '../util/cloneData.dart';
-import '../util/fade_animation.dart';
-import 'footer.dart';
 
 class Login extends StatefulWidget {
   const Login({
@@ -32,7 +27,7 @@ class _LoginState extends State<Login> {
   final userController = TextEditingController();
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  DbHelper dbHelper = DbHelper();
+  // DbHelper dbHelper = DbHelper();
   String username;
   String password;
 
@@ -73,31 +68,27 @@ class _LoginState extends State<Login> {
               // await Controller().addRecurringToSqlite();
               // await Controller().addNonRecurringToSqlite();
 
-              bool firsttimeSetup = await dbHelper.getfirst();
+              // bool firsttimeSetup = await dbHelper.getfirst();
               EasyLoading.show(
                 status: 'loading...',
                 maskType: EasyLoadingMaskType.black,
               );
               await Internet.isInternet().then((connection) async {
                 FocusScope.of(context).requestFocus(FocusNode());
-                if (firsttimeSetup) {
-                  if (!mounted) return;
-                  print(firsttimeSetup);
+                // if (firsttimeSetup) {
+                if (!mounted) return;
 
-                  if (connection) {
-                    await dbHelper.addfirst();
-                    await Controller().addDataToSqlite();
-                    await Controller().addNotificationDateToSqlite();
-                    await CloneHelper().initDb();
-                    // await Controller().addRecurringToSqlite();
-                    // await Controller().addNonRecurringToSqlite();
+                if (connection) {
+                  // await dbHelper.addfirst();
 
-                    // sp.setString("updateTime", DateTime.now().toString());
+                  // await Controller().addNotificationDateToSqlite();
+                  // await CloneHelper().initDb();
+                  // await Clone2Helper().initDb();
+                  // await Controller().addRecurringToSqlite();
+                  // await Controller().addNonRecurringToSqlite();
 
-                  }
-                } else {
-                  await CloneHelper().initDb();
-                  await Controller().addNotificationDateToSqlite();
+                  // sp.setString("updateTime", DateTime.now().toString());
+
                 }
               });
 
@@ -210,178 +201,153 @@ class _LoginState extends State<Login> {
     sp.setString("phone", user.phone);
     sp.setString("active", user.active);
     sp.setString("filepath", user.filepath);
-    sp.setString("updateTime", "");
 
     // sp.setString("photoName", user.photoName!);
   }
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            Container(
-              height: 350,
-              decoration: const BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage('assets/images/login/background.png'),
-                      fit: BoxFit.fitWidth)),
-              child: Stack(
-                children: <Widget>[
-                  Positioned(
-                    left: 30,
-                    width: 80,
-                    height: 200,
-                    child: FadeAnimation(
-                        1,
-                        Container(
-                          decoration: const BoxDecoration(
-                              image: DecorationImage(
-                                  image: AssetImage(
-                                      'assets/images/login/light-1.png'))),
-                        )),
-                  ),
-                  Positioned(
-                    left: 140,
-                    width: 80,
-                    height: 150,
-                    child: FadeAnimation(
-                        1.3,
-                        Container(
-                          decoration: const BoxDecoration(
-                              image: DecorationImage(
-                                  image: AssetImage(
-                                      'assets/images/login/light-2.png'))),
-                        )),
-                  ),
-                  Positioned(
-                    right: 40,
-                    top: 40,
-                    width: 80,
-                    height: 150,
-                    child: FadeAnimation(
-                        1.5,
-                        Container(
-                          decoration: const BoxDecoration(
-                              image: DecorationImage(
-                                  image: AssetImage(
-                                      'assets/images/login/clock.png'))),
-                        )),
-                  ),
-                  Positioned(
-                    child: FadeAnimation(
-                        1.6,
-                        Container(
-                          margin: const EdgeInsets.only(top: 50),
-                          child: Center(
-                            child: Text(
-                              "Login",
-                              style: TextStyle(
-                                  color: Styles.textColor,
-                                  fontSize: 40,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        )),
-                  )
-                ],
+        child: Container(
+          width: double.infinity,
+          height: height,
+          child: Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              Positioned(
+                top: 0,
+                right: 0,
+                child:
+                    Image.asset("assets/images/login/top1.png", width: width),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(30.0),
-              child: Column(
-                children: <Widget>[
-                  FadeAnimation(
-                      1.8,
-                      Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: const [
-                              BoxShadow(
-                                  color: Color.fromRGBO(143, 148, 251, .2),
-                                  blurRadius: 20.0,
-                                  offset: Offset(0, 10))
-                            ]),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            children: <Widget>[
-                              Container(
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        bottom: BorderSide(
-                                            color: Colors.grey[100]))),
-                                child: TextFormField(
-                                  validator: (text) {
-                                    if (text == null || text.isEmpty) {
-                                      return 'Can\'t be empty';
-                                    }
-
-                                    return null;
-                                  },
-                                  controller: userController,
-                                  decoration: InputDecoration(
-                                      border: InputBorder.none,
-                                      hintText: "Username",
-                                      hintStyle:
-                                          TextStyle(color: Colors.grey[400])),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(8.0),
-                                child: TextFormField(
-                                  validator: (text) {
-                                    if (text == null || text.isEmpty) {
-                                      return 'Can\'t be empty';
-                                    }
-
-                                    return null;
-                                  },
-                                  controller: passwordController,
-                                  obscureText: showPassword,
-                                  enableSuggestions: false,
-                                  autocorrect: false,
-                                  decoration: InputDecoration(
-                                      border: InputBorder.none,
-                                      suffixIcon: IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            showPassword = !showPassword;
-                                          });
-                                        },
-                                        icon: Icon(
-                                          showPassword
-                                              ? Icons.visibility
-                                              : Icons.visibility_off,
-                                          color: Colors.grey,
-                                          size: 18,
-                                        ),
-                                      ),
-                                      hintText: "Password",
-                                      hintStyle:
-                                          TextStyle(color: Colors.grey[400])),
-                                ),
-                              )
-                            ],
+              Positioned(
+                top: 0,
+                right: 0,
+                child:
+                    Image.asset("assets/images/login/top2.png", width: width),
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Image.asset("assets/images/login/bottom1.png",
+                    width: width),
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Image.asset("assets/images/login/bottom2.png",
+                    width: width),
+              ),
+              Positioned(
+                bottom: 40,
+                left: 30,
+                child: Column(
+                  children: [
+                    const Text(
+                      "Powered By",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Image.asset("assets/logo.png", width: width * 0.25),
+                  ],
+                ),
+              ),
+              Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      child: const Text(
+                        "LOGIN",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF5c7494),
+                            fontSize: 36),
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                    SizedBox(height: height * 0.03),
+                    Container(
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.symmetric(horizontal: 40),
+                      child: TextFormField(
+                        controller: userController,
+                        decoration: const InputDecoration(
+                          labelText: "Username",
+                          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                          prefixIcon: Icon(
+                            Icons.person,
+                            color: Color(0xFF7797AA),
                           ),
                         ),
-                      )),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  FadeAnimation(
-                      2,
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            backgroundColor: Styles.bgColor,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
+                        validator: (text) {
+                          if (text == null || text.isEmpty) {
+                            return 'Can\'t be empty';
+                          }
+
+                          return null;
+                        },
+                      ),
+                    ),
+                    SizedBox(height: height * 0.03),
+                    Container(
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.symmetric(horizontal: 40),
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          labelText: "Password",
+                          labelStyle:
+                              const TextStyle(fontWeight: FontWeight.bold),
+                          prefixIcon: const Icon(
+                            Icons.lock,
+                            color: Color(0xFF7797AA),
+                          ),
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                showPassword = !showPassword;
+                              });
+                            },
+                            icon: Icon(
+                              showPassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: Colors.grey,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                        validator: (text) {
+                          if (text == null || text.isEmpty) {
+                            return 'Can\'t be empty';
+                          }
+
+                          return null;
+                        },
+                        controller: passwordController,
+                        obscureText: showPassword,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                      ),
+                    ),
+                    SizedBox(height: height * 0.05),
+                    Container(
+                      alignment: Alignment.centerRight,
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 10),
+                      child: ElevatedButton(
                         onPressed: (() async {
                           await Internet.isInternet().then((connection) async {
                             if (connection) {
@@ -404,60 +370,67 @@ class _LoginState extends State<Login> {
                             }
                           });
                         }),
-                        child: Ink(
-                          height: 50,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Styles.bgColor,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.all(0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(80.0),
                           ),
-                          child: Center(
-                            child: Text(
-                              "Login",
-                              style: TextStyle(
-                                  color: Styles.textColor,
-                                  fontWeight: FontWeight.bold),
-                            ),
+                          elevation: 4.0,
+                        ),
+                        child: Container(
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 10.0,
+                                offset: Offset(0, 10),
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          height: 50.0,
+                          width: width * 0.6,
+                          padding: const EdgeInsets.all(0),
+                          child: const Text(
+                            "LOG IN",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 16),
                           ),
                         ),
-                      )),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  // FadeAnimation(
-                  //     2,
-                  //     ElevatedButton(
-                  //       style: ElevatedButton.styleFrom(
-                  //           padding: EdgeInsets.zero,
-                  //           backgroundColor: Styles.bgColor,
-                  //           shape: RoundedRectangleBorder(
-                  //               borderRadius: BorderRadius.circular(10))),
-                  //       onPressed: (() {
-                  //         Navigator.pushReplacement(
-                  //             context,
-                  //             MaterialPageRoute(
-                  //                 builder: (context) => SignUp()));
-                  //       }),
-                  //       child: Ink(
-                  //         height: 50,
-                  //         decoration: BoxDecoration(
-                  //           borderRadius: BorderRadius.circular(10),
-                  //           color: Styles.bgColor,
-                  //         ),
-                  //         child: Center(
-                  //           child: Text(
-                  //             "Signup",
-                  //             style: TextStyle(
-                  //                 color: Styles.textColor,
-                  //                 fontWeight: FontWeight.bold),
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     )),
-                  const Footer()
-                ],
+                      ),
+                    ),
+                    // Container(
+                    //   height: 100.0,
+                    //   alignment: Alignment.bottomLeft,
+                    //   margin: const EdgeInsets.symmetric(
+                    //     horizontal: 20,
+                    //   ),
+                    //   padding: EdgeInsets.only(top: 50),
+                    //   child: Column(
+                    //     children: [
+                    //       const Text(
+                    //         "Powered By",
+                    //         style: TextStyle(
+                    //             color: Colors.white,
+                    //             fontWeight: FontWeight.bold,
+                    //             fontSize: 16),
+                    //       ),
+                    //       Container(
+                    //           width: 100.0,
+                    //           child: Image.asset("assets/logo.png")),
+                    //     ],
+                    //   ),
+                    // ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

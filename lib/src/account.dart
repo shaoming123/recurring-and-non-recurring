@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
+
 import 'package:ipsolution/model/manageUser.dart';
 import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/navbar.dart';
@@ -31,11 +31,11 @@ class _AccountState extends State<Account> {
   File image;
 
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-  DbHelper dbHelper = DbHelper();
+  // DbHelper dbHelper = DbHelper();
 
   final username = TextEditingController();
   final password = TextEditingController();
-  int userid;
+  String userid;
   final email = TextEditingController();
   final phone = TextEditingController();
   final userRole = TextEditingController();
@@ -57,7 +57,7 @@ class _AccountState extends State<Account> {
     isOnline = await Internet.isInternet();
 
     setState(() {
-      userid = sp.getInt("user_id");
+      userid = sp.getInt("user_id").toString();
       username.text = sp.getString("user_name");
       password.text = sp.getString("password");
       email.text = sp.getString("email");
@@ -307,7 +307,7 @@ class _AccountState extends State<Account> {
                                 if (connection) {
                                   await updateAccount(
                                       UserModel(
-                                          user_id: userid,
+                                          user_id: int.parse(userid),
                                           user_name: username.text,
                                           password: password.text,
                                           email: email.text,

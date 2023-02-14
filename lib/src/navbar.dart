@@ -16,7 +16,7 @@ import 'package:ipsolution/src/recurrring.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../databaseHandler/DbHelper.dart';
+
 
 import 'package:url_launcher/url_launcher.dart';
 
@@ -31,12 +31,12 @@ class Navbar extends StatefulWidget {
 
 class _NavbarState extends State<Navbar> {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-  DbHelper dbHelper;
+  // DbHelper dbHelper;
   String username = "";
   String email = "";
   String userRole = "";
   String filepath;
-  int userid;
+  String userid;
   List userData = [];
   bool isOnline;
   final Uri ipsolutionUrl = Uri.parse('https://ipsolutions4u.com/ipsolutions/');
@@ -44,8 +44,6 @@ class _NavbarState extends State<Navbar> {
   TapGestureRecognizer _ipsolutionTapRecognizer;
   @override
   void initState() {
-    dbHelper = DbHelper();
-
     _ipsolutionTapRecognizer = TapGestureRecognizer()..onTap = () => _openUrl();
     getUserData();
 
@@ -70,13 +68,13 @@ class _NavbarState extends State<Navbar> {
   Future<void> getUserData() async {
     final SharedPreferences sp = await _pref;
     isOnline = await Internet.isInternet();
-    // await Internet.isInternet().then((connection) async {
-    //   if (connection) {
-    //     await getImage();
-    //   }
-    // });
+    await Internet.isInternet().then((connection) async {
+      if (connection && mounted) {
+        await getImage();
+      }
+    });
     setState(() {
-      userid = sp.getInt("user_id");
+      userid = sp.getInt("user_id").toString();
       username = sp.getString("user_name");
       userRole = sp.getString("role");
       email = sp.getString("email");

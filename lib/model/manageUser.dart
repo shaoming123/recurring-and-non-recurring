@@ -1,13 +1,13 @@
 //@dart=2.9
 import 'package:flutter/material.dart';
-import 'package:ipsolution/databaseHandler/DbHelper.dart';
+
 import 'package:ipsolution/model/user.dart';
 import 'package:ipsolution/src/account.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../src/member.dart';
 
-DbHelper dbHelper = DbHelper();
+// DbHelper dbHelper = DbHelper();
 Future<SharedPreferences> _pref = SharedPreferences.getInstance();
 
 Future updateSP(UserModel user) async {
@@ -109,7 +109,7 @@ Future updateAccount(UserModel user, context) async {
 }
 
 // Delete an item
-Future removeUser(int id, context) async {
+Future removeUser(String id, context) async {
   var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/delete.php';
   final response = await http.post(Uri.parse(url), body: {
     "dataTable": "user_details",

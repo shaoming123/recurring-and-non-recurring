@@ -10,7 +10,8 @@ import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/src/appbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-import '../databaseHandler/DbHelper.dart';
+import '../databaseHandler/Clone2Helper.dart';
+
 import '../model/eventDataSource.dart';
 import '../util/app_styles.dart';
 import '../util/checkInternet.dart';
@@ -32,7 +33,7 @@ List<String> functionList = [];
 List<String> siteList = <String>[];
 List<String> functionData = [];
 List<String> currentUserSite = [];
-DbHelper dbHelper = DbHelper();
+// DbHelper dbHelper = DbHelper();
 List<String> userList = [];
 List<String> userLists = [];
 bool isOnline;
@@ -44,17 +45,20 @@ class _RecurringState extends State<Recurring> {
   String _selectedSite = '';
   String userRole = 'Staff';
   CloneHelper cloneHelper = CloneHelper();
+  Clone2Helper clone2Helper = Clone2Helper();
   List data;
+  List userData;
   @override
   void initState() {
     super.initState();
-    cloneHelper.initDb();
+
     _refreshEvent();
   }
 
   Future<void> _refreshEvent() async {
     isOnline = await Internet.isInternet();
     data = [];
+    userData = [];
 
     await Internet.isInternet().then((connection) async {
       EasyLoading.show(
@@ -63,12 +67,13 @@ class _RecurringState extends State<Recurring> {
       );
       if (connection) {
         data = await Controller().getOnlineRecurring();
+        userData = await Controller().getOnlineUser();
       } else {
         data = await cloneHelper.fetchRecurringData();
+        userData = await clone2Helper.getUser();
       }
     });
 
-    final userData = await dbHelper.getItems();
     EasyLoading.showSuccess('Done');
     final SharedPreferences sp = await _pref;
 
@@ -107,7 +112,7 @@ class _RecurringState extends State<Recurring> {
         List positionList = item["position"].split(",");
         if (userRole == "Manager" || userRole == "Super Admin") {
           functionList = functionData;
-          userList.add(item['user_name']);
+          userList.add(item['username']);
 
           siteList = [
             'HQ',
@@ -133,8 +138,10 @@ class _RecurringState extends State<Recurring> {
 
           for (int y = 0; y < siteData.length; y++) {
             if ((item["role"] == "Leader" || item["role"] == "Staff") &&
-                siteData[y] == currentUserSiteLead) {
-              userList.add(item["user_name"]);
+                currentUserSiteLead.split(",").contains(siteData[y])) {
+              if (!userList.contains(item["username"])) {
+                userList.add(item["username"]);
+              }
             }
           }
         } else {
@@ -144,16 +151,16 @@ class _RecurringState extends State<Recurring> {
             for (int x = 0; x < functionData.length; x++) {
               if (positionList[i] == functionData[x] &&
                   (item["role"] == "Leader" || item["role"] == "Staff")) {
-                if (userList.contains(item['user_name'])) {
+                if (userList.contains(item['username'])) {
                 } else {
-                  userList.add(item["user_name"]);
+                  userList.add(item["username"]);
                 }
               }
             }
           }
         }
       }
-
+      print(userList);
       // userList.insert(0, "All");
       functionList.insert(0, "All");
       if (userRole == 'Super Admin' || userRole == 'Manager') {
@@ -161,7 +168,9 @@ class _RecurringState extends State<Recurring> {
       }
       siteList.insert(0, "All");
 
-      userLists = userList;
+      // Remove duplicate
+      // Set<String> setWithoutDuplicates = Set.from(userList);
+      // userList = setWithoutDuplicates.toList();
     });
   }
 

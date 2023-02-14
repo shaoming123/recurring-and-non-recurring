@@ -11,7 +11,7 @@ import 'package:ipsolution/src/card/task.dart';
 import 'package:ipsolution/src/navbar.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../databaseHandler/DbHelper.dart';
+
 import '../model/eventDataSource.dart';
 import '../util/checkInternet.dart';
 import '../util/cloneData.dart';
@@ -38,7 +38,7 @@ class _NonRecurringState extends State<NonRecurring> {
   int requestReview = 0;
   int pendingReview = 0;
   bool arrowChange = false;
-  DbHelper dbHelper = DbHelper();
+  // DbHelper dbHelper = DbHelper();
   CloneHelper cloneHelper = CloneHelper();
   List<Map<String, dynamic>> allNonRecurring = [];
   List<Map<String, dynamic>> foundNonRecurring = [];
@@ -53,7 +53,7 @@ class _NonRecurringState extends State<NonRecurring> {
   @override
   void initState() {
     super.initState();
-    cloneHelper.initDb();
+
     _refresh();
     if (widget.start != null && widget.end != null) {
       startDate = widget.start;
@@ -158,7 +158,6 @@ class _NonRecurringState extends State<NonRecurring> {
       initialDateRange: startDate != null && endDate != null
           ? DateTimeRange(start: startDate, end: endDate)
           : null,
-      initialEntryMode: DatePickerEntryMode.calendarOnly,
       firstDate: DateTime(DateTime.now().year - 50),
       lastDate: DateTime(DateTime.now().year + 50),
       saveText: 'Done',

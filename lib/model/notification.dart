@@ -1,5 +1,5 @@
 class NotificationModel {
-  late int id;
+  late String id;
   late String owner;
   late String assigner;
   late String task;
