@@ -130,7 +130,6 @@ class _TeamtaskState extends State<Teamtask>
                                 border: InputBorder.none,
                               ),
                               onChanged: (value) {
-                                print(widget.foundTeamNonRecurring);
                                 List<List<Map<String, dynamic>>> results =
                                     Search().searchResult(
                                         value,
@@ -424,211 +423,225 @@ Widget page(label, screenHeight, nonRecurring) {
                     child: nonRecurring.isNotEmpty
                         ? Column(
                             children: [
-                              ExpansionTile(
-                                leading: Text(
-                                  '${index + 1}',
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                title: Text(
-                                  nonRecurring[index]['task'],
-                                  // overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black),
-                                ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 5.0),
+                                child: ExpansionTile(
+                                  leading: Text(
+                                    '${index + 1}',
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  tilePadding: EdgeInsets.zero,
+                                  title: Text(
+                                    nonRecurring[index]['task'],
+                                    // overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black),
+                                  ),
 
-                                // TextField(
-                                //   enabled: false,
-                                //   maxLines: 1,
-                                //   decoration: InputDecoration(
-                                //     hintText:
-                                //         'New Form - Need To Assign Someone To Add New Form - Notices - Someone Create And Richie Review - Done In Weekly Basi',
-                                //     border: InputBorder.none,
-                                //     hintStyle: TextStyle(
-                                //         fontSize: 14,
-                                //         fontWeight: FontWeight.w500,
-                                //         color: Colors.black),
-                                //   ),
-                                // ),
-                                trailing: nonRecurring[index]['status'] == '100'
-                                    ? const SizedBox()
-                                    : Container(
-                                        width: 90,
-                                        height: 20,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                          color: dayLeft.isNegative
-                                              ? Styles.lateColor
-                                              : dayLeft == 0
-                                                  ? Styles.todayColor
-                                                  : Styles.activeColor,
-                                        ),
-                                        child: Center(
-                                            child: dayLeft.isNegative
-                                                ? Text(
-                                                    "${dayLeft.abs()} DAYS LATE",
-                                                    style: Styles.dayLeftLate,
-                                                  )
+                                  // TextField(
+                                  //   enabled: false,
+                                  //   maxLines: 1,
+                                  //   decoration: InputDecoration(
+                                  //     hintText:
+                                  //         'New Form - Need To Assign Someone To Add New Form - Notices - Someone Create And Richie Review - Done In Weekly Basi',
+                                  //     border: InputBorder.none,
+                                  //     hintStyle: TextStyle(
+                                  //         fontSize: 14,
+                                  //         fontWeight: FontWeight.w500,
+                                  //         color: Colors.black),
+                                  //   ),
+                                  // ),
+                                  trailing: nonRecurring[index]['status'] ==
+                                          '100'
+                                      ? const SizedBox()
+                                      : Container(
+                                          width: 85,
+                                          height: 20,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            color: dayLeft.isNegative
+                                                ? Styles.lateColor
                                                 : dayLeft == 0
-                                                    ? Text(
-                                                        "DUE TODAY",
-                                                        style:
-                                                            Styles.dayLeftToday,
-                                                      )
-                                                    : Text(
-                                                        "$dayLeft DAYS LEFT",
-                                                        style: Styles
-                                                            .dayLeftActive,
-                                                      ))),
-                                children: <Widget>[
-                                  Container(
-                                    width: double.infinity,
-                                    margin: const EdgeInsets.all(10),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 20.0),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Column(
-                                      children: <Widget>[
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(
-                                                  Icons.edit_outlined,
-                                                  size: 20),
-                                              onPressed: () {
-                                                showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return editNonRecurring(
-                                                          id: nonRecurring[
-                                                                  index]["id"]
-                                                              .toString(),
-                                                          task: false);
-                                                    });
-                                              },
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(
-                                                  Icons.delete_outline,
-                                                  size: 20),
-                                              onPressed: () async {
-                                                await Internet.isInternet()
-                                                    .then((connection) async {
-                                                  if (connection) {
-                                                    await deleteItem(
-                                                        context,
-                                                        nonRecurring[index]
-                                                                ["id"]
-                                                            .toString());
-                                                  } else {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(SnackBar(
-                                                      content: const Text(
-                                                          "No Internet !"),
-                                                      behavior: SnackBarBehavior
-                                                          .floating,
-                                                      margin:
-                                                          const EdgeInsets.all(
-                                                              20),
-                                                      action: SnackBarAction(
-                                                        label: 'Dismiss',
-                                                        disabledTextColor:
-                                                            Colors.white,
-                                                        textColor: Colors.blue,
-                                                        onPressed: () {
-                                                          //Do whatever you want
-                                                        },
-                                                      ),
-                                                    ));
-                                                  }
-                                                });
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                        const Gap(10),
-                                        buildField(
-                                            'Category',
-                                            nonRecurring[index]['category']
-                                                .split("|")[0],
-                                            null,
-                                            null,
-                                            context),
-                                        const Gap(20),
-                                        buildField(
-                                            'Sub-Category	',
-                                            nonRecurring[index]['subcategory'],
-                                            null,
-                                            null,
-                                            context),
-                                        const Gap(20),
-                                        buildField(
-                                            'Type',
-                                            nonRecurring[index]['type'],
-                                            null,
-                                            null,
-                                            context),
-                                        const Gap(20),
-                                        buildField(
-                                            'Site',
-                                            nonRecurring[index]['site'],
-                                            null,
-                                            null,
-                                            context),
-                                        const Gap(20),
-                                        buildField(
-                                            'Due',
-                                            nonRecurring[index]['deadline'],
-                                            null,
-                                            null,
-                                            context),
-                                        const Gap(20),
-                                        buildField(
-                                            'Stages',
-                                            nonRecurring[index]['status'],
-                                            null,
-                                            null,
-                                            context),
-                                        const Gap(20),
-                                        buildField(
-                                            'Remark',
-                                            nonRecurring[index]['remarks'],
-                                            null,
-                                            null,
-                                            context),
-                                        const Gap(20),
-                                        buildField(
-                                            'Last Mod',
-                                            nonRecurring[index]['lastMod'],
-                                            null,
-                                            null,
-                                            context),
-                                        const Gap(10),
-                                        nonRecurring[index]['checked'] != '-'
-                                            ? buildField(
-                                                'Checked',
-                                                nonRecurring[index]['checked'],
-                                                nonRecurring[index]
-                                                    ['personCheck'],
-                                                nonRecurring[index]['id'],
-                                                context)
-                                            : const Gap(10),
-                                        const Gap(10),
-                                      ],
-                                    ),
-                                  )
-                                ],
+                                                    ? Styles.todayColor
+                                                    : Styles.activeColor,
+                                          ),
+                                          child: Center(
+                                              child: dayLeft.isNegative
+                                                  ? Text(
+                                                      "${dayLeft.abs()} DAYS LATE",
+                                                      style: Styles.dayLeftLate,
+                                                    )
+                                                  : dayLeft == 0
+                                                      ? Text(
+                                                          "DUE TODAY",
+                                                          style: Styles
+                                                              .dayLeftToday,
+                                                        )
+                                                      : Text(
+                                                          "$dayLeft DAYS LEFT",
+                                                          style: Styles
+                                                              .dayLeftActive,
+                                                        ))),
+                                  children: <Widget>[
+                                    Container(
+                                      width: double.infinity,
+                                      margin: const EdgeInsets.all(10),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20.0),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Column(
+                                        children: <Widget>[
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              IconButton(
+                                                icon: const Icon(
+                                                    Icons.edit_outlined,
+                                                    size: 20),
+                                                onPressed: () {
+                                                  showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext
+                                                          context) {
+                                                        return editNonRecurring(
+                                                            id: nonRecurring[
+                                                                    index]["id"]
+                                                                .toString(),
+                                                            task: false);
+                                                      });
+                                                },
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(
+                                                    Icons.delete_outline,
+                                                    size: 20),
+                                                onPressed: () async {
+                                                  await Internet.isInternet()
+                                                      .then((connection) async {
+                                                    if (connection) {
+                                                      await deleteItem(
+                                                          context,
+                                                          nonRecurring[index]
+                                                                  ["id"]
+                                                              .toString());
+                                                    } else {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                              SnackBar(
+                                                        content: const Text(
+                                                            "No Internet !"),
+                                                        behavior:
+                                                            SnackBarBehavior
+                                                                .floating,
+                                                        margin: const EdgeInsets
+                                                            .all(20),
+                                                        action: SnackBarAction(
+                                                          label: 'Dismiss',
+                                                          disabledTextColor:
+                                                              Colors.white,
+                                                          textColor:
+                                                              Colors.blue,
+                                                          onPressed: () {
+                                                            //Do whatever you want
+                                                          },
+                                                        ),
+                                                      ));
+                                                    }
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                          const Gap(10),
+                                          buildField(
+                                              'Category',
+                                              nonRecurring[index]['category']
+                                                  .split("|")[0],
+                                              null,
+                                              null,
+                                              context),
+                                          const Gap(20),
+                                          buildField(
+                                              'Sub-Category	',
+                                              nonRecurring[index]
+                                                  ['subcategory'],
+                                              null,
+                                              null,
+                                              context),
+                                          const Gap(20),
+                                          buildField(
+                                              'Type',
+                                              nonRecurring[index]['type'],
+                                              null,
+                                              null,
+                                              context),
+                                          const Gap(20),
+                                          buildField(
+                                              'Site',
+                                              nonRecurring[index]['site'],
+                                              null,
+                                              null,
+                                              context),
+                                          const Gap(20),
+                                          buildField(
+                                              'Due',
+                                              nonRecurring[index]['deadline'],
+                                              null,
+                                              null,
+                                              context),
+                                          const Gap(20),
+                                          buildField(
+                                              'Stages',
+                                              nonRecurring[index]['status'],
+                                              null,
+                                              null,
+                                              context),
+                                          const Gap(20),
+                                          buildField(
+                                              'Remark',
+                                              nonRecurring[index]['remarks'],
+                                              null,
+                                              null,
+                                              context),
+                                          const Gap(20),
+                                          buildField(
+                                              'Last Mod',
+                                              nonRecurring[index]['lastMod'],
+                                              null,
+                                              null,
+                                              context),
+                                          const Gap(20),
+                                          nonRecurring[index]['checked'] !=
+                                                      '-' &&
+                                                  nonRecurring[index]
+                                                          ['status'] ==
+                                                      '100'
+                                              ? buildField(
+                                                  'Checked',
+                                                  nonRecurring[index]
+                                                      ['checked'],
+                                                  nonRecurring[index]
+                                                      ['personCheck'],
+                                                  nonRecurring[index]['id'],
+                                                  context)
+                                              : const Gap(10),
+                                          const Gap(10),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
                               ),
                             ],
                           )
@@ -652,13 +665,12 @@ Widget buildField(
     children: <Widget>[
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 5.0),
-        child: Container(
-            width: 80, child: Text('$labelText:', style: Styles.label)),
+        child: SizedBox(
+            width: 70, child: Text('$labelText:', style: Styles.labelData)),
       ),
-      const Gap(10),
       Flexible(
         child: Container(
-          width: 150,
+          width: 180,
           height: 40,
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.withOpacity(0.5), width: 1.0),
@@ -691,8 +703,26 @@ Widget buildField(
                             await Internet.isInternet()
                                 .then((connection) async {
                               if (connection) {
-                                if (checkPerson == currentUsername) {
+                                if (checkPerson
+                                    .split(',')
+                                    .contains(currentUsername)) {
                                   await toggleSwitch(value, id, context);
+                                } else {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: const Text(
+                                        "This must be checked by an authorized person."),
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: const EdgeInsets.all(20),
+                                    action: SnackBarAction(
+                                      label: 'Dismiss',
+                                      disabledTextColor: Colors.white,
+                                      textColor: Colors.blue,
+                                      onPressed: () {
+                                        //Do whatever you want
+                                      },
+                                    ),
+                                  ));
                                 }
                               } else {
                                 ScaffoldMessenger.of(context)

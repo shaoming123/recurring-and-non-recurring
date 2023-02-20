@@ -32,7 +32,7 @@ class _DialogBoxState extends State<DialogBox> {
   List<String> userPosition = <String>[];
   List<String> userSite = <String>[];
   List<String> userSiteLead = <String>[];
-  List<Map<String, dynamic>> userDetails = [];
+  List userDetails = [];
   bool showPassword = true;
   String userRole = '';
   String userActive = '';
@@ -371,6 +371,7 @@ class _DialogBoxState extends State<DialogBox> {
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
                 decoration: const InputDecoration(border: InputBorder.none),
+                enabled: widget.isEditing == true ? true : false,
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,
@@ -415,6 +416,7 @@ class _DialogBoxState extends State<DialogBox> {
             child: DropdownButtonHideUnderline(
               child: DropDownMultiSelect(
                 decoration: const InputDecoration(border: InputBorder.none),
+                enabled: widget.isEditing == true ? true : false,
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,

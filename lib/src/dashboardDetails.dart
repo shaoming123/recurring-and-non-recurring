@@ -110,11 +110,11 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                               title: Text(
                                 e["task"],
                                 style: const TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w500),
+                                    fontSize: 12, fontWeight: FontWeight.w500),
                               ),
                               trailing: widget.detailName != 'Completed'
                                   ? Container(
-                                      width: 100,
+                                      width: 85,
                                       height: 20,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(5),
@@ -158,48 +158,42 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "Start Date: ${DateFormat('dd-MM-yyyy hh:mm:ss').format(DateTime.parse(e["start"]))}",
-                                          style: TextStyle(
-                                              color: Styles.textColor),
+                                          style: Styles.labelData,
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "Due Date: ${DateFormat('dd-MM-yyyy hh:mm:ss').format(DateTime.parse(e["end"]))}",
-                                          style: TextStyle(
-                                              color: Styles.textColor),
+                                          style: Styles.labelData,
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "Duration: ${e["duration"]}",
-                                          style: TextStyle(
-                                              color: Styles.textColor),
+                                          style: Styles.labelData,
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "Assignee: ${e["person"]}",
-                                          style: TextStyle(
-                                              color: Styles.textColor),
+                                          style: Styles.labelData,
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "Site: ${e["site"]}",
-                                          style: TextStyle(
-                                              color: Styles.textColor),
+                                          style: Styles.labelData,
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "Recurring : ${e["recurring"]}",
-                                          style: TextStyle(
-                                              color: Styles.textColor),
+                                          style: Styles.labelData,
                                         ),
                                       ),
                                     ],
@@ -243,7 +237,7 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                               ),
                               trailing: widget.detailName != 'Completed'
                                   ? Container(
-                                      width: 100,
+                                      width: 85,
                                       height: 20,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(5),
@@ -287,40 +281,35 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "Category:  ${e["category"]}",
-                                          style: TextStyle(
-                                              color: Styles.textColor),
+                                          style: Styles.labelData,
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "Subcategory:  ${e["subcategory"]}",
-                                          style: TextStyle(
-                                              color: Styles.textColor),
+                                          style: Styles.labelData,
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "Site:  ${e["site"]}",
-                                          style: TextStyle(
-                                              color: Styles.textColor),
+                                          style: Styles.labelData,
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "Status:  ${e["status"]} %",
-                                          style: TextStyle(
-                                              color: Styles.textColor),
+                                          style: Styles.labelData,
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           "Deadline: ${DateFormat('dd-MM-yyyy').format(DateTime.parse(e["deadline"]))}",
-                                          style: TextStyle(
-                                              color: Styles.textColor),
+                                          style: Styles.labelData,
                                         ),
                                       ),
                                     ],

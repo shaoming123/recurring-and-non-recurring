@@ -28,12 +28,12 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
+	<!-- <key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
+	</array> -->
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -46,6 +46,12 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+    <string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UIRequiresFullScreen</key>
 	<true/>
 </dict>
 </plist>

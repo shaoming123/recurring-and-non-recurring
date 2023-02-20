@@ -1,5 +1,6 @@
 //@dart=2.9
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import 'package:ipsolution/src/dashboard.dart';
@@ -10,6 +11,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences prefs = await SharedPreferences.getInstance();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }

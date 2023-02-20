@@ -17,7 +17,6 @@ import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-
 import 'package:url_launcher/url_launcher.dart';
 
 import '../util/checkInternet.dart';
@@ -220,8 +219,7 @@ class _NavbarState extends State<Navbar> {
                           Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      const NonRecurringTeam()));
+                                  builder: (context) => const NonRecurringTeam()));
                         },
                       ),
                     )

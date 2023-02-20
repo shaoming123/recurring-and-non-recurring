@@ -353,7 +353,6 @@ class _AddMemberState extends State<AddMember> {
             const Gap(10),
             Container(
               margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
                   border: Border.all(color: Colors.white, width: 1),
                   borderRadius: BorderRadius.circular(12),
@@ -383,6 +382,7 @@ class _AddMemberState extends State<AddMember> {
                       // }
                     });
                   },
+
                   selectedValues: selectedPosition,
                 ),
               ),
@@ -435,7 +435,6 @@ class _AddMemberState extends State<AddMember> {
             const Gap(10),
             Container(
               margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
                   border: Border.all(color: Colors.white, width: 1),
                   borderRadius: BorderRadius.circular(12),
@@ -511,7 +510,6 @@ class _AddMemberState extends State<AddMember> {
             const Gap(10),
             Container(
               margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
                   border: Border.all(color: Colors.white, width: 1),
                   borderRadius: BorderRadius.circular(12),
@@ -573,9 +571,11 @@ class _AddMemberState extends State<AddMember> {
       );
     }
 
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return Stack(children: <Widget>[
       Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(15),
           margin: const EdgeInsets.only(top: 45),
           decoration: BoxDecoration(
               shape: BoxShape.rectangle,
@@ -585,7 +585,7 @@ class _AddMemberState extends State<AddMember> {
                 BoxShadow(
                     color: Colors.black, offset: Offset(0, 10), blurRadius: 10),
               ]),
-          child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+          child: Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

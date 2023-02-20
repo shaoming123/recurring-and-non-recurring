@@ -160,7 +160,7 @@ class _RecurringState extends State<Recurring> {
           }
         }
       }
-      print(userList);
+
       // userList.insert(0, "All");
       functionList.insert(0, "All");
       if (userRole == 'Super Admin' || userRole == 'Manager') {
@@ -373,8 +373,8 @@ class _RecurringState extends State<Recurring> {
                       ? Column(
                           children: [
                             Container(
-                              height: 30,
-                              margin: const EdgeInsets.only(bottom: 10),
+                              height: 25,
+                              margin: const EdgeInsets.only(bottom: 5),
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 10),
                               decoration: BoxDecoration(
@@ -392,7 +392,7 @@ class _RecurringState extends State<Recurring> {
                                   selectedItemHighlightColor: Colors.grey,
                                   hint: const Text(
                                     'User',
-                                    style: TextStyle(fontSize: 12),
+                                    style: TextStyle(fontSize: 10),
                                   ),
                                   // value: ,
                                   dropdownMaxHeight: 300,
@@ -403,7 +403,7 @@ class _RecurringState extends State<Recurring> {
                                           child: Text(
                                             e,
                                             style:
-                                                const TextStyle(fontSize: 12),
+                                                const TextStyle(fontSize: 10),
                                           ),
                                         ),
                                       )
@@ -428,9 +428,9 @@ class _RecurringState extends State<Recurring> {
                                 children: [
                                   Expanded(
                                     child: Container(
-                                      height: 30,
+                                      height: 25,
                                       margin: const EdgeInsets.only(
-                                          bottom: 10, right: 5),
+                                          bottom: 5, right: 5),
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 10),
                                       decoration: BoxDecoration(
@@ -451,7 +451,7 @@ class _RecurringState extends State<Recurring> {
                                               Colors.grey,
                                           hint: const Text(
                                             'Function',
-                                            style: TextStyle(fontSize: 12),
+                                            style: TextStyle(fontSize: 10),
                                           ),
                                           // value: ,
                                           items: functionList
@@ -461,7 +461,7 @@ class _RecurringState extends State<Recurring> {
                                                   child: Text(
                                                     e,
                                                     style: const TextStyle(
-                                                        fontSize: 12),
+                                                        fontSize: 10),
                                                   ),
                                                 ),
                                               )
@@ -484,9 +484,9 @@ class _RecurringState extends State<Recurring> {
                                   ),
                                   Expanded(
                                     child: Container(
-                                      height: 30,
+                                      height: 25,
                                       margin: const EdgeInsets.only(
-                                          bottom: 10, left: 5),
+                                          bottom: 5, left: 5),
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 10),
                                       decoration: BoxDecoration(
@@ -502,7 +502,7 @@ class _RecurringState extends State<Recurring> {
                                           isExpanded: true,
                                           hint: const Text(
                                             'Site',
-                                            style: TextStyle(fontSize: 12),
+                                            style: TextStyle(fontSize: 10),
                                           ),
                                           value: _selectedSite == ''
                                               ? null
@@ -516,7 +516,7 @@ class _RecurringState extends State<Recurring> {
                                                   child: Text(
                                                     e,
                                                     style: const TextStyle(
-                                                        fontSize: 12),
+                                                        fontSize: 10),
                                                   ),
                                                 ),
                                               )
@@ -568,7 +568,7 @@ class _RecurringState extends State<Recurring> {
                       monthViewSettings: MonthViewSettings(
                         showAgenda: true,
                         agendaItemHeight: height / 5.5,
-                        agendaViewHeight: 180,
+                        agendaViewHeight: height / 3,
                         monthCellStyle: const MonthCellStyle(
                             textStyle: TextStyle(
                                 fontStyle: FontStyle.normal,

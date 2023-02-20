@@ -748,7 +748,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
           const Gap(10),
           Container(
             margin: const EdgeInsets.only(bottom: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 5),
+            // padding: const EdgeInsets.symmetric(horizontal: 5),
             decoration: BoxDecoration(
                 border: Border.all(color: Colors.white, width: 1),
                 borderRadius: BorderRadius.circular(12),

@@ -7,7 +7,7 @@ import '../util/checkInternet.dart';
 import 'package:http/http.dart' as http;
 
 class notificationList extends StatefulWidget {
-  List<NotificationModel> notification;
+  List notification;
   notificationList({Key key, this.notification}) : super(key: key);
 
   @override
@@ -15,7 +15,7 @@ class notificationList extends StatefulWidget {
 }
 
 class _notificationListState extends State<notificationList> {
-  List<NotificationModel> notification = [];
+  List notification = [];
   @override
   void initState() {
     super.initState();
@@ -46,7 +46,8 @@ class _notificationListState extends State<notificationList> {
         ),
       ));
 
-      notification = notification..removeWhere((item) => item.id == id);
+      notification = notification
+        ..removeWhere((item) => item.id.toString() == id);
 
       Navigator.pushReplacement(
         context,
@@ -157,7 +158,8 @@ class _notificationListState extends State<notificationList> {
                     onPressed: () async {
                       await Internet.isInternet().then((connection) async {
                         if (connection) {
-                          await removeNotification(notification[index].id);
+                          await removeNotification(
+                              notification[index].id.toString());
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: const Text("No Internet !"),

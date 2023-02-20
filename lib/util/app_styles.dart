@@ -19,13 +19,13 @@ class Styles {
   static TextStyle subtitle =
       TextStyle(fontSize: 20, color: textColor, fontWeight: FontWeight.bold);
   static TextStyle label =
-      TextStyle(fontSize: 14, color: textColor, fontWeight: FontWeight.w700);
-  static TextStyle labelData =
       TextStyle(fontSize: 12, color: textColor, fontWeight: FontWeight.w700);
+  static TextStyle labelData =
+      TextStyle(fontSize: 11, color: textColor, fontWeight: FontWeight.w500);
   static TextStyle dayLeftActive = const TextStyle(
-      color: Color(0xFF39948f), fontWeight: FontWeight.bold, fontSize: 12);
+      color: Color(0xFF39948f), fontWeight: FontWeight.bold, fontSize: 10);
   static TextStyle dayLeftLate = const TextStyle(
-      color: Color(0xFFf43a2c), fontWeight: FontWeight.bold, fontSize: 12);
+      color: Color(0xFFf43a2c), fontWeight: FontWeight.bold, fontSize: 10);
   static TextStyle dayLeftToday = const TextStyle(
-      color: Color(0xFFd08c04), fontWeight: FontWeight.bold, fontSize: 12);
+      color: Color(0xFFd08c04), fontWeight: FontWeight.bold, fontSize: 10);
 }

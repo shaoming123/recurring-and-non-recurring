@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/CloneHelper.dart';
 import 'package:ipsolution/src/card/task.dart';
 import 'package:ipsolution/src/navbar.dart';
+import 'package:ipsolution/src/popFilter.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -206,7 +207,7 @@ class _NonRecurringState extends State<NonRecurring> {
           child: Column(
             children: [
               Appbar(title: "Non-Recurring", scaffoldKey: scaffoldKey),
-              const Gap(5),
+              // const Gap(5),
               GestureDetector(
                 onTap: () {
                   _show();
@@ -219,10 +220,16 @@ class _NonRecurringState extends State<NonRecurring> {
                       const Icon(Icons.calendar_month, size: 15),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text(
-                          "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
-                          style:
-                              TextStyle(color: Styles.textColor, fontSize: 12),
+                        child: Row(
+                          children: [
+                            Text(
+                              "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
+                              style: TextStyle(
+                                  color: Styles .textColor, fontSize: 12),
+                            ),
+                            const Gap(15),
+                            const PopFilter(task: 'ownTasks')
+                          ],
                         ),
                       ),
                     ],

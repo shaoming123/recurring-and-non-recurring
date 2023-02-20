@@ -1,5 +1,5 @@
 class NotificationModel {
-  late String id;
+  late int id;
   late String owner;
   late String assigner;
   late String task;
@@ -30,7 +30,7 @@ class NotificationModel {
   }
 
   NotificationModel.fromMap(Map<String, dynamic> map) {
-    id = map['id'];
+    id = int.parse(map['id'].toString());
     owner = map['owner'];
     assigner = map['assigner'];
     type = map['type'];

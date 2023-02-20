@@ -151,36 +151,6 @@ class _LoginState extends State<Login> {
             ),
           );
         }
-        // await dbHelper.getLoginUser(username, password).then((userData) {
-        //   if (userData != null && userData.active == 'Active') {
-        //     setSP(userData).whenComplete(() {
-        //       Navigator.pushAndRemoveUntil(
-        //           context,
-        //           MaterialPageRoute(builder: (_) => Dashboard()),
-        //           (Route<dynamic> route) => false);
-
-        //       ScaffoldMessenger.of(context).showSnackBar(
-        //         const SnackBar(
-        //           content: Text("Login Successfully"),
-        //         ),
-        //       );
-        //     });
-        //   } else {
-        //     ScaffoldMessenger.of(context).showSnackBar(
-        //       const SnackBar(
-        //         content: Text("Username and Password Incorrect!"),
-        //       ),
-        //     );
-        //   }
-        // }).catchError((error) {
-        //   print(error);
-
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     const SnackBar(
-        //       content: Text("Username and Password Incorrect!"),
-        //     ),
-        //   );
-        // });
       }
     }
   }
@@ -219,32 +189,34 @@ class _LoginState extends State<Login> {
             alignment: Alignment.center,
             children: <Widget>[
               Positioned(
-                top: 0,
-                right: 0,
+                top: -10,
+                right: -10,
                 child:
                     Image.asset("assets/images/login/top1.png", width: width),
               ),
               Positioned(
-                top: 0,
-                right: 0,
+                top: -10,
+                right: -10,
                 child:
                     Image.asset("assets/images/login/top2.png", width: width),
               ),
               Positioned(
-                bottom: 0,
+                bottom: -10,
                 right: 0,
+                left: -15,
                 child: Image.asset("assets/images/login/bottom1.png",
                     width: width),
               ),
               Positioned(
                 bottom: 0,
                 right: 0,
+                left: -10,
                 child: Image.asset("assets/images/login/bottom2.png",
                     width: width),
               ),
               Positioned(
                 bottom: 40,
-                left: 30,
+                left: 20,
                 child: Column(
                   children: [
                     const Text(

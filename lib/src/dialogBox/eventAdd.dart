@@ -1064,92 +1064,96 @@ class _EventAddState extends State<EventAdd> {
     }
 
     Widget recurringDetail() {
-      return AnimatedContainer(
+      return SizedBox(
         height: _animatedHeight,
-        color: Colors.transparent,
-        width: width,
-        duration: const Duration(milliseconds: 120),
-        child: Column(
-          children: [
-            _selectedRecurring == 'Once'
-                ? Container()
-                : Row(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Every : ",
-                          style:
-                              TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 20),
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white, width: 1),
-                              borderRadius: BorderRadius.circular(12),
-                              color: const Color(0xFFd4dce4)),
-                          child: TextFormField(
-                            cursorColor: Colors.black,
-                            style: const TextStyle(fontSize: 14),
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              hintText: '1',
-                            ),
-                            onFieldSubmitted: (_) {},
-                            controller: recurringController,
-                            validator: (data) {
-                              return data == null &&
-                                      data.isEmpty &&
-                                      _selectedRecurring != 'Once'
-                                  ? 'Field cannot be empty'
-                                  : null;
-                            },
+        child: AnimatedContainer(
+          height: _animatedHeight,
+          color: Colors.transparent,
+          width: width,
+          duration: const Duration(milliseconds: 120),
+          child: Column(
+            children: [
+              _selectedRecurring == 'Once'
+                  ? Container()
+                  : Row(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Every : ",
+                            style: TextStyle(
+                                color: Color(0xFFd4dce4), fontSize: 14),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-            Row(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    " Until : ",
-                    style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.all(0),
-                    padding: const EdgeInsets.all(0),
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white, width: 1),
-                        borderRadius: BorderRadius.circular(12),
-                        color: const Color(0xFFd4dce4)),
-                    child: ListTile(
-                      title: Text(
-                        recurringDate == null
-                            ? 'dd/mm/yy'
-                            : Utils.toDate(recurringDate),
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      trailing: const Icon(
-                        Icons.arrow_drop_down,
-                        color: Colors.black,
-                        size: 30,
-                      ),
-                      onTap: () {
-                        pickRecurringDate();
-                      },
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                            decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.white, width: 1),
+                                borderRadius: BorderRadius.circular(12),
+                                color: const Color(0xFFd4dce4)),
+                            child: TextFormField(
+                              cursorColor: Colors.black,
+                              style: const TextStyle(fontSize: 14),
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                hintText: '1',
+                              ),
+                              onFieldSubmitted: (_) {},
+                              controller: recurringController,
+                              validator: (data) {
+                                return data == null &&
+                                        data.isEmpty &&
+                                        _selectedRecurring != 'Once'
+                                    ? 'Field cannot be empty'
+                                    : null;
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+              Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      " Until : ",
+                      style: TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
                     ),
                   ),
-                )
-              ],
-            )
-          ],
+                  Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.all(0),
+                      padding: const EdgeInsets.all(0),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white, width: 1),
+                          borderRadius: BorderRadius.circular(12),
+                          color: const Color(0xFFd4dce4)),
+                      child: ListTile(
+                        title: Text(
+                          recurringDate == null
+                              ? 'dd/mm/yy'
+                              : Utils.toDate(recurringDate),
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        trailing: const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.black,
+                          size: 30,
+                        ),
+                        onTap: () {
+                          pickRecurringDate();
+                        },
+                      ),
+                    ),
+                  )
+                ],
+              )
+            ],
+          ),
         ),
       );
     }

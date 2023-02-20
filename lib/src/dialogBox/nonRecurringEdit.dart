@@ -806,7 +806,8 @@ class _editNonRecurringState extends State<editNonRecurring> {
           const Gap(10),
           Container(
             margin: const EdgeInsets.only(bottom: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 5),
+
+            // padding: const EdgeInsets.symmetric(horizontal: 5),
             decoration: BoxDecoration(
                 border: Border.all(color: Colors.white, width: 1),
                 borderRadius: BorderRadius.circular(12),
@@ -815,7 +816,10 @@ class _editNonRecurringState extends State<editNonRecurring> {
               child: DropDownMultiSelect(
                 // hint: Text(internet ? "" : nonRecurring_edit[0]['personCheck']),
                 enabled: check == true ? true : false,
-                decoration: const InputDecoration(border: InputBorder.none),
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                ),
+
                 icon: const Icon(
                   Icons.arrow_drop_down,
                   color: Colors.black,

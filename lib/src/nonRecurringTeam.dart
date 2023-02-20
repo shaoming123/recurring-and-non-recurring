@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
+import 'package:ipsolution/src/popFilter.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -65,22 +66,32 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
   void initState() {
     super.initState();
 
-    // allTeamNonRecurring = [];
-    // completedTeamNonRecurring = [];
-    // lateTeamNonRecurring = [];
-    // activeTeamNonRecurring = [];
     if (widget.start != null && widget.end != null) {
       startDate = widget.start;
       endDate = widget.end;
     }
-
     if (widget.selectedUser != null && widget.selectedPosition != null) {
       _selectedPosition = widget.selectedPosition;
       _selectedUser = widget.selectedUser;
+    } else {
+      allTeamNonRecurring = [];
+      completedTeamNonRecurring = [];
+      lateTeamNonRecurring = [];
+      activeTeamNonRecurring = [];
     }
+
     getUserPosition();
     fetchUsers();
   }
+
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   allTeamNonRecurring = [];
+  //   completedTeamNonRecurring = [];
+  //   lateTeamNonRecurring = [];
+  //   activeTeamNonRecurring = [];
+  // }
 
   Future<void> getUserPosition() async {
     final SharedPreferences sp = await _pref;
@@ -348,6 +359,42 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
     }
   }
 
+  void _setDates(FilterOption option) async {
+    setState(() {
+      switch (option) {
+        case FilterOption.thisYear:
+          startDate = DateTime(DateTime.now().year, 1, 1);
+          endDate = DateTime(DateTime.now().year, 12, 31);
+          break;
+        case FilterOption.lastMonth:
+          var now = DateTime.now();
+          startDate = DateTime(now.year, now.month - 1, 1);
+          endDate = startDate.add(const Duration(days: 31));
+          break;
+        case FilterOption.lastYear:
+          startDate = DateTime(DateTime.now().year - 1, 1, 1);
+          endDate = DateTime(DateTime.now().year - 1, 12, 31);
+          break;
+        case FilterOption.thisMonth:
+          var now = DateTime.now();
+          startDate = DateTime(now.year, now.month, 1);
+          endDate = DateTime(now.year, now.month + 1, 0);
+          break;
+      }
+    });
+    await getTeamData();
+    if (!mounted) return;
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) => NonRecurringTeam(
+                  start: startDate,
+                  end: endDate,
+                  selectedUser: _selectedUser,
+                  selectedPosition: _selectedPosition,
+                )));
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -379,10 +426,59 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
                           Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text(
-                              "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
-                              style: TextStyle(
-                                  color: Styles.textColor, fontSize: 12),
+                            child: Row(
+                              children: [
+                                Text(
+                                  "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
+                                  style: TextStyle(
+                                      color: Styles.textColor, fontSize: 12),
+                                ),
+                                const Gap(15),
+                                // filter
+                                PopupMenuButton<FilterOption>(
+                                  offset: const Offset(0, 25),
+                                  padding: EdgeInsets.zero,
+                                  onSelected: _setDates,
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: FilterOption.thisYear,
+                                      child: Text(
+                                        'This Year',
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: FilterOption.lastMonth,
+                                      child: Text(
+                                        'Last Month',
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: FilterOption.lastYear,
+                                      child: Text(
+                                        'Last Year',
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: FilterOption.thisMonth,
+                                      child: Text(
+                                        'This Month',
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                    ),
+                                  ],
+                                  child: const SizedBox(
+                                    height: 20,
+                                    width: 25,
+                                    child: Icon(
+                                      Icons.filter_alt,
+                                      size: 20,
+                                    ),
+                                  ),
+                                )
+                              ],
                             ),
                           ),
                         ],
@@ -433,13 +529,13 @@ class _NonRecurringTeamState extends State<NonRecurringTeam> {
                                         ),
                                       )
                                       .toList(),
-                                  onChanged: (val) {
+                                  onChanged: (val) async {
                                     if (mounted) {
                                       setState(() {
                                         _selectedPosition = val;
                                         _selectedUser = '';
                                       });
-                                      fetchUsers();
+                                      await fetchUsers();
                                     }
                                   },
                                   icon: const Icon(

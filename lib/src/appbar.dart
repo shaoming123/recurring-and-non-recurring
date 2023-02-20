@@ -1,5 +1,5 @@
 //@dart=2.9
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:flutter/material.dart';
 
 import 'package:ipsolution/model/notification.dart';
@@ -25,7 +25,7 @@ class Appbar extends StatefulWidget {
 
 class _AppbarState extends State<Appbar> {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
-  List<NotificationModel> notification = [];
+  List notification = [];
   // DbHelper dbHelper = DbHelper();
   CloneHelper cloneHelper = CloneHelper();
   Clone2Helper clone2Helper = Clone2Helper();
@@ -35,7 +35,7 @@ class _AppbarState extends State<Appbar> {
     getNotification();
   }
 
-  Future<void> getNotification() async {
+  Future<List> getNotification() async {
     final SharedPreferences sp = await _pref;
     bool isOnline = await Internet.isInternet();
 
@@ -43,6 +43,7 @@ class _AppbarState extends State<Appbar> {
         ? await Controller().getOnlineNotification()
         : await clone2Helper.fetchNotificationData();
 
+    notification = [];
     if (mounted) {
       setState(() {
         for (var item in data) {
@@ -52,12 +53,8 @@ class _AppbarState extends State<Appbar> {
         }
       });
     }
-  }
 
-  @override
-  void dispose() {
-    super.dispose();
-    notification = [];
+    return notification;
   }
 
   @override
@@ -110,39 +107,60 @@ class _AppbarState extends State<Appbar> {
               //   ],
               // ),
               // const Gap(15),
-              Container(
-                margin: const EdgeInsets.only(right: 10),
-                child: GestureDetector(
-                    onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  notificationList(notification: notification)),
+              FutureBuilder<List>(
+                  future: getNotification(),
+                  initialData: notification,
+                  builder:
+                      (BuildContext context, AsyncSnapshot<List> snapshot) {
+                    if (snapshot.hasData) {
+                      List notifications = snapshot.data;
+
+                      return Container(
+                        margin: const EdgeInsets.only(right: 10),
+                        child: GestureDetector(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => notificationList(
+                                    notification: notifications)),
+                          ),
+                          child: notifications.isNotEmpty
+                              ? badge.Badge(
+                                  badgeColor: Colors.red,
+                                  shape: badge.BadgeShape.circle,
+                                  position: badge.BadgePosition.topEnd(
+                                      top: -15, end: -5),
+                                  padding: const EdgeInsets.all(5),
+                                  badgeContent: Text(
+                                    notifications.length.toString(),
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  child: const Icon(
+                                    Icons.notifications_none,
+                                    size: 25,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.notifications_none,
+                                  size: 25,
+                                ),
                         ),
-                    child: notification.isNotEmpty
-                        ? Badge(
-                            badgeColor: Colors.red,
-                            shape: BadgeShape.circle,
-                            // borderRadius: BorderRadius.circular(5),
-                            position: BadgePosition.topEnd(top: -15, end: -5),
-                            padding: const EdgeInsets.all(5),
-                            badgeContent: Text(
-                              notification.length.toString(),
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            child: const Icon(
-                              Icons.notifications_none,
-                              size: 25,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.notifications_none,
-                            size: 25,
-                          )),
-              ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Container(
+                        margin: const EdgeInsets.only(right: 10),
+                        child: const Icon(
+                          Icons.notifications_none,
+                          size: 25,
+                        ),
+                      );
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  })
             ],
           ),
         ],
