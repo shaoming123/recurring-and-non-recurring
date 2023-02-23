@@ -613,12 +613,30 @@ class _RecurringState extends State<Recurring> {
                 ])),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return const EventAdd();
-              });
+        onPressed: () async {
+          await Internet.isInternet().then((connection) async {
+            if (connection) {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return const EventAdd();
+                  });
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: const Text("No Internet !"),
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.all(20),
+                action: SnackBarAction(
+                  label: 'Dismiss',
+                  disabledTextColor: Colors.white,
+                  textColor: Colors.blue,
+                  onPressed: () {
+                    //Do whatever you want
+                  },
+                ),
+              ));
+            }
+          });
         },
         backgroundColor: Styles.buttonColor,
         child: const Icon(

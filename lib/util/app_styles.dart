@@ -28,4 +28,6 @@ class Styles {
       color: Color(0xFFf43a2c), fontWeight: FontWeight.bold, fontSize: 10);
   static TextStyle dayLeftToday = const TextStyle(
       color: Color(0xFFd08c04), fontWeight: FontWeight.bold, fontSize: 10);
+  static TextStyle formText = const TextStyle(
+      color: Color(0xFFd4dce4), fontWeight: FontWeight.bold, fontSize: 12);
 }

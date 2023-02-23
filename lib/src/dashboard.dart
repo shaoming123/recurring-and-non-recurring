@@ -1,5 +1,6 @@
 //@dart=2.9
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
@@ -74,7 +75,15 @@ class _DashboardState extends State<Dashboard> {
     final nonRecurringData = isOnline
         ? await Controller().getOnlineNonRecurring()
         : await cloneHelper.fetchNonrecurringData();
-    EasyLoading.showSuccess('Done');
+
+    if (taskData == null || nonRecurringData == null) {
+      EasyLoading.showError('Failed with Server Error');
+      Future.delayed(const Duration(seconds: 2))
+          .then((value) => SystemNavigator.pop());
+    } else {
+      EasyLoading.showSuccess('Done');
+    }
+
     completed = [];
     late = [];
     progress = [];

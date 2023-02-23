@@ -22,6 +22,7 @@ Future updateSP(UserModel user) async {
   sp.setString("position", user.position);
   sp.setString("leadFunc", user.leadFunc);
   sp.setString("site", user.site);
+  sp.setString("leadFunc", user.leadFunc);
   sp.setString("siteLead", user.siteLead);
   sp.setString("active", user.active);
 }
@@ -39,6 +40,7 @@ Future updateAccount(UserModel user, context) async {
     "position": user.position,
     "site": user.site,
     "siteLead": user.siteLead,
+    "leadFunc": user.leadFunc,
     "phone": user.phone,
     "active": user.active,
   };

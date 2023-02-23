@@ -59,12 +59,8 @@ class Clone2Helper {
             await f.create();
             await f.writeAsBytes(response.data);
           }
-        } else {
-          // Handle the case where the HTTP status code is not 200 (OK)
-          // throw Exception(
-          //     "HTTP request failed with status code: ${response.statusCode}");
         }
-      } else {}
+      }
     });
     var openDb = await openDatabase(dbFile);
     return openDb;

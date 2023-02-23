@@ -93,8 +93,8 @@ class _NavbarState extends State<Navbar> {
   }
 
   void websitelaunch() async {
-    final Uri url =
-        Uri(scheme: 'https', host: 'www.ipsolutions4u.com', path: '');
+    final Uri url = Uri(
+        scheme: 'https', host: 'www.ipsolutions4u.com', path: 'ipsolutions');
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       throw 'Could not launch $url';
     }
@@ -219,7 +219,8 @@ class _NavbarState extends State<Navbar> {
                           Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const NonRecurringTeam()));
+                                  builder: (context) =>
+                                      const NonRecurringTeam()));
                         },
                       ),
                     )

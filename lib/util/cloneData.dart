@@ -144,100 +144,130 @@ class Controller {
   Future getOnlineUser() async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
 
-    var response =
-        await http.post(Uri.parse(url), body: {"tableName": "user_details"});
-    List userData = json.decode(response.body);
-
-    return userData;
+    try {
+      var response =
+          await http.post(Uri.parse(url), body: {"tableName": "user_details"});
+      List userData = json.decode(response.body);
+      return userData;
+    } catch (error) {
+      print("Error occurred: $error");
+      return null;
+    }
   }
 
   Future<List> getOnlineNonRecurring() async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
+    try {
+      var response =
+          await http.post(Uri.parse(url), body: {"tableName": "nonrecurring"});
+      List nonrecurringData = json.decode(response.body);
 
-    var response =
-        await http.post(Uri.parse(url), body: {"tableName": "nonrecurring"});
-    List nonrecurringData = json.decode(response.body);
-
-    return nonrecurringData;
+      return nonrecurringData;
+    } catch (error) {
+      print("Error occurred: $error");
+      return null;
+    }
   }
 
   Future<List> getOnlineRecurring() async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
+    try {
+      var response =
+          await http.post(Uri.parse(url), body: {"tableName": "tasks"});
 
-    var response =
-        await http.post(Uri.parse(url), body: {"tableName": "tasks"});
+      List recurringData = json.decode(response.body);
 
-    List recurringData = json.decode(response.body);
-
-    return recurringData;
+      return recurringData;
+    } catch (error) {
+      print("Error occurred: $error");
+      return null;
+    }
   }
 
   Future<List> getOnlineNotification() async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
+    try {
+      var response =
+          await http.post(Uri.parse(url), body: {"tableName": "notification"});
+      List notificationData = json.decode(response.body);
 
-    var response =
-        await http.post(Uri.parse(url), body: {"tableName": "notification"});
-    List notificationData = json.decode(response.body);
-
-    return notificationData;
+      return notificationData;
+    } catch (error) {
+      print("Error occurred: $error");
+      return null;
+    }
   }
 
 // Single Online
   Future getAOnlineUser(int id) async {
     var url =
         'https://ipsolutions4u.com/ipsolutions/recurringMobile/readSingle.php';
-    var response = await http.post(Uri.parse(url),
-        body: {"tableName": "user_details", "id": id.toString()});
-    var userData = [];
-    if (response.body.isNotEmpty) {
-      var data = json.decode(response.body);
-      if (data is Map) {
-        userData.add(data);
+    try {
+      var response = await http.post(Uri.parse(url),
+          body: {"tableName": "user_details", "id": id.toString()});
+      var userData = [];
+      if (response.body.isNotEmpty) {
+        var data = json.decode(response.body);
+        if (data is Map) {
+          userData.add(data);
+        }
+      } else {
+        userData = [];
       }
-    } else {
-      userData = [];
-    }
 
-    return userData;
+      return userData;
+    } catch (error) {
+      print("Error occurred: $error");
+      return null;
+    }
   }
 
   Future getAOnlineRecurring(int id) async {
     var url =
         'https://ipsolutions4u.com/ipsolutions/recurringMobile/readSingle.php';
+    try {
+      var response = await http.post(Uri.parse(url),
+          body: {"tableName": "tasks", "id": id.toString()});
 
-    var response = await http.post(Uri.parse(url),
-        body: {"tableName": "tasks", "id": id.toString()});
-
-    var recurringData = [];
-    if (response.body.isNotEmpty) {
-      var data = json.decode(response.body);
-      if (data is Map) {
-        recurringData.add(data);
+      var recurringData = [];
+      if (response.body.isNotEmpty) {
+        var data = json.decode(response.body);
+        if (data is Map) {
+          recurringData.add(data);
+        }
+      } else {
+        recurringData = [];
       }
-    } else {
-      recurringData = [];
-    }
 
-    return recurringData;
+      return recurringData;
+    } catch (error) {
+      print("Error occurred: $error");
+      return null;
+    }
   }
 
   Future getAOnlineNonRecurring(int id) async {
-    var url =
-        'https://ipsolutions4u.com/ipsolutions/recurringMobile/readSingle.php';
+    try {
+      var url =
+          'https://ipsolutions4u.com/ipsolutions/recurringMobile/readSingle.php';
 
-    var response = await http.post(Uri.parse(url),
-        body: {"tableName": "nonrecurring", "id": id.toString()});
+      var response = await http.post(Uri.parse(url),
+          body: {"tableName": "nonrecurring", "id": id.toString()});
 
-    var nonrecurringData = [];
-    if (response.body.isNotEmpty) {
-      var data = json.decode(response.body);
-      if (data is Map) {
-        nonrecurringData.add(data);
+      var nonrecurringData = [];
+      if (response.body.isNotEmpty) {
+        var data = json.decode(response.body);
+        if (data is Map) {
+          nonrecurringData.add(data);
+        }
+      } else {
+        nonrecurringData = [];
       }
-    } else {
-      nonrecurringData = [];
-    }
 
-    return nonrecurringData;
+      return nonrecurringData;
+    } catch (error) {
+      print("Error occurred: $error");
+      return null;
+    }
   }
 }

@@ -42,6 +42,7 @@ class _AccountState extends State<Account> {
   final site = TextEditingController();
   final siteLead = TextEditingController();
   String active = '';
+  String leadFunc = '';
   String filepath;
   final function = TextEditingController();
   List userData = [];
@@ -67,7 +68,7 @@ class _AccountState extends State<Account> {
       site.text = sp.getString("site");
       siteLead.text = sp.getString("siteLead");
       active = sp.getString("active");
-
+      leadFunc = sp.getString("leadFunc");
       filepath = sp.getString("filepath");
     });
   }
@@ -316,6 +317,7 @@ class _AccountState extends State<Account> {
                                           site: site.text,
                                           siteLead: siteLead.text,
                                           phone: phone.text,
+                                          leadFunc: leadFunc,
                                           active: active),
                                       context);
                                 } else {

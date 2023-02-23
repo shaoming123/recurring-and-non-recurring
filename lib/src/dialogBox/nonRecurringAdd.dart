@@ -1,9 +1,13 @@
 //@dart=2.9
+import 'dart:io';
+
+import 'package:dotted_border/dotted_border.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/Clone2Helper.dart';
 
@@ -13,6 +17,7 @@ import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/selection.dart';
+import '../../util/app_styles.dart';
 import '../../util/checkInternet.dart';
 
 import '../../util/cloneData.dart';
@@ -370,6 +375,51 @@ class _addNonRecurringState extends State<addNonRecurring> {
     }
   }
 
+  // File _image1;
+  // File _image2;
+  // Future<void> _pickImage(ImageSource source, int index) async {
+  //   final pickedImage = await ImagePicker().pickImage(source: source);
+  //   if (pickedImage != null) {
+  //     setState(() {
+  //       if (index == 1) {
+  //         _image1 = File(pickedImage.path);
+  //       } else {
+  //         _image2 = File(pickedImage.path);
+  //       }
+  //     });
+  //   }
+  // }
+
+  // void _showImageDialog(BuildContext context, int index) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         content: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             ListTile(
+  //               title: Text('Take a photo'),
+  //               onTap: () {
+  //                 _pickImage(ImageSource.camera, index);
+  //                 Navigator.of(context).pop();
+  //               },
+  //             ),
+  //             ListTile(
+  //               title: Text('Choose from gallery'),
+  //               onTap: () async {
+  //                 _pickImage(ImageSource.gallery, index);
+  //                 Navigator.of(context).pop();
+  //               },
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -431,6 +481,71 @@ class _addNonRecurringState extends State<addNonRecurring> {
         ],
       );
     }
+
+    // image
+    // Widget _buildImageBox(File image, int index, String imageText) {
+    //   return Column(
+    //     children: [
+    //       GestureDetector(
+    //         onTap: () => _showImageDialog(context, index),
+    //         child: DottedBorder(
+    //           color: Colors.black,
+    //           strokeWidth: 5,
+    //           dashPattern: [
+    //             5,
+    //             5,
+    //           ],
+    //           child: Container(
+    //             width: 80,
+    //             height: 80,
+    //             color: Color(0xFFd4dce4),
+    //             child: image != null
+    //                 ? Image.file(
+    //                     image,
+    //                     fit: BoxFit.cover,
+    //                   )
+    //                 : Icon(Icons.add_a_photo),
+    //           ),
+    //         ),
+    //       ),
+    //       const Gap(15),
+    //       Text(
+    //         imageText,
+    //         style: Styles.formText,
+    //       ),
+    //     ],
+    //   );
+    // }
+
+    // // image
+    // Widget uploadImage() {
+    //   return Column(
+    //     crossAxisAlignment: CrossAxisAlignment.start,
+    //     mainAxisSize: MainAxisSize.min,
+    //     children: [
+    //       Text(
+    //         'Images',
+    //         style: const TextStyle(color: Color(0xFFd4dce4), fontSize: 14),
+    //       ),
+    //       const Gap(20),
+    //       Container(
+    //         margin: const EdgeInsets.only(bottom: 30),
+    //         padding: const EdgeInsets.symmetric(horizontal: 5),
+    //         child: Center(
+    //           child: Row(
+    //             crossAxisAlignment: CrossAxisAlignment.center,
+    //             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    //             children: [
+    //               _buildImageBox(_image1, 1, "Before"),
+    //               const Gap(10),
+    //               _buildImageBox(_image2, 2, "After"),
+    //             ],
+    //           ),
+    //         ),
+    //       ),
+    //     ],
+    //   );
+    // }
 
     Widget dropdownList(String labelText) {
       return Column(
@@ -943,6 +1058,7 @@ class _addNonRecurringState extends State<addNonRecurring> {
                 dropdownType(),
                 dropdownSite(),
                 buildTextField("Task", "description", taskController),
+                // uploadImage(),
                 dropdownOwner(),
                 deadlineSelect(),
                 buildTextField("Status", "0", statusController),
