@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import 'package:ipsolution/model/user.dart';
@@ -35,9 +36,13 @@ class _LoginState extends State<Login> {
     if (_formKey.currentState.validate()) {
       username = userController.text;
       password = passwordController.text;
-
+      FocusScope.of(context).requestFocus(FocusNode());
       var url =
           'https://ipsolutions4u.com/ipsolutions/recurringMobile/login.php';
+      EasyLoading.show(
+        status: 'loading...',
+        maskType: EasyLoadingMaskType.black,
+      );
       var response = await http.post(Uri.parse(url), body: {
         "username": username,
         "password": password,
@@ -65,33 +70,6 @@ class _LoginState extends State<Login> {
             // final dataModel = UserModel.fromMap(data);
 
             setSP(dataModel).whenComplete(() async {
-              // await Controller().addRecurringToSqlite();
-              // await Controller().addNonRecurringToSqlite();
-
-              // bool firsttimeSetup = await dbHelper.getfirst();
-              EasyLoading.show(
-                status: 'loading...',
-                maskType: EasyLoadingMaskType.black,
-              );
-              await Internet.isInternet().then((connection) async {
-                FocusScope.of(context).requestFocus(FocusNode());
-                // if (firsttimeSetup) {
-                if (!mounted) return;
-
-                if (connection) {
-                  // await dbHelper.addfirst();
-
-                  // await Controller().addNotificationDateToSqlite();
-                  // await CloneHelper().initDb();
-                  // await Clone2Helper().initDb();
-                  // await Controller().addRecurringToSqlite();
-                  // await Controller().addNonRecurringToSqlite();
-
-                  // sp.setString("updateTime", DateTime.now().toString());
-
-                }
-              });
-
               EasyLoading.showSuccess('Done');
               if (!mounted) return;
               Navigator.pushAndRemoveUntil(
@@ -151,6 +129,10 @@ class _LoginState extends State<Login> {
             ),
           );
         }
+      } else {
+        EasyLoading.showError('Failed with Server Error');
+        Future.delayed(const Duration(seconds: 2))
+            .then((value) => SystemNavigator.pop());
       }
     }
   }

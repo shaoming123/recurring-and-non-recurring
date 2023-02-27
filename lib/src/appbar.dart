@@ -1,6 +1,8 @@
 //@dart=2.9
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import 'package:ipsolution/model/notification.dart';
 
@@ -42,18 +44,18 @@ class _AppbarState extends State<Appbar> {
     final data = isOnline
         ? await Controller().getOnlineNotification()
         : await clone2Helper.fetchNotificationData();
-
-    notification = [];
-    if (mounted) {
-      setState(() {
-        for (var item in data) {
-          if (item["owner"] == sp.getString("user_name")) {
-            notification.add(NotificationModel.fromMap(item));
+    if (data != null) {
+      notification = [];
+      if (mounted) {
+        setState(() {
+          for (var item in data) {
+            if (item["owner"] == sp.getString("user_name")) {
+              notification.add(NotificationModel.fromMap(item));
+            }
           }
-        }
-      });
+        });
+      }
     }
-
     return notification;
   }
 

@@ -1,13 +1,12 @@
 //@dart=2.9
 import 'dart:io';
 
-import 'package:dotted_border/dotted_border.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
+
 import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/Clone2Helper.dart';
 
@@ -17,7 +16,7 @@ import 'package:multiselect/multiselect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/selection.dart';
-import '../../util/app_styles.dart';
+
 import '../../util/checkInternet.dart';
 
 import '../../util/cloneData.dart';

@@ -1,6 +1,8 @@
 //@dart=2.9
 import 'dart:convert';
 
+import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 
 // final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
@@ -160,9 +162,18 @@ class Controller {
     try {
       var response =
           await http.post(Uri.parse(url), body: {"tableName": "nonrecurring"});
-      List nonrecurringData = json.decode(response.body);
 
-      return nonrecurringData;
+      if (response.statusCode == 200) {
+        List nonrecurringData = json.decode(response.body);
+
+        return nonrecurringData;
+      } else {
+        EasyLoading.showError(
+            'Server is down, status code: ${response.statusCode}');
+        Future.delayed(const Duration(seconds: 2))
+            .then((value) => SystemNavigator.pop());
+        return null;
+      }
     } catch (error) {
       print("Error occurred: $error");
       return null;
@@ -171,13 +182,21 @@ class Controller {
 
   Future<List> getOnlineRecurring() async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
+
     try {
       var response =
           await http.post(Uri.parse(url), body: {"tableName": "tasks"});
 
-      List recurringData = json.decode(response.body);
-
-      return recurringData;
+      if (response.statusCode == 200) {
+        List recurringData = json.decode(response.body);
+        return recurringData;
+      } else {
+        EasyLoading.showError(
+            'Server is down, status code: ${response.statusCode}');
+        Future.delayed(const Duration(seconds: 2))
+            .then((value) => SystemNavigator.pop());
+        return null;
+      }
     } catch (error) {
       print("Error occurred: $error");
       return null;
@@ -189,9 +208,18 @@ class Controller {
     try {
       var response =
           await http.post(Uri.parse(url), body: {"tableName": "notification"});
-      List notificationData = json.decode(response.body);
 
-      return notificationData;
+      if (response.statusCode == 200) {
+        List notificationData = json.decode(response.body);
+
+        return notificationData;
+      } else {
+        EasyLoading.showError(
+            'Server is down, status code: ${response.statusCode}');
+        Future.delayed(const Duration(seconds: 2))
+            .then((value) => SystemNavigator.pop());
+        return null;
+      }
     } catch (error) {
       print("Error occurred: $error");
       return null;

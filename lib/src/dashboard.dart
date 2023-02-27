@@ -64,11 +64,7 @@ class _DashboardState extends State<Dashboard> {
       status: 'loading...',
       maskType: EasyLoadingMaskType.black,
     );
-    if (isOnline) {
-      await cloneHelper.initDb();
-      await clone2Helper.initDb();
-      // await Controller().addNotificationDateToSqlite();
-    }
+
     final taskData = isOnline
         ? await Controller().getOnlineRecurring()
         : await cloneHelper.fetchRecurringData();
@@ -76,11 +72,12 @@ class _DashboardState extends State<Dashboard> {
         ? await Controller().getOnlineNonRecurring()
         : await cloneHelper.fetchNonrecurringData();
 
-    if (taskData == null || nonRecurringData == null) {
-      EasyLoading.showError('Failed with Server Error');
-      Future.delayed(const Duration(seconds: 2))
-          .then((value) => SystemNavigator.pop());
-    } else {
+    if (taskData != null && nonRecurringData != null) {
+      if (isOnline) {
+        await cloneHelper.initDb();
+        await clone2Helper.initDb();
+        // await Controller().addNotificationDateToSqlite();
+      }
       EasyLoading.showSuccess('Done');
     }
 

@@ -1,7 +1,6 @@
 //@dart=2.9
 import 'package:flutter/material.dart';
 
-import '../model/notification.dart';
 import '../util/app_styles.dart';
 import '../util/checkInternet.dart';
 import 'package:http/http.dart' as http;
