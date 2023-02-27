@@ -57,5 +57,7 @@
 	<dict>
   		<key>NSAllowsArbitraryLoads</key><true/>
 	</dict>
+	<key>NSFileUsageDescription</key>
+	<string>This app needs access to the SQLite database file to store and retrieve data.</string>
 </dict>
 </plist>
