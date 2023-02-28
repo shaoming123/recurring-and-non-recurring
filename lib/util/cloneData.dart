@@ -149,10 +149,20 @@ class Controller {
     try {
       var response =
           await http.post(Uri.parse(url), body: {"tableName": "user_details"});
-      List userData = json.decode(response.body);
-      return userData;
+      if (response.statusCode == 200) {
+        List userData = json.decode(response.body);
+        return userData;
+      } else {
+        EasyLoading.showError(
+            'Server is down, status code: ${response.statusCode}');
+        Future.delayed(const Duration(seconds: 2))
+            .then((value) => SystemNavigator.pop());
+        return null;
+      }
     } catch (error) {
-      print("Error occurred: $error");
+      EasyLoading.showError('ERROR: $error');
+      Future.delayed(const Duration(seconds: 2))
+          .then((value) => SystemNavigator.pop());
       return null;
     }
   }
@@ -175,7 +185,9 @@ class Controller {
         return null;
       }
     } catch (error) {
-      print("Error occurred: $error");
+      EasyLoading.showError('ERROR: $error');
+      Future.delayed(const Duration(seconds: 2))
+          .then((value) => SystemNavigator.pop());
       return null;
     }
   }
@@ -198,7 +210,9 @@ class Controller {
         return null;
       }
     } catch (error) {
-      print("Error occurred: $error");
+      EasyLoading.showError('ERROR: $error');
+      Future.delayed(const Duration(seconds: 2))
+          .then((value) => SystemNavigator.pop());
       return null;
     }
   }
@@ -221,7 +235,9 @@ class Controller {
         return null;
       }
     } catch (error) {
-      print("Error occurred: $error");
+      EasyLoading.showError('ERROR: $error');
+      Future.delayed(const Duration(seconds: 2))
+          .then((value) => SystemNavigator.pop());
       return null;
     }
   }
@@ -233,19 +249,30 @@ class Controller {
     try {
       var response = await http.post(Uri.parse(url),
           body: {"tableName": "user_details", "id": id.toString()});
-      var userData = [];
-      if (response.body.isNotEmpty) {
-        var data = json.decode(response.body);
-        if (data is Map) {
-          userData.add(data);
-        }
-      } else {
-        userData = [];
-      }
 
-      return userData;
+      if (response.statusCode == 200) {
+        var userData = [];
+        if (response.body.isNotEmpty) {
+          var data = json.decode(response.body);
+          if (data is Map) {
+            userData.add(data);
+          }
+        } else {
+          userData = [];
+        }
+
+        return userData;
+      } else {
+        EasyLoading.showError(
+            'Server is down, status code: ${response.statusCode}');
+        Future.delayed(const Duration(seconds: 2))
+            .then((value) => SystemNavigator.pop());
+        return null;
+      }
     } catch (error) {
-      print("Error occurred: $error");
+      EasyLoading.showError('ERROR: $error');
+      Future.delayed(const Duration(seconds: 2))
+          .then((value) => SystemNavigator.pop());
       return null;
     }
   }
@@ -256,20 +283,29 @@ class Controller {
     try {
       var response = await http.post(Uri.parse(url),
           body: {"tableName": "tasks", "id": id.toString()});
-
-      var recurringData = [];
-      if (response.body.isNotEmpty) {
-        var data = json.decode(response.body);
-        if (data is Map) {
-          recurringData.add(data);
+      if (response.statusCode == 200) {
+        var recurringData = [];
+        if (response.body.isNotEmpty) {
+          var data = json.decode(response.body);
+          if (data is Map) {
+            recurringData.add(data);
+          }
+        } else {
+          recurringData = [];
         }
-      } else {
-        recurringData = [];
-      }
 
-      return recurringData;
+        return recurringData;
+      } else {
+        EasyLoading.showError(
+            'Server is down, status code: ${response.statusCode}');
+        Future.delayed(const Duration(seconds: 2))
+            .then((value) => SystemNavigator.pop());
+        return null;
+      }
     } catch (error) {
-      print("Error occurred: $error");
+      EasyLoading.showError('ERROR: $error');
+      Future.delayed(const Duration(seconds: 2))
+          .then((value) => SystemNavigator.pop());
       return null;
     }
   }
@@ -281,20 +317,29 @@ class Controller {
 
       var response = await http.post(Uri.parse(url),
           body: {"tableName": "nonrecurring", "id": id.toString()});
-
-      var nonrecurringData = [];
-      if (response.body.isNotEmpty) {
-        var data = json.decode(response.body);
-        if (data is Map) {
-          nonrecurringData.add(data);
+      if (response.statusCode == 200) {
+        var nonrecurringData = [];
+        if (response.body.isNotEmpty) {
+          var data = json.decode(response.body);
+          if (data is Map) {
+            nonrecurringData.add(data);
+          }
+        } else {
+          nonrecurringData = [];
         }
-      } else {
-        nonrecurringData = [];
-      }
 
-      return nonrecurringData;
+        return nonrecurringData;
+      } else {
+        EasyLoading.showError(
+            'Server is down, status code: ${response.statusCode}');
+        Future.delayed(const Duration(seconds: 2))
+            .then((value) => SystemNavigator.pop());
+        return null;
+      }
     } catch (error) {
-      print("Error occurred: $error");
+      EasyLoading.showError('ERROR: $error');
+      Future.delayed(const Duration(seconds: 2))
+          .then((value) => SystemNavigator.pop());
       return null;
     }
   }

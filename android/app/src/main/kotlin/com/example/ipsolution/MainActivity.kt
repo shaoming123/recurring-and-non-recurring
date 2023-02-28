@@ -1,4 +1,4 @@
-package com.example.ipsolution
+package com.invenioptl.ipsolution
 
 import io.flutter.embedding.android.FlutterActivity
 
