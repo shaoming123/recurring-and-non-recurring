@@ -155,14 +155,14 @@ class Controller {
       } else {
         EasyLoading.showError(
             'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2))
-            .then((value) => SystemNavigator.pop());
+        Future.delayed(const Duration(seconds: 2)).then((value) =>
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
         return null;
       }
     } catch (error) {
       EasyLoading.showError('ERROR: $error');
-      Future.delayed(const Duration(seconds: 2))
-          .then((value) => SystemNavigator.pop());
+      Future.delayed(const Duration(seconds: 2)).then((value) =>
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
     }
   }
@@ -180,14 +180,14 @@ class Controller {
       } else {
         EasyLoading.showError(
             'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2))
-            .then((value) => SystemNavigator.pop());
+        Future.delayed(const Duration(seconds: 2)).then((value) =>
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
         return null;
       }
     } catch (error) {
       EasyLoading.showError('ERROR: $error');
-      Future.delayed(const Duration(seconds: 2))
-          .then((value) => SystemNavigator.pop());
+      Future.delayed(const Duration(seconds: 2)).then((value) =>
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
     }
   }
@@ -205,14 +205,14 @@ class Controller {
       } else {
         EasyLoading.showError(
             'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2))
-            .then((value) => SystemNavigator.pop());
+        Future.delayed(const Duration(seconds: 2)).then((value) =>
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
         return null;
       }
     } catch (error) {
       EasyLoading.showError('ERROR: $error');
-      Future.delayed(const Duration(seconds: 2))
-          .then((value) => SystemNavigator.pop());
+      Future.delayed(const Duration(seconds: 2)).then((value) =>
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
     }
   }
@@ -230,14 +230,14 @@ class Controller {
       } else {
         EasyLoading.showError(
             'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2))
-            .then((value) => SystemNavigator.pop());
+        Future.delayed(const Duration(seconds: 2)).then((value) =>
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
         return null;
       }
     } catch (error) {
       EasyLoading.showError('ERROR: $error');
-      Future.delayed(const Duration(seconds: 2))
-          .then((value) => SystemNavigator.pop());
+      Future.delayed(const Duration(seconds: 2)).then((value) =>
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
     }
   }
@@ -265,14 +265,14 @@ class Controller {
       } else {
         EasyLoading.showError(
             'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2))
-            .then((value) => SystemNavigator.pop());
+        Future.delayed(const Duration(seconds: 2)).then((value) =>
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
         return null;
       }
     } catch (error) {
       EasyLoading.showError('ERROR: $error');
-      Future.delayed(const Duration(seconds: 2))
-          .then((value) => SystemNavigator.pop());
+      Future.delayed(const Duration(seconds: 2)).then((value) =>
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
     }
   }
@@ -298,14 +298,14 @@ class Controller {
       } else {
         EasyLoading.showError(
             'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2))
-            .then((value) => SystemNavigator.pop());
+        Future.delayed(const Duration(seconds: 2)).then((value) =>
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
         return null;
       }
     } catch (error) {
       EasyLoading.showError('ERROR: $error');
-      Future.delayed(const Duration(seconds: 2))
-          .then((value) => SystemNavigator.pop());
+      Future.delayed(const Duration(seconds: 2)).then((value) =>
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
     }
   }
@@ -332,14 +332,14 @@ class Controller {
       } else {
         EasyLoading.showError(
             'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2))
-            .then((value) => SystemNavigator.pop());
+        Future.delayed(const Duration(seconds: 2)).then((value) =>
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
         return null;
       }
     } catch (error) {
       EasyLoading.showError('ERROR: $error');
-      Future.delayed(const Duration(seconds: 2))
-          .then((value) => SystemNavigator.pop());
+      Future.delayed(const Duration(seconds: 2)).then((value) =>
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
     }
   }
