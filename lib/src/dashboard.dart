@@ -1,4 +1,6 @@
 //@dart=2.9
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -9,17 +11,19 @@ import 'package:ipsolution/databaseHandler/CloneHelper.dart';
 import 'package:ipsolution/src/dashboardDetails.dart';
 import 'package:ipsolution/src/footer.dart';
 import 'package:ipsolution/src/navbar.dart';
+import 'package:ipsolution/src/popFilter.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:upgrader/upgrader.dart';
 import '../databaseHandler/Clone2Helper.dart';
 import '../util/checkInternet.dart';
 import '../util/cloneData.dart';
 import 'appbar.dart';
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({
-    Key key,
-  }) : super(key: key);
+  final DateTime start;
+  final DateTime end;
+  const Dashboard({Key key, this.start, this.end}) : super(key: key);
 
   @override
   State<Dashboard> createState() => _DashboardState();
@@ -38,9 +42,9 @@ class _DashboardState extends State<Dashboard> {
   List<Map<String, dynamic>> lateNon = [];
   List<Map<String, dynamic>> progressNon = [];
   List<Map<String, dynamic>> upcomingNon = [];
-  DateTime dateNow = DateTime.now();
-  DateTime startDate;
-  DateTime endDate;
+
+  DateTime startDate = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  DateTime endDate = DateTime(DateTime.now().year, DateTime.now().month + 1, 0);
   bool isOnline;
   CloneHelper cloneHelper = CloneHelper();
   Clone2Helper clone2Helper = Clone2Helper();
@@ -48,10 +52,11 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
 
-    startDate = DateTime(dateNow.year, dateNow.month, 1);
-    endDate = DateTime(dateNow.year, dateNow.month + 1, 0);
-
     refresh();
+    if (widget.start != null && widget.end != null) {
+      startDate = widget.start;
+      endDate = widget.end;
+    }
   }
 
   Future<void> refresh() async {
@@ -204,460 +209,476 @@ class _DashboardState extends State<Dashboard> {
         backgroundColor: Styles.bgColor,
         key: scaffoldKey,
         drawer: const Navbar(), //set gobal key defined above
-        body: SingleChildScrollView(
-          child: Container(
-            margin: EdgeInsets.symmetric(
-                vertical: height * 0.08, horizontal: width * 0.02),
-            child: Column(
-              children: [
-                Appbar(title: "Dashboard", scaffoldKey: scaffoldKey),
-                GestureDetector(
-                  onTap: () {
-                    _show();
-                  },
-                  child: Container(
+        body: UpgradeAlert(
+          upgrader: Upgrader(
+              shouldPopScope: () => true,
+              durationUntilAlertAgain: const Duration(days: 1),
+              canDismissDialog: true,
+              dialogStyle: Platform.isIOS
+                  ? UpgradeDialogStyle.cupertino
+                  : UpgradeDialogStyle.material),
+          child: SingleChildScrollView(
+            child: Container(
+              margin: EdgeInsets.symmetric(
+                  vertical: height * 0.08, horizontal: width * 0.02),
+              child: Column(
+                children: [
+                  Appbar(title: "Dashboard", scaffoldKey: scaffoldKey),
+                  GestureDetector(
+                    onTap: () {
+                      _show();
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const Icon(Icons.calendar_month),
+                          const Gap(10),
+                          Text(
+                            "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
+                            style: TextStyle(
+                                color: Styles.textColor, fontSize: 14),
+                          ),
+                          const Gap(15),
+                          const PopFilter(task: 'dashboard')
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    elevation: 8,
                     margin: const EdgeInsets.all(10),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        const Icon(Icons.calendar_month),
-                        Text(
-                          "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
-                          style:
-                              TextStyle(color: Styles.textColor, fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  elevation: 8,
-                  margin: const EdgeInsets.all(10),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    height: 100,
-                    color: Colors.white,
-                    child: Row(
-                      children: [
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      height: 100,
+                      color: Colors.white,
+                      child: Row(
+                        children: [
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Container(
+                                height: 60,
+                                width: width * 0.15,
+                                decoration: BoxDecoration(
+                                  color: const Color(0XFF242c28),
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  shape: BoxShape.rectangle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 1,
+                                      blurRadius: 3,
+                                      // ignore: prefer_const_constructors
+                                      offset: Offset(
+                                          0, 2), // changes position of shadow
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.upcoming_outlined,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 8,
                             child: Container(
-                              height: 60,
-                              width: width * 0.15,
-                              decoration: BoxDecoration(
-                                color: const Color(0XFF242c28),
-                                borderRadius: BorderRadius.circular(10.0),
-                                shape: BoxShape.rectangle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    spreadRadius: 1,
-                                    blurRadius: 3,
-                                    // ignore: prefer_const_constructors
-                                    offset: Offset(
-                                        0, 2), // changes position of shadow
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 10),
+                              alignment: Alignment.bottomRight,
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    flex: 5,
+                                    child: ListTile(
+                                      title: const Padding(
+                                        padding: EdgeInsets.only(bottom: 8.0),
+                                        child: Text(
+                                          "Upcoming",
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        (upcoming.length + upcomingNon.length)
+                                            .toString(),
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w800),
+                                      ),
+                                    ),
                                   ),
+                                  Expanded(
+                                    flex: 5,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        TextButton(
+                                          child: const Text(
+                                            "Details",
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      DashboardDetails(
+                                                        task: upcoming,
+                                                        nonRecurring:
+                                                            upcomingNon,
+                                                        detailName: 'Upcoming',
+                                                      )),
+                                            );
+                                          },
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        )
+                                      ],
+                                    ),
+                                  )
                                 ],
                               ),
-                              child: const Icon(
-                                Icons.upcoming_outlined,
-                                color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Gap(5),
+                  Card(
+                    // ignore: sort_child_properties_last
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      height: 100,
+                      color: Colors.white,
+                      child: Row(
+                        children: [
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Container(
+                                height: 60,
+                                width: width * 0.15,
+                                decoration: BoxDecoration(
+                                  color: const Color(0XFFe43068),
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  shape: BoxShape.rectangle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 1,
+                                      blurRadius: 3,
+                                      // ignore: prefer_const_constructors
+                                      offset: Offset(
+                                          0, 2), // changes position of shadow
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.draw_outlined,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          flex: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 10),
-                            alignment: Alignment.bottomRight,
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  flex: 5,
-                                  child: ListTile(
-                                    title: const Padding(
-                                      padding: EdgeInsets.only(bottom: 8.0),
-                                      child: Text(
-                                        "Upcoming",
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      (upcoming.length + upcomingNon.length)
-                                          .toString(),
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w800),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 5,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      TextButton(
-                                        child: const Text(
-                                          "Details",
-                                          style: TextStyle(fontSize: 14),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    DashboardDetails(
-                                                      task: upcoming,
-                                                      nonRecurring: upcomingNon,
-                                                      detailName: 'Upcoming',
-                                                    )),
-                                          );
-                                        },
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      )
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const Gap(5),
-                Card(
-                  // ignore: sort_child_properties_last
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    height: 100,
-                    color: Colors.white,
-                    child: Row(
-                      children: [
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
+                          Expanded(
+                            flex: 8,
                             child: Container(
-                              height: 60,
-                              width: width * 0.15,
-                              decoration: BoxDecoration(
-                                color: const Color(0XFFe43068),
-                                borderRadius: BorderRadius.circular(10.0),
-                                shape: BoxShape.rectangle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    spreadRadius: 1,
-                                    blurRadius: 3,
-                                    // ignore: prefer_const_constructors
-                                    offset: Offset(
-                                        0, 2), // changes position of shadow
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 10),
+                              alignment: Alignment.bottomRight,
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    flex: 5,
+                                    child: ListTile(
+                                      title: const Padding(
+                                        padding: EdgeInsets.only(bottom: 8.0),
+                                        child: Text(
+                                          "In Progress",
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        (progress.length + progressNon.length)
+                                            .toString(),
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w800),
+                                      ),
+                                    ),
                                   ),
+                                  Expanded(
+                                    flex: 5,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        TextButton(
+                                          child: const Text(
+                                            "Details",
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      DashboardDetails(
+                                                        task: progress,
+                                                        nonRecurring:
+                                                            progressNon,
+                                                        detailName:
+                                                            'In Progress',
+                                                      )),
+                                            );
+                                          },
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        )
+                                      ],
+                                    ),
+                                  )
                                 ],
                               ),
-                              child: const Icon(
-                                Icons.draw_outlined,
-                                color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    elevation: 8,
+                    margin: const EdgeInsets.all(10),
+                  ),
+                  const Gap(5),
+                  Card(
+                    // ignore: sort_child_properties_last
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      height: 100,
+                      color: Colors.white,
+                      child: Row(
+                        children: [
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Container(
+                                height: 60,
+                                width: width * 0.15,
+                                decoration: BoxDecoration(
+                                  color: const Color(0XFFf04c44),
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  shape: BoxShape.rectangle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 1,
+                                      blurRadius: 3,
+                                      // ignore: prefer_const_constructors
+                                      offset: Offset(
+                                          0, 2), // changes position of shadow
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.warning_amber,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          flex: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 10),
-                            alignment: Alignment.bottomRight,
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  flex: 5,
-                                  child: ListTile(
-                                    title: const Padding(
-                                      padding: EdgeInsets.only(bottom: 8.0),
-                                      child: Text(
-                                        "In Progress",
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      (progress.length + progressNon.length)
-                                          .toString(),
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w800),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 5,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      TextButton(
-                                        child: const Text(
-                                          "Details",
-                                          style: TextStyle(fontSize: 14),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    DashboardDetails(
-                                                      task: progress,
-                                                      nonRecurring: progressNon,
-                                                      detailName: 'In Progress',
-                                                    )),
-                                          );
-                                        },
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      )
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  elevation: 8,
-                  margin: const EdgeInsets.all(10),
-                ),
-                const Gap(5),
-                Card(
-                  // ignore: sort_child_properties_last
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    height: 100,
-                    color: Colors.white,
-                    child: Row(
-                      children: [
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
+                          Expanded(
+                            flex: 8,
                             child: Container(
-                              height: 60,
-                              width: width * 0.15,
-                              decoration: BoxDecoration(
-                                color: const Color(0XFFf04c44),
-                                borderRadius: BorderRadius.circular(10.0),
-                                shape: BoxShape.rectangle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    spreadRadius: 1,
-                                    blurRadius: 3,
-                                    // ignore: prefer_const_constructors
-                                    offset: Offset(
-                                        0, 2), // changes position of shadow
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 10),
+                              alignment: Alignment.bottomRight,
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    flex: 5,
+                                    child: ListTile(
+                                      title: const Padding(
+                                        padding: EdgeInsets.only(bottom: 8.0),
+                                        child: Text(
+                                          "Late",
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        (late.length + lateNon.length)
+                                            .toString(),
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w800),
+                                      ),
+                                    ),
                                   ),
+                                  Expanded(
+                                    flex: 5,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        TextButton(
+                                          child: const Text(
+                                            "Details",
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      DashboardDetails(
+                                                        task: late,
+                                                        nonRecurring: lateNon,
+                                                        detailName: 'Late',
+                                                      )),
+                                            );
+                                          },
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        )
+                                      ],
+                                    ),
+                                  )
                                 ],
                               ),
-                              child: const Icon(
-                                Icons.warning_amber,
-                                color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    elevation: 8,
+                    margin: const EdgeInsets.all(10),
+                  ),
+                  const Gap(5),
+                  Card(
+                    // ignore: sort_child_properties_last
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      height: 100,
+                      color: Colors.white,
+                      child: Row(
+                        children: [
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Container(
+                                height: 60,
+                                width: width * 0.15,
+                                decoration: BoxDecoration(
+                                  color: const Color(0XFF54b058),
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  shape: BoxShape.rectangle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 1,
+                                      blurRadius: 3,
+                                      // ignore: prefer_const_constructors
+                                      offset: Offset(
+                                          0, 2), // changes position of shadow
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          flex: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 10),
-                            alignment: Alignment.bottomRight,
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  flex: 5,
-                                  child: ListTile(
-                                    title: const Padding(
-                                      padding: EdgeInsets.only(bottom: 8.0),
-                                      child: Text(
-                                        "Late",
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      (late.length + lateNon.length).toString(),
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w800),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 5,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      TextButton(
-                                        child: const Text(
-                                          "Details",
-                                          style: TextStyle(fontSize: 14),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    DashboardDetails(
-                                                      task: late,
-                                                      nonRecurring: lateNon,
-                                                      detailName: 'Late',
-                                                    )),
-                                          );
-                                        },
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      )
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  elevation: 8,
-                  margin: const EdgeInsets.all(10),
-                ),
-                const Gap(5),
-                Card(
-                  // ignore: sort_child_properties_last
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    height: 100,
-                    color: Colors.white,
-                    child: Row(
-                      children: [
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
+                          Expanded(
+                            flex: 8,
                             child: Container(
-                              height: 60,
-                              width: width * 0.15,
-                              decoration: BoxDecoration(
-                                color: const Color(0XFF54b058),
-                                borderRadius: BorderRadius.circular(10.0),
-                                shape: BoxShape.rectangle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    spreadRadius: 1,
-                                    blurRadius: 3,
-                                    // ignore: prefer_const_constructors
-                                    offset: Offset(
-                                        0, 2), // changes position of shadow
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 10),
+                              alignment: Alignment.bottomRight,
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    flex: 5,
+                                    child: ListTile(
+                                      title: const Padding(
+                                        padding: EdgeInsets.only(bottom: 8.0),
+                                        child: Text(
+                                          "Completed",
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        (completed.length + completedNon.length)
+                                            .toString(),
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w800),
+                                      ),
+                                    ),
                                   ),
+                                  Expanded(
+                                    flex: 5,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        TextButton(
+                                          child: const Text(
+                                            "Details",
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      DashboardDetails(
+                                                        task: completed,
+                                                        nonRecurring:
+                                                            completedNon,
+                                                        detailName: 'Completed',
+                                                      )),
+                                            );
+                                          },
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        )
+                                      ],
+                                    ),
+                                  )
                                 ],
                               ),
-                              child: const Icon(
-                                Icons.check,
-                                color: Colors.white,
-                              ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          flex: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 10),
-                            alignment: Alignment.bottomRight,
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  flex: 5,
-                                  child: ListTile(
-                                    title: const Padding(
-                                      padding: EdgeInsets.only(bottom: 8.0),
-                                      child: Text(
-                                        "Completed",
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      (completed.length + completedNon.length)
-                                          .toString(),
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w800),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 5,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      TextButton(
-                                        child: const Text(
-                                          "Details",
-                                          style: TextStyle(fontSize: 14),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    DashboardDetails(
-                                                      task: completed,
-                                                      nonRecurring:
-                                                          completedNon,
-                                                      detailName: 'Completed',
-                                                    )),
-                                          );
-                                        },
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      )
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    elevation: 8,
+                    margin: const EdgeInsets.all(10),
                   ),
-                  elevation: 8,
-                  margin: const EdgeInsets.all(10),
-                ),
-                const Footer()
-              ],
+                  const Footer()
+                ],
+              ),
             ),
           ),
         ));

@@ -1,5 +1,6 @@
 //@dart=2.9
 import 'package:flutter/material.dart';
+import 'package:ipsolution/src/dashboard.dart';
 
 import 'nonRecurringTask.dart';
 import 'nonRecurringTeam.dart';
@@ -30,8 +31,9 @@ class _PopFilterState extends State<PopFilter> {
           break;
         case FilterOption.lastMonth:
           var now = DateTime.now();
-          startDate = DateTime(now.year, now.month - 1, 1);
-          endDate = startDate.add(const Duration(days: 31));
+          var lastMonth = DateTime.utc(now.year, now.month - 1, 1);
+          startDate = DateTime(lastMonth.year, lastMonth.month, 1);
+          endDate = DateTime(lastMonth.year, lastMonth.month + 1, 0);
           break;
         case FilterOption.lastYear:
           startDate = DateTime(DateTime.now().year - 1, 1, 1);
@@ -51,6 +53,11 @@ class _PopFilterState extends State<PopFilter> {
           MaterialPageRoute(
               builder: (context) =>
                   NonRecurring(start: startDate, end: endDate)));
+    } else if (widget.task == 'dashboard') {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => Dashboard(start: startDate, end: endDate)));
     }
   }
 
