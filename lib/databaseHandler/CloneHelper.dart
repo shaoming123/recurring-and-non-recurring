@@ -7,8 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-import '../util/checkInternet.dart';
-
 class CloneHelper {
   CloneHelper.internal();
   static final CloneHelper instance = CloneHelper.internal();

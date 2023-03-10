@@ -146,21 +146,14 @@ class Controller {
   Future getOnlineUser() async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
 
-    try {
-      var response =
-          await http.post(Uri.parse(url), body: {"tableName": "user_details"});
-      if (response.statusCode == 200) {
-        List userData = json.decode(response.body);
-        return userData;
-      } else {
-        EasyLoading.showError(
-            'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2)).then((value) =>
-            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
-        return null;
-      }
-    } catch (error) {
-      EasyLoading.showError('ERROR: $error');
+    var response =
+        await http.post(Uri.parse(url), body: {"tableName": "user_details"});
+    if (response.statusCode == 200) {
+      List userData = json.decode(response.body);
+      return userData;
+    } else {
+      EasyLoading.showError(
+          'Server is down, status code: ${response.statusCode}');
       Future.delayed(const Duration(seconds: 2)).then((value) =>
           SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
@@ -169,23 +162,17 @@ class Controller {
 
   Future<List> getOnlineNonRecurring() async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
-    try {
-      var response =
-          await http.post(Uri.parse(url), body: {"tableName": "nonrecurring"});
 
-      if (response.statusCode == 200) {
-        List nonrecurringData = json.decode(response.body);
+    var response =
+        await http.post(Uri.parse(url), body: {"tableName": "nonrecurring"});
 
-        return nonrecurringData;
-      } else {
-        EasyLoading.showError(
-            'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2)).then((value) =>
-            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
-        return null;
-      }
-    } catch (error) {
-      EasyLoading.showError('ERROR: $error');
+    if (response.statusCode == 200) {
+      List nonrecurringData = json.decode(response.body);
+
+      return nonrecurringData;
+    } else {
+      EasyLoading.showError(
+          'Server is down, status code: ${response.statusCode}');
       Future.delayed(const Duration(seconds: 2)).then((value) =>
           SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
@@ -195,22 +182,15 @@ class Controller {
   Future<List> getOnlineRecurring() async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
 
-    try {
-      var response =
-          await http.post(Uri.parse(url), body: {"tableName": "tasks"});
+    var response =
+        await http.post(Uri.parse(url), body: {"tableName": "tasks"});
 
-      if (response.statusCode == 200) {
-        List recurringData = json.decode(response.body);
-        return recurringData;
-      } else {
-        EasyLoading.showError(
-            'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2)).then((value) =>
-            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
-        return null;
-      }
-    } catch (error) {
-      EasyLoading.showError('ERROR: $error');
+    if (response.statusCode == 200) {
+      List recurringData = json.decode(response.body);
+      return recurringData;
+    } else {
+      EasyLoading.showError(
+          'Server is down, status code: ${response.statusCode}');
       Future.delayed(const Duration(seconds: 2)).then((value) =>
           SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
@@ -219,23 +199,17 @@ class Controller {
 
   Future<List> getOnlineNotification() async {
     var url = 'https://ipsolutions4u.com/ipsolutions/recurringMobile/read.php';
-    try {
-      var response =
-          await http.post(Uri.parse(url), body: {"tableName": "notification"});
 
-      if (response.statusCode == 200) {
-        List notificationData = json.decode(response.body);
+    var response =
+        await http.post(Uri.parse(url), body: {"tableName": "notification"});
 
-        return notificationData;
-      } else {
-        EasyLoading.showError(
-            'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2)).then((value) =>
-            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
-        return null;
-      }
-    } catch (error) {
-      EasyLoading.showError('ERROR: $error');
+    if (response.statusCode == 200) {
+      List notificationData = json.decode(response.body);
+
+      return notificationData;
+    } else {
+      EasyLoading.showError(
+          'Server is down, status code: ${response.statusCode}');
       Future.delayed(const Duration(seconds: 2)).then((value) =>
           SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
@@ -246,31 +220,25 @@ class Controller {
   Future getAOnlineUser(int id) async {
     var url =
         'https://ipsolutions4u.com/ipsolutions/recurringMobile/readSingle.php';
-    try {
-      var response = await http.post(Uri.parse(url),
-          body: {"tableName": "user_details", "id": id.toString()});
 
-      if (response.statusCode == 200) {
-        var userData = [];
-        if (response.body.isNotEmpty) {
-          var data = json.decode(response.body);
-          if (data is Map) {
-            userData.add(data);
-          }
-        } else {
-          userData = [];
+    var response = await http.post(Uri.parse(url),
+        body: {"tableName": "user_details", "id": id.toString()});
+
+    if (response.statusCode == 200) {
+      var userData = [];
+      if (response.body.isNotEmpty) {
+        var data = json.decode(response.body);
+        if (data is Map) {
+          userData.add(data);
         }
-
-        return userData;
       } else {
-        EasyLoading.showError(
-            'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2)).then((value) =>
-            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
-        return null;
+        userData = [];
       }
-    } catch (error) {
-      EasyLoading.showError('ERROR: $error');
+
+      return userData;
+    } else {
+      EasyLoading.showError(
+          'Server is down, status code: ${response.statusCode}');
       Future.delayed(const Duration(seconds: 2)).then((value) =>
           SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
@@ -280,30 +248,24 @@ class Controller {
   Future getAOnlineRecurring(int id) async {
     var url =
         'https://ipsolutions4u.com/ipsolutions/recurringMobile/readSingle.php';
-    try {
-      var response = await http.post(Uri.parse(url),
-          body: {"tableName": "tasks", "id": id.toString()});
-      if (response.statusCode == 200) {
-        var recurringData = [];
-        if (response.body.isNotEmpty) {
-          var data = json.decode(response.body);
-          if (data is Map) {
-            recurringData.add(data);
-          }
-        } else {
-          recurringData = [];
-        }
 
-        return recurringData;
+    var response = await http.post(Uri.parse(url),
+        body: {"tableName": "tasks", "id": id.toString()});
+    if (response.statusCode == 200) {
+      var recurringData = [];
+      if (response.body.isNotEmpty) {
+        var data = json.decode(response.body);
+        if (data is Map) {
+          recurringData.add(data);
+        }
       } else {
-        EasyLoading.showError(
-            'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2)).then((value) =>
-            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
-        return null;
+        recurringData = [];
       }
-    } catch (error) {
-      EasyLoading.showError('ERROR: $error');
+
+      return recurringData;
+    } else {
+      EasyLoading.showError(
+          'Server is down, status code: ${response.statusCode}');
       Future.delayed(const Duration(seconds: 2)).then((value) =>
           SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;
@@ -311,33 +273,26 @@ class Controller {
   }
 
   Future getAOnlineNonRecurring(int id) async {
-    try {
-      var url =
-          'https://ipsolutions4u.com/ipsolutions/recurringMobile/readSingle.php';
+    var url =
+        'https://ipsolutions4u.com/ipsolutions/recurringMobile/readSingle.php';
 
-      var response = await http.post(Uri.parse(url),
-          body: {"tableName": "nonrecurring", "id": id.toString()});
-      if (response.statusCode == 200) {
-        var nonrecurringData = [];
-        if (response.body.isNotEmpty) {
-          var data = json.decode(response.body);
-          if (data is Map) {
-            nonrecurringData.add(data);
-          }
-        } else {
-          nonrecurringData = [];
+    var response = await http.post(Uri.parse(url),
+        body: {"tableName": "nonrecurring", "id": id.toString()});
+    if (response.statusCode == 200) {
+      var nonrecurringData = [];
+      if (response.body.isNotEmpty) {
+        var data = json.decode(response.body);
+        if (data is Map) {
+          nonrecurringData.add(data);
         }
-
-        return nonrecurringData;
       } else {
-        EasyLoading.showError(
-            'Server is down, status code: ${response.statusCode}');
-        Future.delayed(const Duration(seconds: 2)).then((value) =>
-            SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
-        return null;
+        nonrecurringData = [];
       }
-    } catch (error) {
-      EasyLoading.showError('ERROR: $error');
+
+      return nonrecurringData;
+    } else {
+      EasyLoading.showError(
+          'Server is down, status code: ${response.statusCode}');
       Future.delayed(const Duration(seconds: 2)).then((value) =>
           SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       return null;

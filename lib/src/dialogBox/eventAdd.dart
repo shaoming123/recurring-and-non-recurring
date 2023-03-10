@@ -300,7 +300,7 @@ class _EventAddState extends State<EventAdd> {
     final SharedPreferences sp = await _pref;
     String currentUsername = sp.getString("user_name");
     String color;
-
+    isTapped = false;
     if (isValid) {
       String selectedUser = _selectedUser.join(",");
 
@@ -1104,8 +1104,7 @@ class _EventAddState extends State<EventAdd> {
                               onFieldSubmitted: (_) {},
                               controller: recurringController,
                               validator: (data) {
-                                return data == null &&
-                                        data.isEmpty &&
+                                return data.isEmpty &&
                                         _selectedRecurring != 'Once'
                                     ? 'Field cannot be empty'
                                     : null;

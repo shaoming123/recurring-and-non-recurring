@@ -2,7 +2,6 @@
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import 'package:ipsolution/model/notification.dart';
 

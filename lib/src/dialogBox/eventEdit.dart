@@ -319,6 +319,7 @@ class _EventEditState extends State<EventEdit> {
     final isValid = _formkey.currentState.validate();
     String selectedUser = selectedUsers.join(",");
     String color;
+    isTapped = false;
     if (isValid) {
       // final event = Event(
       //     recurringId: recurringId,
