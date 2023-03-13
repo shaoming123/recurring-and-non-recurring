@@ -737,6 +737,33 @@ class _RecurringState extends State<Recurring> {
     final event = details.appointments.first;
     Color cardColor;
 
+    List<String> names = event.person.split(',');
+    List<CircleAvatar> avatars = [];
+    for (String name in names) {
+      Map<String, dynamic> person = userData.firstWhere(
+        (person) => person['username'] == name,
+        orElse: () => null,
+      );
+
+      if (person != null &&
+          person['filepath'] != null &&
+          person['filepath'].isNotEmpty &&
+          isOnline) {
+        String filepath = person['filepath'];
+        avatars.add(CircleAvatar(
+          backgroundImage: NetworkImage(
+              "https://ipsolutions4u.com/ipsolutions/recurring/upload/$filepath"),
+          radius: 10,
+        ));
+      } else {
+        avatars.add(CircleAvatar(
+          radius: 10,
+          backgroundColor: Color(0xFF512DA8),
+          child: Text(name[0], style: const TextStyle(fontSize: 12)),
+        ));
+      }
+    }
+
     if (event.status == "Done") {
       cardColor = Colors.grey;
     } else if (event.color == "lightcoral") {
@@ -757,10 +784,8 @@ class _RecurringState extends State<Recurring> {
             });
       },
       child: Container(
-        // width: details.bounds.width,
-
+        width: details.bounds.width,
         padding: const EdgeInsets.all(10),
-
         decoration: BoxDecoration(
           border: Border.all(
               color: darken(cardColor, .2),
@@ -815,14 +840,40 @@ class _RecurringState extends State<Recurring> {
               flex: 1,
               child: Padding(
                 padding: const EdgeInsets.only(right: 2.0, left: 2.0, top: 4.0),
-                child: Text(
-                    '${DateFormat('hh:mm a').format(DateTime.parse(event.from))} - ${DateFormat('hh:mm a').format(DateTime.parse(event.to))}',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Styles.textColor,
-                        fontWeight: FontWeight.w700)),
+                child: SizedBox.expand(
+                  child: LayoutBuilder(
+                    builder:
+                        (BuildContext context, BoxConstraints constraints) {
+                      final double rowWidth = avatars.fold(
+                        0.0,
+                        (double previousValue, CircleAvatar avatar) =>
+                            previousValue + avatar.radius * 2 + 2.0,
+                      );
+                      final bool hasOverflow = rowWidth > constraints.maxWidth;
+                      return Wrap(
+                        direction: Axis.horizontal,
+                        alignment: WrapAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${DateFormat('hh:mm a').format(DateTime.parse(event.from))} - ${DateFormat('hh:mm a').format(DateTime.parse(event.to))}',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Styles.textColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if (!hasOverflow)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: avatars,
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
             Expanded(

@@ -7,6 +7,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+import '../util/checkInternet.dart';
+
 class Clone2Helper {
   Clone2Helper.internal();
   static final Clone2Helper instance = Clone2Helper.internal();
@@ -34,30 +36,32 @@ class Clone2Helper {
     String path = directory.path;
     String dbFile = "$path/sqlite_db_2.db";
     File f = File(dbFile);
+    await Internet.isInternet().then((connection) async {
+      if (connection) {
+        Dio dio = Dio();
+        Response response = await dio.get(downloadUrl,
+            options: Options(responseType: ResponseType.bytes));
 
-    Dio dio = Dio();
-    Response response = await dio.get(downloadUrl,
-        options: Options(responseType: ResponseType.bytes));
+        if (response.statusCode == 200) {
+          // Get the md5 hash of the downloaded file
+          String downloadedMd5 = md5.convert(response.data).toString();
 
-    if (response.statusCode == 200) {
-      // Get the md5 hash of the downloaded file
-      String downloadedMd5 = md5.convert(response.data).toString();
-
-      if (f.existsSync()) {
-        // Get the md5 hash of the existing file
-        String existingMd5 = md5.convert(await f.readAsBytes()).toString();
-        // Compare the md5 hash of the downloaded file with the existing file
-        if (existingMd5 != downloadedMd5) {
-          // If they are different, update the existing file with the downloaded file
-          await f.writeAsBytes(response.data);
+          if (f.existsSync()) {
+            // Get the md5 hash of the existing file
+            String existingMd5 = md5.convert(await f.readAsBytes()).toString();
+            // Compare the md5 hash of the downloaded file with the existing file
+            if (existingMd5 != downloadedMd5) {
+              // If they are different, update the existing file with the downloaded file
+              await f.writeAsBytes(response.data);
+            }
+          } else {
+            // If the file doesn't exist, create it and write the downloaded file to it
+            await f.create();
+            await f.writeAsBytes(response.data);
+          }
         }
-      } else {
-        // If the file doesn't exist, create it and write the downloaded file to it
-        await f.create();
-        await f.writeAsBytes(response.data);
       }
-    }
-
+    });
     var openDb = await openDatabase(dbFile);
     return openDb;
   }
