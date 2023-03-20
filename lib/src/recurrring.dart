@@ -758,7 +758,7 @@ class _RecurringState extends State<Recurring> {
       } else {
         avatars.add(CircleAvatar(
           radius: 10,
-          backgroundColor: Color(0xFF512DA8),
+          backgroundColor: const Color(0xFF512DA8),
           child: Text(name[0], style: const TextStyle(fontSize: 12)),
         ));
       }

@@ -185,7 +185,7 @@ class _LoginState extends State<Login> {
               Positioned(
                 bottom: -10,
                 right: 0,
-                left: -15,
+                left: -15,                                                                                                                                                                                                                                                                                                                                
                 child: Image.asset("assets/images/login/bottom1.png",
                     width: width),
               ),
@@ -197,8 +197,8 @@ class _LoginState extends State<Login> {
                     width: width),
               ),
               Positioned(
-                bottom: 40,
-                left: 20,
+                bottom: 30,
+                left: 15,
                 child: Column(
                   children: [
                     const Text(
