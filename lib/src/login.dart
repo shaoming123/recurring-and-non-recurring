@@ -43,43 +43,62 @@ class _LoginState extends State<Login> {
         status: 'loading...',
         maskType: EasyLoadingMaskType.black,
       );
-      var response = await http.post(Uri.parse(url), body: {
-        "username": username,
-        "password": password,
-      });
-      if (response.statusCode == 200) {
-        // print(json.decode(response.body));
-        final data = json.decode(response.body);
+      try {
+        final response = await http.post(Uri.parse(url), body: {
+          "username": username,
+          "password": password,
+        });
 
-        if (data != null && data != "Error") {
-          final dataModel = UserModel(
-            user_id: int.parse(data[0]["id"]),
-            user_name: data[0]["username"],
-            password: data[0]["password"],
-            email: data[0]["email"],
-            role: data[0]["role"],
-            position: data[0]["position"],
-            leadFunc: data[0]["leadFunc"],
-            site: data[0]["site"],
-            phone: data[0]["phone"],
-            active: data[0]["active"],
-            siteLead: data[0]["siteLead"],
-            filepath: data[0]["filepath"],
-          );
-          if (dataModel.active == "Active") {
-            // final dataModel = UserModel.fromMap(data);
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
 
-            setSP(dataModel).whenComplete(() async {
-              EasyLoading.showSuccess('Done');
+          if (data != null && data != "Error") {
+            final dataModel = UserModel(
+              user_id: int.parse(data[0]["id"]),
+              user_name: data[0]["username"],
+              password: data[0]["password"],
+              email: data[0]["email"],
+              role: data[0]["role"],
+              position: data[0]["position"],
+              leadFunc: data[0]["leadFunc"],
+              site: data[0]["site"],
+              phone: data[0]["phone"],
+              active: data[0]["active"],
+              siteLead: data[0]["siteLead"],
+              filepath: data[0]["filepath"],
+            );
+            if (dataModel.active == "Active") {
+              // final dataModel = UserModel.fromMap(data);
+
+              setSP(dataModel).whenComplete(() async {
+                EasyLoading.showSuccess('Done');
+                if (!mounted) return;
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Dashboard()),
+                    (Route<dynamic> route) => false);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text("Login Successfully"),
+                    behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.all(20),
+                    action: SnackBarAction(
+                      label: 'Dismiss',
+                      disabledTextColor: Colors.white,
+                      textColor: Colors.blue,
+                      onPressed: () {
+                        //Do whatever you want
+                      },
+                    ),
+                  ),
+                );
+              });
+            } else {
               if (!mounted) return;
-              Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const Dashboard()),
-                  (Route<dynamic> route) => false);
-
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text("Login Successfully"),
+                  content: const Text("Deactive User!"),
                   behavior: SnackBarBehavior.floating,
                   margin: const EdgeInsets.all(20),
                   action: SnackBarAction(
@@ -92,12 +111,12 @@ class _LoginState extends State<Login> {
                   ),
                 ),
               );
-            });
+            }
           } else {
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text("Deactive User!"),
+                content: const Text("Username and Password Incorrect!"),
                 behavior: SnackBarBehavior.floating,
                 margin: const EdgeInsets.all(20),
                 action: SnackBarAction(
@@ -112,24 +131,11 @@ class _LoginState extends State<Login> {
             );
           }
         } else {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text("Username and Password Incorrect!"),
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.all(20),
-              action: SnackBarAction(
-                label: 'Dismiss',
-                disabledTextColor: Colors.white,
-                textColor: Colors.blue,
-                onPressed: () {
-                  //Do whatever you want
-                },
-              ),
-            ),
-          );
+          EasyLoading.showError('Failed with Server Error');
+          Future.delayed(const Duration(seconds: 2))
+              .then((value) => SystemNavigator.pop());
         }
-      } else {
+      } catch (e) {
         EasyLoading.showError('Failed with Server Error');
         Future.delayed(const Duration(seconds: 2))
             .then((value) => SystemNavigator.pop());
@@ -185,7 +191,7 @@ class _LoginState extends State<Login> {
               Positioned(
                 bottom: -10,
                 right: 0,
-                left: -15,                                                                                                                                                                                                                                                                                                                                
+                left: -15,
                 child: Image.asset("assets/images/login/bottom1.png",
                     width: width),
               ),

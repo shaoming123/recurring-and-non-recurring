@@ -38,7 +38,7 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      // if true redirect to dashboard else login page
+      // if true redirect to dashboard else login page    
       home: widget.isLoggedIn ? const Dashboard() : const Login(),
       builder: EasyLoading.init(),
     );
