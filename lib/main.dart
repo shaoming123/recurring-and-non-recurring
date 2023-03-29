@@ -17,7 +17,7 @@ void main() async {
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-
+  // check the user is logged in or not
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
@@ -38,6 +38,7 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
+      // if true redirect to dashboard else login page
       home: widget.isLoggedIn ? const Dashboard() : const Login(),
       builder: EasyLoading.init(),
     );
