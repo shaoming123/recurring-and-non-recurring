@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
@@ -371,6 +372,8 @@ class _addNonRecurringState extends State<addNonRecurring> {
           ));
         }
       }
+    } else {
+      EasyLoading.showError('Please fill all the fields');
     }
   }
 

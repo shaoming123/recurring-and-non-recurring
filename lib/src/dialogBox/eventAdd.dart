@@ -490,6 +490,8 @@ class _EventAddState extends State<EventAdd> {
           ),
         ));
       }
+    } else {
+      EasyLoading.showError('Please fill all the fields');
     }
   }
 
@@ -526,7 +528,7 @@ class _EventAddState extends State<EventAdd> {
             value: _selectedCategory,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
-              return value == null ? 'Please select' : null;
+              return value == null ? 'Required' : null;
             },
             items: [
               for (final item in categoryData)
@@ -577,7 +579,7 @@ class _EventAddState extends State<EventAdd> {
                 : null,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
-              return value == null ? 'Please select' : null;
+              return value == null ? 'Required' : null;
             },
             items: _selectedCategory != null
                 ? [
@@ -615,7 +617,7 @@ class _EventAddState extends State<EventAdd> {
             value: typeselect,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
-              return value == null ? 'Please select' : null;
+              return value == null ? 'Required' : null;
             },
             items: typeList.map((TypeSelect e) {
               return e.bold == "true"
@@ -707,7 +709,7 @@ class _EventAddState extends State<EventAdd> {
             value: _selectedSite == '' ? null : _selectedSite,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
-              return value == null ? 'Please select' : null;
+              return value == null ? 'Required' : null;
             },
             items: siteList
                 .map(
@@ -751,7 +753,7 @@ class _EventAddState extends State<EventAdd> {
             value: _selectedPriority == '' ? null : _selectedPriority,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
-              return value == null ? 'Please select' : null;
+              return value == null ? 'Required' : null;
             },
             items: priorityList
                 .map(
@@ -795,7 +797,7 @@ class _EventAddState extends State<EventAdd> {
             value: _selectedStatus == '' ? null : _selectedStatus,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
-              return value == null ? 'Please select' : null;
+              return value == null ? 'Required' : null;
             },
             items: statusList
                 .map(
@@ -839,7 +841,7 @@ class _EventAddState extends State<EventAdd> {
             value: _selectedRecurring == '' ? null : _selectedRecurring,
             selectedItemHighlightColor: Colors.grey,
             validator: (value) {
-              return value == null ? 'Please select' : null;
+              return value == null ? 'Required' : null;
             },
             items: recurringOption
                 .map(

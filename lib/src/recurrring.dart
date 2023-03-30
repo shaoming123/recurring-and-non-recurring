@@ -47,7 +47,7 @@ class _RecurringState extends State<Recurring> {
   CloneHelper cloneHelper = CloneHelper();
   Clone2Helper clone2Helper = Clone2Helper();
   List data;
-  List userData;
+  List userData = [];
   @override
   void initState() {
     super.initState();
@@ -740,7 +740,7 @@ class _RecurringState extends State<Recurring> {
     List<String> names = event.person.split(',');
     List<CircleAvatar> avatars = [];
     for (String name in names) {
-      Map<String, dynamic> person = userData.firstWhere(
+      Map<String, dynamic> person = userData?.firstWhere(
         (person) => person['username'] == name,
         orElse: () => null,
       );

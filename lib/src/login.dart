@@ -204,7 +204,7 @@ class _LoginState extends State<Login> {
               ),
               Positioned(
                 bottom: 30,
-                left: 15,
+                left: 10,
                 child: Column(
                   children: [
                     const Text(
@@ -212,7 +212,7 @@ class _LoginState extends State<Login> {
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 20),
+                          fontSize: 18),
                     ),
                     const SizedBox(
                       height: 5,
