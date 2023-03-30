@@ -39,10 +39,7 @@ class _LoginState extends State<Login> {
       FocusScope.of(context).requestFocus(FocusNode());
       var url =
           'https://ipsolutions4u.com/ipsolutions/recurringMobile/login.php';
-      EasyLoading.show(
-        status: 'loading...',
-        maskType: EasyLoadingMaskType.black,
-      );
+
       try {
         final response = await http.post(Uri.parse(url), body: {
           "username": username,
@@ -71,7 +68,6 @@ class _LoginState extends State<Login> {
               // final dataModel = UserModel.fromMap(data);
 
               setSP(dataModel).whenComplete(() async {
-                EasyLoading.showSuccess('Done');
                 if (!mounted) return;
                 Navigator.pushAndRemoveUntil(
                     context,

@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:ipsolution/databaseHandler/CloneHelper.dart';
 import 'package:ipsolution/src/card/task.dart';
 import 'package:ipsolution/src/navbar.dart';
+import 'package:ipsolution/src/nonRecurringTeam.dart';
 import 'package:ipsolution/src/popFilter.dart';
 import 'package:ipsolution/util/app_styles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -94,7 +95,8 @@ class _NonRecurringState extends State<NonRecurring> {
         for (int x = 0; x < data.length; x++) {
           if (data[x]["owner"] == userName) {
             DateTime dateEnd = DateTime.parse(data[x]["deadline"]);
-
+            final dayLeft = daysBetween(
+                DateTime.now(), DateTime.parse(data[x]["deadline"]));
             if ((dateEnd.isAfter(startDate) ||
                     DateFormat.yMd()
                             .format(dateEnd)
@@ -110,12 +112,16 @@ class _NonRecurringState extends State<NonRecurring> {
                       DateFormat('yyyy-MM-dd').format(DateTime.now())),
                   DateTime.parse(data[x]["deadline"]));
               allNonRecurring.add(data[x]);
+
               foundNonRecurring.add(data[x]);
+
               if (data[x]["status"] == '100') {
                 CompletednonRecurring.add(data[x]);
               } else if (dayLeft.isNegative) {
+                data[x]["dayLeft"] = dayLeft;
                 LatenonRecurring.add(data[x]);
               } else if (dayLeft >= 0) {
+                data[x]["dayLeft"] = dayLeft;
                 ActivenonRecurring.add(data[x]);
               }
             }
@@ -151,6 +157,8 @@ class _NonRecurringState extends State<NonRecurring> {
         print('Error');
       }
     });
+    LatenonRecurring.sort((a, b) => a['dayLeft'].compareTo(b['dayLeft']));
+    ActivenonRecurring.sort((a, b) => a['dayLeft'].compareTo(b['dayLeft']));
   }
 
   Future<void> _show() async {
@@ -225,7 +233,7 @@ class _NonRecurringState extends State<NonRecurring> {
                             Text(
                               "${DateFormat.yMMMMd('en_US').format(startDate).toString()} - ${DateFormat.yMMMMd('en_US').format(endDate).toString()}",
                               style: TextStyle(
-                                  color: Styles .textColor, fontSize: 12),
+                                  color: Styles.textColor, fontSize: 12),
                             ),
                             const Gap(15),
                             const PopFilter(task: 'ownTasks')

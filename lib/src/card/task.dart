@@ -59,8 +59,10 @@ class _TaskState extends State<Task> with SingleTickerProviderStateMixin {
 
     textcontroller = TextEditingController();
     foundNonRecurring = widget.foundNonRecurring;
+
     latenonRecurring = widget.latenonRecurring;
     activenonRecurring = widget.activenonRecurring;
+
     completednonRecurring = widget.completednonRecurring;
     controller.addListener(() {
       setState(() {
@@ -77,6 +79,8 @@ class _TaskState extends State<Task> with SingleTickerProviderStateMixin {
     setState(() {
       selectedUser = sp.getString("user_name");
     });
+
+   
   }
 
   @override
@@ -96,6 +100,8 @@ class _TaskState extends State<Task> with SingleTickerProviderStateMixin {
       page('All', screenHeight, foundNonRecurring),
       // page(screenHeight)
     ];
+
+    
 
     double width = MediaQuery.of(context).size.width;
     return Container(
