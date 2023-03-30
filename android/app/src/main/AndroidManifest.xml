@@ -6,7 +6,7 @@
         android:label="Ipsolution"
         android:name="${applicationName}"
         android:requestLegacyExternalStorage="true"
-        android:icon="@mipmap/launcher_icon"
+        android:icon="@mipmap/ic_launcher"
         android:resizeableActivity="false">
         
         <activity
